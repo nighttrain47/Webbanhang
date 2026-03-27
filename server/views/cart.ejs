@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - HobbyShop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f23;
+            color: #e0e0e0;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1a3e 0%, #2d1b69 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #6c3bd5;
+        }
+
+        header h1 a {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        header nav a {
+            color: #a78bfa;
+            text-decoration: none;
+            margin-left: 16px;
+            padding: 8px 20px;
+            border: 1px solid #a78bfa;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        header nav a:hover {
+            background: #a78bfa;
+            color: #1a1a3e;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            color: #f3f0ff;
+            margin-bottom: 24px;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 16px;
+            background: linear-gradient(145deg, #1e1e3f, #2a2a5e);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(167, 139, 250, 0.15);
+        }
+
+        .cart-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .cart-item .details {
+            flex: 1;
+        }
+
+        .cart-item .name {
+            font-weight: 600;
+            color: #f3f0ff;
+        }
+
+        .cart-item .price {
+            color: #f472b6;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 4px;
+        }
+
+        .cart-item .qty {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .cart-item form button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #ef4444;
+            background: transparent;
+            color: #ef4444;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cart-item form button:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .cart-summary {
+            margin-top: 24px;
+            padding: 24px;
+            background: linear-gradient(145deg, #1e1e3f, #2a2a5e);
+            border-radius: 12px;
+            border: 1px solid rgba(167, 139, 250, 0.15);
+            text-align: right;
+        }
+
+        .cart-summary .total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f472b6;
+        }
+
+        .cart-summary .total-label {
+            color: #94a3b8;
+            font-size: 1rem;
+            margin-right: 12px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+            font-size: 1.2rem;
+        }
+
+        .empty a {
+            color: #a78bfa;
+            text-decoration: none;
+        }
+
+        .btn-continue {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            background: transparent;
+            border: 1px solid #a78bfa;
+            color: #a78bfa;
+            transition: all 0.3s;
+        }
+
+        .btn-continue:hover {
+            background: #a78bfa;
+            color: #1a1a3e;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/shop">🎌 HobbyShop</a></h1>
+        <nav>
+            <a href="/shop">🏠 Trang chủ</a>
+        </nav>
+    </header>
+    <div class="container">
+        <h2>🛒 Giỏ hàng (<%= cart.length %> sản phẩm)</h2>
+
+        <% if (cart.length===0) { %>
+            <div class="empty">
+                <p>Giỏ hàng trống</p>
+                <a href="/shop" class="btn-continue">← Tiếp tục mua sắm</a>
+            </div>
+            <% } else { %>
+                <% let grandTotal=0; %>
+                    <% cart.forEach(item=> { %>
+                        <% grandTotal +=item.price * item.quantity; %>
+                            <div class="cart-item">
+                                <img src="<%= item.image || 'https://via.placeholder.com/80x80?text=No+Image' %>"
+                                    alt="<%= item.name %>">
+                                <div class="details">
+                                    <div class="name">
+                                        <%= item.name %>
+                                    </div>
+                                    <div class="qty">Số lượng: <%= item.quantity %>
+                                    </div>
+                                    <div class="price">
+                                        <%= (item.price * item.quantity).toLocaleString('vi-VN') %>₫
+                                    </div>
+                                </div>
+                                <form action="/shop/cart/remove/<%= item.productId %>" method="POST">
+                                    <button type="submit">✕ Xóa</button>
+                                </form>
+                            </div>
+                            <% }); %>
+
+                                <div class="cart-summary">
+                                    <span class="total-label">Tổng cộng:</span>
+                                    <span class="total">
+                                        <%= grandTotal.toLocaleString('vi-VN') %>₫
+                                    </span>
+                                </div>
+                                <div style="text-align: center; margin-top: 20px;">
+                                    <a href="/shop" class="btn-continue">← Tiếp tục mua sắm</a>
+                                </div>
+                                <% } %>
+    </div>
+</body>
+
+</html>

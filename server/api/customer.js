@@ -1,0 +1,325 @@
+const express = require('express');
+const router = express.Router();
+const ProductDAO = require('../models/ProductDAO');
+const CategoryDAO = require('../models/CategoryDAO');
+const CustomerDAO = require('../models/CustomerDAO');
+const OrderDAO = require('../models/OrderDAO');
+const ReviewDAO = require('../models/ReviewDAO');
+const ArticleDAO = require('../models/ArticleDAO');
+const BrandDAO = require('../models/BrandDAO');
+const { createToken, verifyToken } = require('../utils/jwtAuth');
+
+// ==================== ARTICLES ====================
+
+// GET /api/customer/articles
+router.get('/articles', async (req, res) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+        const result = await ArticleDAO.selectAllPublished(page, limit);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/articles/:slug
+router.get('/articles/:slug', async (req, res) => {
+    try {
+        const article = await ArticleDAO.selectBySlug(req.params.slug);
+        if (!article) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy bài viết' });
+        }
+        res.json(article);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== BRANDS ====================
+
+// GET /api/customer/brands
+router.get('/brands', async (req, res) => {
+    try {
+        const brands = await BrandDAO.selectAll();
+        res.json(brands);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== CATEGORIES ====================
+
+// GET /api/customer/categories
+router.get('/categories', async (req, res) => {
+    try {
+        const categories = await CategoryDAO.selectAll();
+        res.json(categories);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== PRODUCTS ====================
+
+// GET /api/customer/products/new
+router.get('/products/new', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 8;
+        const products = await ProductDAO.selectNewProducts(limit);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/products/hot
+router.get('/products/hot', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 8;
+        const products = await ProductDAO.selectHotProducts(limit);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/products/preorder
+router.get('/products/preorder', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 8;
+        const products = await ProductDAO.selectPreorderProducts(limit);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/products/promotion
+router.get('/products/promotion', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 8;
+        const products = await ProductDAO.selectPromotionProducts(limit);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/products/category/:cid
+router.get('/products/category/:cid', async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const result = await ProductDAO.selectByCategory(req.params.cid, page, limit);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/products/search/:keyword
+router.get('/products/search/:keyword', async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const result = await ProductDAO.selectByKeyword(req.params.keyword, page, limit);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/products/:id
+router.get('/products/:id', async (req, res) => {
+    try {
+        const product = await ProductDAO.selectById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
+        }
+        res.json(product);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== REVIEWS ====================
+
+// GET /api/customer/products/:id/reviews
+router.get('/products/:id/reviews', async (req, res) => {
+    try {
+        const reviews = await ReviewDAO.selectByProductId(req.params.id);
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/customer/products/:id/reviews
+// Authentication is optional or you can add a simple check.
+router.post('/products/:id/reviews', async (req, res) => {
+    try {
+        const { userName, rating, comment, userId } = req.body;
+        const productId = req.params.id;
+        
+        // Prevent duplicate rating if userId is provided
+        if (userId) {
+            const existingReview = await ReviewDAO.selectByUserAndProduct(userId, productId);
+            if (existingReview) {
+                return res.status(400).json({ success: false, message: 'Bạn đã đánh giá sản phẩm này rồi' });
+            }
+        }
+
+        const review = await ReviewDAO.insert({
+            productId,
+            userId,
+            userName,
+            rating,
+            comment
+        });
+
+        res.status(201).json({ success: true, review });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== AUTH ====================
+
+// POST /api/customer/signup
+router.post('/signup', async (req, res) => {
+    try {
+        const { username, password, name, email, phone } = req.body;
+        // Check duplicates
+        const existingUser = await CustomerDAO.selectByUsername(username);
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: 'Username đã tồn tại' });
+        }
+        const existingEmail = await CustomerDAO.selectByEmail(email);
+        if (existingEmail) {
+            return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
+        }
+        const token = Math.random().toString(36).substring(2);
+        const customer = await CustomerDAO.insert({ username, password, name, email, phone, token });
+        res.status(201).json({ success: true, message: 'Đăng ký thành công', id: customer._id });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/customer/login
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const customer = await CustomerDAO.selectByUsername(username);
+        if (!customer) {
+            return res.status(401).json({ success: false, message: 'Sai tài khoản hoặc mật khẩu' });
+        }
+        if (!customer.active) {
+            return res.status(401).json({ success: false, message: 'Tài khoản chưa được kích hoạt' });
+        }
+        const isMatch = await customer.comparePassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: 'Sai tài khoản hoặc mật khẩu' });
+        }
+        const jwtToken = createToken({ id: customer._id, username: customer.username, role: 'customer' });
+        res.json({
+            success: true,
+            token: jwtToken,
+            customer: { id: customer._id, username: customer.username, name: customer.name, email: customer.email },
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/active?id=xxx&token=xxx
+router.get('/active', async (req, res) => {
+    try {
+        const { id, token } = req.query;
+        const result = await CustomerDAO.active(id, token);
+        if (result) {
+            res.json({ success: true, message: 'Kích hoạt tài khoản thành công' });
+        } else {
+            res.status(400).json({ success: false, message: 'Token không hợp lệ' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== ORDERS (cần token) ====================
+
+// POST /api/customer/orders
+router.post('/orders', verifyToken, async (req, res) => {
+    try {
+        const { items, shippingAddress, note } = req.body;
+        if (!items || items.length === 0) {
+            return res.status(400).json({ success: false, message: 'Giỏ hàng trống' });
+        }
+
+        // Calculate total from items
+        const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        const order = await OrderDAO.insert({
+            customer: req.user.id,
+            items: items.map(item => ({
+                product: item.productId || item.product,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity
+            })),
+            total,
+            shippingAddress: shippingAddress || '',
+            note: note || '',
+            status: 'pending'
+        });
+
+        res.status(201).json({ success: true, order });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// GET /api/customer/orders
+router.get('/orders', verifyToken, async (req, res) => {
+    try {
+        const orders = await OrderDAO.selectByCustomer(req.user.id);
+        res.json({ success: true, orders });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== PROFILE (cần token) ====================
+
+// GET /api/customer/profile
+router.get('/profile', verifyToken, async (req, res) => {
+    try {
+        const customer = await CustomerDAO.selectById(req.user.id);
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+        }
+        res.json({ success: true, customer });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// PUT /api/customer/profile
+router.put('/profile', verifyToken, async (req, res) => {
+    try {
+        const { name, email, phone } = req.body;
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (email) updateData.email = email;
+        if (phone) updateData.phone = phone;
+
+        const customer = await CustomerDAO.update(req.user.id, updateData);
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+        }
+        res.json({ success: true, customer });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+module.exports = router;

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= product.name %> - HobbyShop
+    </title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f23;
+            color: #e0e0e0;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1a3e 0%, #2d1b69 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #6c3bd5;
+        }
+
+        header h1 a {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        header nav a {
+            color: #a78bfa;
+            text-decoration: none;
+            margin-left: 16px;
+            padding: 8px 20px;
+            border: 1px solid #a78bfa;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        header nav a:hover {
+            background: #a78bfa;
+            color: #1a1a3e;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .product-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background: linear-gradient(145deg, #1e1e3f, #2a2a5e);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(167, 139, 250, 0.15);
+        }
+
+        .product-image img {
+            width: 100%;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .product-info h2 {
+            font-size: 1.6rem;
+            color: #f3f0ff;
+            margin-bottom: 8px;
+        }
+
+        .product-info .series {
+            color: #a78bfa;
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+
+        .product-info .price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f472b6;
+            margin-bottom: 20px;
+        }
+
+        .product-info .manufacturer {
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .product-info .description {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .specs {
+            margin-top: 16px;
+        }
+
+        .specs h3 {
+            color: #c4b5fd;
+            margin-bottom: 12px;
+        }
+
+        .specs table {
+            width: 100%;
+        }
+
+        .specs td {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+        }
+
+        .specs td:first-child {
+            color: #94a3b8;
+            width: 120px;
+        }
+
+        .actions-row {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .actions-row form {
+            flex: 1;
+        }
+
+        .btn-back {
+            display: inline-block;
+            flex: 1;
+            padding: 12px 24px;
+            text-align: center;
+            border-radius: 10px;
+            text-decoration: none;
+            background: transparent;
+            border: 1px solid #a78bfa;
+            color: #a78bfa;
+            font-size: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-back:hover {
+            background: #a78bfa;
+            color: #1a1a3e;
+        }
+
+        .btn-add {
+            width: 100%;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #a78bfa, #f472b6);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .btn-add:hover {
+            opacity: 0.9;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .status-active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .product-detail {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/shop">🎌 HobbyShop</a></h1>
+        <nav>
+            <a href="/shop">🏠 Trang chủ</a>
+            <a href="/shop/cart">🛒 Giỏ hàng</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="product-detail">
+            <div class="product-image">
+                <img src="<%= product.image || 'https://via.placeholder.com/500x500?text=No+Image' %>"
+                    alt="<%= product.name %>">
+            </div>
+            <div class="product-info">
+                <span class="status status-<%= product.status %>">
+                    <%= product.status==='active' ? 'Còn hàng' : 'Hết hàng' %>
+                </span>
+                <h2>
+                    <%= product.name %>
+                </h2>
+                <div class="series">
+                    <%= product.series %>
+                </div>
+                <div class="manufacturer">Nhà sản xuất: <strong>
+                        <%= product.manufacturer %>
+                    </strong></div>
+                <div class="price">
+                    <%= product.price.toLocaleString('vi-VN') %>₫
+                </div>
+
+                <% if (product.description) { %>
+                    <div class="description">
+                        <%= product.description %>
+                    </div>
+                    <% } %>
+
+                        <% if (product.specs) { %>
+                            <div class="specs">
+                                <h3>Thông số</h3>
+                                <table>
+                                    <% if (product.specs.material) { %>
+                                        <tr>
+                                            <td>Chất liệu</td>
+                                            <td>
+                                                <%= product.specs.material %>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                                            <% if (product.specs.size) { %>
+                                                <tr>
+                                                    <td>Kích thước</td>
+                                                    <td>
+                                                        <%= product.specs.size %>
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+                                                    <% if (product.specs.sculptor) { %>
+                                                        <tr>
+                                                            <td>Sculptor</td>
+                                                            <td>
+                                                                <%= product.specs.sculptor %>
+                                                            </td>
+                                                        </tr>
+                                                        <% } %>
+                                                            <% if (product.specs.releaseDate) { %>
+                                                                <tr>
+                                                                    <td>Ngày phát hành</td>
+                                                                    <td>
+                                                                        <%= product.specs.releaseDate %>
+                                                                    </td>
+                                                                </tr>
+                                                                <% } %>
+                                </table>
+                            </div>
+                            <% } %>
+
+                                <div class="actions-row">
+                                    <a href="/shop" class="btn-back">← Quay lại</a>
+                                    <form action="/shop/cart/add" method="POST">
+                                        <input type="hidden" name="productId" value="<%= product._id %>">
+                                        <button type="submit" class="btn-add">🛒 Thêm vào giỏ</button>
+                                    </form>
+                                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

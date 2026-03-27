@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HobbyShop - Danh sách sản phẩm</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f23; color: #e0e0e0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: linear-gradient(135deg, #1a1a3e 0%, #2d1b69 100%); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6c3bd5; }
+        header h1 { font-size: 1.8rem; background: linear-gradient(90deg, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header a { color: #a78bfa; text-decoration: none; font-weight: 500; padding: 8px 20px; border: 1px solid #a78bfa; border-radius: 8px; transition: all 0.3s; }
+        header a:hover { background: #a78bfa; color: #1a1a3e; }
+        .categories { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+        .categories a { color: #c4b5fd; text-decoration: none; padding: 6px 16px; border-radius: 20px; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); font-size: 0.9rem; transition: all 0.3s; }
+        .categories a:hover, .categories a.active { background: #a78bfa; color: #1a1a3e; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px; margin-top: 20px; }
+        .product-card { background: linear-gradient(145deg, #1e1e3f, #2a2a5e); border-radius: 12px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; border: 1px solid rgba(167,139,250,0.15); }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(108,59,213,0.3); }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; }
+        .product-card .info { padding: 16px; }
+        .product-card .name { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: #f3f0ff; }
+        .product-card .series { font-size: 0.85rem; color: #a78bfa; margin-bottom: 8px; }
+        .product-card .price { font-size: 1.2rem; font-weight: 700; color: #f472b6; }
+        .product-card .actions { padding: 0 16px 16px; display: flex; gap: 8px; }
+        .product-card .actions a, .product-card .actions button { flex: 1; padding: 8px; text-align: center; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.3s; text-decoration: none; }
+        .btn-detail { background: transparent; border: 1px solid #a78bfa; color: #a78bfa; }
+        .btn-detail:hover { background: #a78bfa; color: #1a1a3e; }
+        .btn-cart { background: linear-gradient(135deg, #a78bfa, #f472b6); border: none; color: white; font-weight: 600; }
+        .btn-cart:hover { opacity: 0.9; }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 30px; }
+        .pagination a { padding: 8px 14px; border-radius: 8px; text-decoration: none; color: #c4b5fd; background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); transition: all 0.3s; }
+        .pagination a:hover, .pagination a.active { background: #a78bfa; color: #1a1a3e; }
+        .empty { text-align: center; padding: 60px; color: #888; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎌 HobbyShop</h1>
+        <a href="/shop/cart">🛒 Giỏ hàng</a>
+    </header>
+    <div class="container">
+        <div class="categories">
+            <a href="/shop" class="active">Tất cả</a>
+            <% categories.forEach(cat => { %>
+                <a href="/shop?category=<%= cat._id %>"><%= cat.name %></a>
+            <% }); %>
+        </div>
+
+        <% if (products.length === 0) { %>
+            <div class="empty">Không có sản phẩm nào</div>
+        <% } else { %>
+            <div class="product-grid">
+                <% products.forEach(product => { %>
+                    <div class="product-card">
+                        <img src="<%= product.image || 'https://via.placeholder.com/300x200?text=No+Image' %>" alt="<%= product.name %>">
+                        <div class="info">
+                            <div class="name"><%= product.name %></div>
+                            <div class="series"><%= product.series %></div>
+                            <div class="price"><%= product.price.toLocaleString('vi-VN') %>₫</div>
+                        </div>
+                        <div class="actions">
+                            <a href="/shop/product/<%= product._id %>" class="btn-detail">Chi tiết</a>
+                            <form action="/shop/cart/add" method="POST" style="flex:1;display:flex;">
+                                <input type="hidden" name="productId" value="<%= product._id %>">
+                                <button type="submit" class="btn-cart" style="flex:1;">Thêm giỏ</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <a href="/shop?page=<%= i %>" class="<%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+                    <% } %>
+                </div>
+            <% } %>
+        <% } %>
+    </div>
+</body>
+</html>

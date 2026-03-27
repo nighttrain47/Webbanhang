@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hồ sơ người dùng - FigureCurator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-fixed": "#001e2e",
+              "surface-container": "#ebeef0",
+              "inverse-primary": "#83cfff",
+              "surface-tint": "#00658d",
+              "on-primary": "#ffffff",
+              "surface-container-highest": "#e0e3e5",
+              "secondary-fixed-dim": "#c1c6d7",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed-variant": "#7a3000",
+              "on-surface-variant": "#3e4850",
+              "surface-container-low": "#f1f4f6",
+              "secondary-fixed": "#dde2f3",
+              "secondary-container": "#dde2f3",
+              "surface-bright": "#f7fafc",
+              "on-secondary-fixed-variant": "#414754",
+              "on-secondary-container": "#5e6473",
+              "inverse-surface": "#2d3133",
+              "on-surface": "#181c1e",
+              "on-primary-fixed-variant": "#004c6c",
+              "primary-container": "#00adef",
+              "error-container": "#ffdad6",
+              "primary-fixed-dim": "#83cfff",
+              "tertiary-container": "#ff7d36",
+              "surface-container-high": "#e5e9eb",
+              "on-secondary": "#ffffff",
+              "on-tertiary-container": "#642500",
+              "on-tertiary-fixed": "#351000",
+              "on-tertiary": "#ffffff",
+              "on-error-container": "#93000a",
+              "surface-variant": "#e0e3e5",
+              "outline-variant": "#bdc8d1",
+              "background": "#f7fafc",
+              "inverse-on-surface": "#eef1f3",
+              "error": "#ba1a1a",
+              "on-primary-container": "#003d57",
+              "tertiary-fixed": "#ffdbcc",
+              "on-error": "#ffffff",
+              "secondary": "#585e6c",
+              "primary": "#00658d",
+              "tertiary": "#a04100",
+              "outline": "#6e7881",
+              "tertiary-fixed-dim": "#ffb693",
+              "surface": "#f7fafc",
+              "on-background": "#181c1e",
+              "surface-dim": "#d7dadc",
+              "primary-fixed": "#c6e7ff",
+              "on-secondary-fixed": "#161c27"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .signature-gradient {
+            background: linear-gradient(135deg, #00658d 0%, #00adef 100%);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc;
+            color: #181c1e;
+        }
+        h1, h2, h3, .font-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center px-6 py-3 max-w-7xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">FigureCurator</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-colors font-['Plus_Jakarta_Sans'] font-medium text-sm" href="#">Sản phẩm</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-colors font-['Plus_Jakarta_Sans'] font-medium text-sm" href="#">Bộ sưu tập</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-colors font-['Plus_Jakarta_Sans'] font-medium text-sm" href="#">Tin tức</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-colors font-['Plus_Jakarta_Sans'] font-medium text-sm" href="#">Pre-order</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 rounded-full transition-all relative">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-tertiary-container rounded-full"></span>
+</button>
+<button class="flex items-center gap-2 p-1 pr-3 rounded-full bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-bold border-b-2 border-cyan-500 pb-1">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-xs hidden sm:inline">Hồ sơ</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Side Navigation (Mobile: Horizontal Scroll, Desktop: Sidebar) -->
+<aside class="lg:col-span-3 space-y-6">
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/20">
+<div class="flex flex-col items-center text-center mb-8">
+<div class="relative w-24 h-24 mb-4">
+<img alt="Avatar" class="w-full h-full object-cover rounded-full ring-4 ring-surface-container-low" data-alt="professional studio portrait of a young man with a friendly expression in a minimalist modern setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBr1YAlnPBN92MeIu03ftdW5ble7bDUUalmzvp8o0iNHnwkP1kpfaXgMT7s_pFmiUMPP9cztVa4E2n4tJSO4R0oY4JtBv6pKy8YLpZFimdV99bgChEpCupc9OgdvdPrblXwLYbGWwUqBQoqFL6rDf4wXquTezL5lyrA00EV7QTdenwYSUNX7Dl0hE2hgdrGhU3rC2tpMdMPM-5bvGB643aJKMntHOY5FvxEBmmMCqJvjN-3MYhDOk-2dB4NDbqSljt_9IAwPdFwVg"/>
+<button class="absolute bottom-0 right-0 p-1.5 bg-primary rounded-full text-white shadow-lg border-2 border-white">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+</button>
+</div>
+<h2 class="text-xl font-bold text-on-surface">Minh Nguyễn</h2>
+<p class="text-sm text-on-surface-variant font-body">Thành viên Collector Platinum</p>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-cyan-50 text-cyan-700 rounded-lg font-semibold transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-body text-sm">Thông tin cá nhân</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-body text-sm">Lịch sử đơn hàng</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-body text-sm">Danh sách yêu thích</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="font-body text-sm">Thông báo</span>
+</a>
+<div class="pt-4 mt-4 border-t border-outline-variant/20">
+<a class="flex items-center gap-3 px-4 py-3 text-error hover:bg-error-container/20 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-body text-sm">Đăng xuất</span>
+</a>
+</div>
+</nav>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="lg:col-span-9 space-y-12">
+<!-- Section: Personal Info -->
+<section id="personal-info">
+<div class="flex justify-between items-end mb-6">
+<h3 class="text-2xl font-bold tracking-tight text-on-surface">Thông tin cá nhân</h3>
+<button class="text-primary font-semibold text-sm hover:underline">Chỉnh sửa</button>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/20 grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-1">
+<label class="text-[0.6875rem] uppercase tracking-widest text-on-surface-variant font-label font-semibold">Họ và tên</label>
+<p class="text-base font-medium text-on-surface">Nguyễn Văn Minh</p>
+</div>
+<div class="space-y-1">
+<label class="text-[0.6875rem] uppercase tracking-widest text-on-surface-variant font-label font-semibold">Email</label>
+<p class="text-base font-medium text-on-surface">minh.nguyen@example.com</p>
+</div>
+<div class="space-y-1">
+<label class="text-[0.6875rem] uppercase tracking-widest text-on-surface-variant font-label font-semibold">Số điện thoại</label>
+<p class="text-base font-medium text-on-surface">+84 90 123 4567</p>
+</div>
+<div class="space-y-1">
+<label class="text-[0.6875rem] uppercase tracking-widest text-on-surface-variant font-label font-semibold">Địa chỉ mặc định</label>
+<p class="text-base font-medium text-on-surface leading-relaxed">123 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh</p>
+</div>
+</div>
+</section>
+<!-- Section: Order History -->
+<section id="orders">
+<div class="flex justify-between items-end mb-6">
+<h3 class="text-2xl font-bold tracking-tight text-on-surface">Đơn hàng gần đây</h3>
+<a class="text-primary font-semibold text-sm hover:underline" href="#">Xem tất cả</a>
+</div>
+<div class="space-y-4">
+<!-- Order Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/20 flex flex-col md:flex-row gap-6 items-center md:items-start transition-all hover:bg-surface-container-low">
+<div class="w-24 h-24 flex-shrink-0 bg-surface-container-high rounded-lg overflow-hidden">
+<img alt="Order product" class="w-full h-full object-cover" data-alt="detailed macro shot of a premium anime scale figure with vibrant colors and intricate textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvvY_iM7aq6D_Qo8TyLXJC8pVQ7LKrNfpXKR83ffP64W-wA_hADB5QqwA4n8LNyetQhaNI5DBIWmCRSJ0jLOQSp5Rpw3HvbpxToudt2VJUm0EuDX_SJ2UxHPgQOXhLYngfKg9L5AqyLk5JIdLBWVzNxxZtSJWnjhf6omElcuwKuwTGflLdqrxyrCRkzaJ_Ya0gLEYFKR1p8Xr6cJ2Ydy9U93BvENWcp1WHItKiNQDkiwoAmkHbYYpNUp6-fAq8Zy_oN5OwXc6QAls"/>
+</div>
+<div class="flex-grow space-y-2 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:justify-between items-center">
+<h4 class="font-bold text-lg text-on-surface">Đơn hàng #ORD-88291</h4>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container text-[0.6875rem] font-bold rounded-full uppercase tracking-tighter">Đang giao hàng</span>
+</div>
+<p class="text-sm text-on-surface-variant font-body">Đặt ngày: 15 Th05, 2024 • 2 sản phẩm</p>
+<p class="font-bold text-primary">5,450,000₫</p>
+</div>
+<div class="flex-shrink-0">
+<button class="px-6 py-2 border border-outline-variant rounded-lg text-sm font-semibold hover:bg-surface-container transition-colors">Chi tiết</button>
+</div>
+</div>
+<!-- Order Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/20 flex flex-col md:flex-row gap-6 items-center md:items-start transition-all hover:bg-surface-container-low">
+<div class="w-24 h-24 flex-shrink-0 bg-surface-container-high rounded-lg overflow-hidden">
+<img alt="Order product" class="w-full h-full object-cover" data-alt="high-end collectible statue of a legendary character with dynamic pose and dramatic studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYCEeOsA0VvN1wvGxsRN8nfDhBF1uBTzLsxso02GxKaaVL4A6oBdgTMXJ8Qf-kzQzwGUaqm--098Ix4XeIrmT2hywbLIdsaPIqXEoXKJs6ALi_Ui8NQT0O3WB-uKm5j4dIQ5DpAMKhjvsx1fV9yYw4j_KsnSg_omTYesUIVj9taFwRbIiijL6fhYPy65KURvZerDcFJCRRYFySe8XtFhyWKLacf1mjOeNmTd3ooDJYcbnrenInedPSPL7K6Y-DP9agiPIhCxZMWCI"/>
+</div>
+<div class="flex-grow space-y-2 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:justify-between items-center">
+<h4 class="font-bold text-lg text-on-surface">Đơn hàng #ORD-77210</h4>
+<span class="px-3 py-1 bg-green-100 text-green-700 text-[0.6875rem] font-bold rounded-full uppercase tracking-tighter">Đã hoàn thành</span>
+</div>
+<p class="text-sm text-on-surface-variant font-body">Đặt ngày: 02 Th04, 2024 • 1 sản phẩm</p>
+<p class="font-bold text-primary">2,890,000₫</p>
+</div>
+<div class="flex-shrink-0">
+<button class="px-6 py-2 border border-outline-variant rounded-lg text-sm font-semibold hover:bg-surface-container transition-colors">Chi tiết</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Wishlist Bento Grid -->
+<section id="wishlist">
+<div class="flex justify-between items-end mb-6">
+<h3 class="text-2xl font-bold tracking-tight text-on-surface">Danh sách yêu thích</h3>
+<a class="text-primary font-semibold text-sm hover:underline" href="#">Quản lý</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+<!-- Wishlist Item 1 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-outline-variant/10">
+<div class="aspect-[4/5] relative overflow-hidden bg-surface-container-low">
+<img alt="Product" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="editorial shot of an iconic robot figure with matte finish and glowing accents on a clean white pedestal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOJ8ZhrkynxR-eoKfqJEKZ6Jvq6pbtEyk1FQVSLauli9j6qk7DOTLd4BLXNSKT6j5dL2z9S6ETfFVc76zYNrDcRQ8Qpp-R4ylTpkEZyGG60ve2oMlMDh-UjOJo-5UoZXFb-WjOp9sFQ1HGsZ3UJ_LrhuAEYZZUuU4SXwujf_AFoKfi8OxIi3hEXWGfouo4bzXNMs6KNEnZquwkgOxCgVhti-jgLdcXTgMFGzdmiw105uZT-SJ5gq8u2wurSfwxNvMCn5pqu_t3QEM"/>
+<div class="absolute top-3 left-3">
+<span class="px-2 py-1 bg-tertiary-container text-white text-[0.625rem] font-bold rounded uppercase">Pre-order</span>
+</div>
+<button class="absolute top-3 right-3 p-1.5 bg-white/60 backdrop-blur-md rounded-full text-error hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-xl" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<div class="p-4 space-y-1">
+<span class="text-[0.625rem] text-on-surface-variant font-label uppercase tracking-widest">Good Smile Company</span>
+<h5 class="font-bold text-sm text-on-surface line-clamp-2">Hatsune Miku: Digital Stars 2024 Ver.</h5>
+<div class="flex items-center justify-between pt-2">
+<span class="font-bold text-primary text-base">4,200,000₫</span>
+<button class="p-1.5 signature-gradient rounded-lg text-white shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-xl" data-icon="add_shopping_cart">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Wishlist Item 2 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-outline-variant/10">
+<div class="aspect-[4/5] relative overflow-hidden bg-surface-container-low">
+<img alt="Product" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="luxury collectible action figure displayed in a minimalist acrylic case with subtle atmospheric lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC049acaHKDsMEAZicK_Feo5ioUJaeoL2dShf5H8n6zKeDGQxBOh-4WPvSFXBEWe1tLdnU-O86RIPJxgGO6lioEjnqesKEtjODd3REXTRqzZOA8PEeKVWKC3fdgr3Lqz8ZNffyoCDdxbGMp1v3WVNJMCGsUssiWfJyc3UFOFRZZW0eplQyGA8Eyw5yDpLzaYDhD55i0a00mKwJ2z5DkktQ2gvWUIHBUEV3CmlKZCmXtN-Jag801uJI_XUCEP-lvnX6b5da_EmECVAQ"/>
+<div class="absolute top-3 left-3">
+<span class="px-2 py-1 bg-secondary-container text-on-secondary-container text-[0.625rem] font-bold rounded uppercase">Scale 1/7</span>
+</div>
+<button class="absolute top-3 right-3 p-1.5 bg-white/60 backdrop-blur-md rounded-full text-error hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-xl" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<div class="p-4 space-y-1">
+<span class="text-[0.625rem] text-on-surface-variant font-label uppercase tracking-widest">Alter</span>
+<h5 class="font-bold text-sm text-on-surface line-clamp-2">Azur Lane: Prinz Eugen Unfading Smile Ver.</h5>
+<div class="flex items-center justify-between pt-2">
+<span class="font-bold text-primary text-base">5,150,000₫</span>
+<button class="p-1.5 signature-gradient rounded-lg text-white shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-xl" data-icon="add_shopping_cart">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Wishlist Item 3 (Small variant) -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-outline-variant/10">
+<div class="aspect-[4/5] relative overflow-hidden bg-surface-container-low">
+<img alt="Product" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="collection of stylized small toy figures on a wooden shelf with soft bokeh background and warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh745X0BAmJnEAOb_wGB9ylJoDwz4g45QJmHaAvtUaoPcx9Po8V5QHKhwntU-nfxxZZ75nHzoGghOuyyvV9gprwsvRAFDvKNhXyWJ7cWiX9AWVVqJau4K_GJl9jaUs4JaLhZYewagOCPWHpG_RWiTb6f3n3bq2qDOYJd1ctivb83Ayu7HF0mAZswsXt36np3Hsmh2pzjtF4jvh0SMVzU9X1B9lb7lB526SqgkdYCS1cujp3IYvsvRdmAHkHJee5_KXEH7_zP4Jlao"/>
+<button class="absolute top-3 right-3 p-1.5 bg-white/60 backdrop-blur-md rounded-full text-error hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-xl" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<div class="p-4 space-y-1">
+<span class="text-[0.625rem] text-on-surface-variant font-label uppercase tracking-widest">Kotobukiya</span>
+<h5 class="font-bold text-sm text-on-surface line-clamp-2">ARTFX J Zenitsu Agatsuma - Kimetsu no Yaiba</h5>
+<div class="flex items-center justify-between pt-2">
+<span class="font-bold text-primary text-base">3,450,000₫</span>
+<button class="p-1.5 signature-gradient rounded-lg text-white shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-xl" data-icon="add_shopping_cart">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-6 mt-auto bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-7xl mx-auto">
+<div class="text-left">
+<p class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">© 2024 FigureCurator. Thiết kế theo phong cách Digital Curator.</p>
+</div>
+<div class="flex flex-wrap justify-start md:justify-end gap-6">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-cyan-500 transition-opacity" href="#">Về chúng tôi</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-cyan-500 transition-opacity" href="#">Chính sách bảo mật</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-cyan-500 transition-opacity" href="#">Điều khoản dịch vụ</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-cyan-500 transition-opacity" href="#">Liên hệ</a>
+</div>
+</div>
+</footer>
+<!-- Bottom Mobile Nav -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-outline-variant/20 px-6 py-3 flex justify-between items-center z-50">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[10px] font-medium">Trang chủ</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="text-[10px] font-medium">Khám phá</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="text-[10px] font-medium">Yêu thích</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-[10px] font-bold">Hồ sơ</span>
+</button>
+</div>
+</body></html>

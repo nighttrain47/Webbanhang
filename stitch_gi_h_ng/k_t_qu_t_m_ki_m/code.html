@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kết quả tìm kiếm | Mô Hình Cao Cấp</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-nav { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .signature-gradient { background: linear-gradient(135deg, #00658d 0%, #00adef 100%); }
+        .orange-flame { background-color: #ff7d36; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#181c1e",
+              "surface": "#f7fafc",
+              "tertiary": "#a04100",
+              "tertiary-fixed-dim": "#ffb693",
+              "outline": "#6e7881",
+              "on-secondary-fixed": "#161c27",
+              "surface-dim": "#d7dadc",
+              "primary-fixed": "#c6e7ff",
+              "surface-variant": "#e0e3e5",
+              "outline-variant": "#bdc8d1",
+              "background": "#f7fafc",
+              "on-tertiary": "#ffffff",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#eef1f3",
+              "error": "#ba1a1a",
+              "on-tertiary-fixed": "#351000",
+              "on-tertiary-container": "#642500",
+              "secondary": "#585e6c",
+              "primary": "#00658d",
+              "on-error": "#ffffff",
+              "on-primary-container": "#003d57",
+              "tertiary-fixed": "#ffdbcc",
+              "surface-container-low": "#f1f4f6",
+              "secondary-fixed": "#dde2f3",
+              "secondary-container": "#dde2f3",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed-variant": "#7a3000",
+              "on-surface-variant": "#3e4850",
+              "on-secondary-fixed-variant": "#414754",
+              "on-secondary-container": "#5e6473",
+              "inverse-surface": "#2d3133",
+              "surface-bright": "#f7fafc",
+              "surface-container-highest": "#e0e3e5",
+              "secondary-fixed-dim": "#c1c6d7",
+              "on-primary": "#ffffff",
+              "primary-fixed-dim": "#83cfff",
+              "primary-container": "#00adef",
+              "error-container": "#ffdad6",
+              "tertiary-container": "#ff7d36",
+              "surface-container-high": "#e5e9eb",
+              "on-secondary": "#ffffff",
+              "on-surface": "#181c1e",
+              "on-primary-fixed-variant": "#004c6c",
+              "on-primary-fixed": "#001e2e",
+              "surface-tint": "#00658d",
+              "inverse-primary": "#83cfff",
+              "surface-container": "#ebeef0"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-slate-900 dark:text-white">Mô Hình Cao Cấp</div>
+<div class="hidden md:flex items-center space-x-8 font-['Plus_Jakarta_Sans'] font-medium text-sm tracking-tight">
+<a class="text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-colors" href="#">Sản phẩm</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-colors" href="#">Bộ sưu tập</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-colors" href="#">Tin tức</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-colors" href="#">Liên hệ</a>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative hidden sm:block">
+<input class="bg-surface-container-highest border-none rounded-lg py-2 pl-4 pr-10 text-sm focus:ring-2 focus:ring-primary w-64 transition-all" type="text" value="Genshin Impact"/>
+<span class="material-symbols-outlined absolute right-3 top-2 text-outline text-lg">search</span>
+</div>
+<button class="p-2 text-slate-600 hover:opacity-80 transition-opacity active:scale-95">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+<button class="p-2 text-slate-600 hover:opacity-80 transition-opacity active:scale-95">
+<span class="material-symbols-outlined">person</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-20 max-w-7xl mx-auto px-6">
+<!-- Search Header -->
+<header class="mb-12">
+<nav class="flex text-xs text-outline mb-4 space-x-2">
+<span>Trang chủ</span>
+<span>/</span>
+<span class="text-primary font-medium">Tìm kiếm</span>
+</nav>
+<h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">
+                Kết quả tìm kiếm cho: <span class="text-primary">"Genshin Impact"</span>
+</h1>
+<p class="text-outline">Tìm thấy 12 sản phẩm phù hợp với yêu cầu của bạn.</p>
+</header>
+<div class="flex flex-col lg:flex-row gap-12">
+<!-- Sidebar Filters -->
+<aside class="w-full lg:w-64 flex-shrink-0 space-y-10">
+<!-- Price Filter -->
+<section>
+<h3 class="font-headline font-bold text-lg mb-6 flex items-center gap-2">
+                         Khoảng giá
+                    </h3>
+<div class="space-y-4">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm group-hover:text-primary transition-colors">Dưới 1.000.000đ</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm group-hover:text-primary transition-colors">1.000.000đ - 5.000.000đ</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm group-hover:text-primary transition-colors">Trên 5.000.000đ</span>
+</label>
+</div>
+</section>
+<!-- Brand Filter -->
+<section>
+<h3 class="font-headline font-bold text-lg mb-6 flex items-center gap-2">
+                        Hãng sản xuất
+                    </h3>
+<div class="space-y-4">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm group-hover:text-primary transition-colors">Good Smile Company</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm group-hover:text-primary transition-colors">Alter</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm group-hover:text-primary transition-colors">Kotobukiya</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm group-hover:text-primary transition-colors">Apex-Toys</span>
+</label>
+</div>
+</section>
+<!-- Scale Filter -->
+<section>
+<h3 class="font-headline font-bold text-lg mb-6">Tỷ lệ</h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-outline-variant text-xs font-medium hover:border-primary hover:text-primary transition-all">Non-scale</button>
+<button class="px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-medium">Scale 1/7</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-xs font-medium hover:border-primary hover:text-primary transition-all">Scale 1/8</button>
+</div>
+</section>
+</aside>
+<!-- Results Grid -->
+<div class="flex-1">
+<!-- Sorting & View Options -->
+<div class="flex justify-between items-center mb-8 pb-4 border-b border-outline-variant/20">
+<div class="flex gap-4">
+<button class="text-sm font-semibold border-b-2 border-primary pb-1">Phổ biến</button>
+<button class="text-sm text-outline hover:text-on-surface transition-colors pb-1">Mới nhất</button>
+<button class="text-sm text-outline hover:text-on-surface transition-colors pb-1">Giá thấp đến cao</button>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">grid_view</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">view_list</span>
+</div>
+</div>
+<!-- Product Bento Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+<!-- Product 1 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:scale-[1.02] transition-all duration-300 shadow-sm hover:shadow-xl">
+<div class="relative aspect-[4/5] overflow-hidden">
+<img class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" data-alt="Premium anime figure of Raiden Shogun from Genshin Impact, detailed purple kimono, glowing electro effects, high-end studio lighting on white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5p8dcux2FSMWKD0nyJrWKEjDCfUlQSLI5jaGkNCgXufGETgFfKl0zwZD-9dTUPF7apUC9TtBLLw_052PqsyoDey26fnLN2EmWB7B8wQTFosKWM5K49kvhPxqkrMmUTXQFcfRBsjEoaDv-MloCDpumC6xvNt5PNu1V9WZcqPpJa1vctD_UbGKGFpEj1ck-gTDsOVYd3OT1vFAm7LO_4nlckjg4WYs5rJ0h52qHJDWEvQlT5Aop8ttU6wfURfo-JqnxOlnVStvMLLw"/>
+<div class="absolute top-4 left-4 flex flex-col gap-2">
+<span class="bg-tertiary-container text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Limited Edition</span>
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Scale 1/7</span>
+</div>
+</div>
+<div class="p-6">
+<p class="text-[10px] text-outline uppercase tracking-widest mb-1">Good Smile Company</p>
+<h3 class="font-headline font-bold text-lg mb-2 leading-tight group-hover:text-primary transition-colors">Raiden Shogun: Statues of Her Excellency</h3>
+<div class="flex justify-between items-end">
+<div>
+<p class="text-primary font-bold text-xl">4.250.000đ</p>
+<p class="text-outline line-through text-xs">5.100.000đ</p>
+</div>
+<button class="signature-gradient text-white p-3 rounded-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined">shopping_bag</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product 2 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:scale-[1.02] transition-all duration-300 shadow-sm hover:shadow-xl">
+<div class="relative aspect-[4/5] overflow-hidden">
+<img class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" data-alt="Exquisite Ganyu figure from Genshin Impact, translucent ice effects, bow held gracefully, soft teal and white color palette, cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbfPG9dqww9WxzFpzor6xLNYm2_rCZBp1jngfRQFfcxeL6xRHkrAXBq90zXatWyE7H6u-x1TXujzUpyKLJOqy1epJtVAS3wwj5a66wC1UIHtxbGm9KXMx3KNooqto8xGlyKYWJK-YoQNP5aEeNRIUaTUlyf4MfpO1RqWX5WXmLKcEc4fTIHkYp1-Z92uQmcfu_Ysq9L7eLMoSnwTJdqvKzPCBxYjckbHNNbE-Vqb_6yUMQ1rKImgqPF4HGR7krR9H1whWfa4EUvAw"/>
+<div class="absolute top-4 left-4">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Scale 1/7</span>
+</div>
+</div>
+<div class="p-6">
+<p class="text-[10px] text-outline uppercase tracking-widest mb-1">Apex-Toys</p>
+<h3 class="font-headline font-bold text-lg mb-2 leading-tight group-hover:text-primary transition-colors">Ganyu: Plenilune Gaze Ver.</h3>
+<div class="flex justify-between items-end">
+<div>
+<p class="text-primary font-bold text-xl">3.890.000đ</p>
+</div>
+<button class="signature-gradient text-white p-3 rounded-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined">shopping_bag</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product 3 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:scale-[1.02] transition-all duration-300 shadow-sm hover:shadow-xl">
+<div class="relative aspect-[4/5] overflow-hidden">
+<img class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" data-alt="Zhongli figure from Genshin Impact, stone pillar base, dramatic shadows and golden highlights, sophisticated dark tones, luxury toy photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB_naqnxmesLou35fUUjC5OsmFkF_Fngd9IHSX4UkG3gH9m6ASzqAmoUExFvWpycAee665_CkMH3WaIKsG835rOcd_VzSB8Uwsc_29Plb58oRcd_lchAzGze4yEol0HbVe3uOH4KvP9EH6gYFu1HQHlHTxuxczSNlXKAo0cxaLFidfyvjvjAjPNFZgOYUNvuLpkj-GtdlbHELWc2k80szWGRdZOhHi4vdErYMUaBuLc_yhNny2WQzYvF00s3cS8T6j_7M9MNUCd_8"/>
+<div class="absolute top-4 right-4">
+<span class="bg-primary-container text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Sắp hết hàng</span>
+</div>
+</div>
+<div class="p-6">
+<p class="text-[10px] text-outline uppercase tracking-widest mb-1">Kotobukiya</p>
+<h3 class="font-headline font-bold text-lg mb-2 leading-tight group-hover:text-primary transition-colors">Zhongli: Vago Mundo Ver.</h3>
+<div class="flex justify-between items-end">
+<div>
+<p class="text-primary font-bold text-xl">4.500.000đ</p>
+</div>
+<button class="signature-gradient text-white p-3 rounded-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined">shopping_bag</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-16 flex justify-center items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant text-outline hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-primary text-white font-bold">1</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant text-outline hover:border-primary hover:text-primary transition-colors font-medium">2</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant text-outline hover:border-primary hover:text-primary transition-colors font-medium">3</button>
+<span class="text-outline">...</span>
+<button class="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant text-outline hover:border-primary hover:text-primary transition-colors font-medium">10</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center border border-outline-variant text-outline hover:border-primary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Empty State (Hidden by default, shown if no results) -->
+<div class="hidden flex-col items-center justify-center py-24 text-center">
+<div class="w-32 h-32 bg-surface-container-highest rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-outline text-5xl">search_off</span>
+</div>
+<h2 class="text-2xl font-bold mb-2">Rất tiếc, không tìm thấy kết quả</h2>
+<p class="text-outline max-w-md mx-auto mb-8">Chúng tôi không tìm thấy mô hình nào khớp với từ khóa của bạn. Hãy thử lại với từ khóa khác hoặc kiểm tra lại chính tả.</p>
+<button class="signature-gradient text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition-opacity">
+                Quay lại trang chủ
+            </button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-100 dark:bg-slate-950 w-full mt-auto border-t border-slate-200 dark:border-slate-800">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-6 py-12 max-w-7xl mx-auto font-['Inter'] text-sm leading-relaxed">
+<div class="md:col-span-1">
+<span class="text-xl font-bold text-slate-900 dark:text-white mb-4 block">Mô Hình Cao Cấp</span>
+<p class="text-slate-500 dark:text-slate-400 mb-6">Nơi hội tụ những tác phẩm nghệ thuật figure cao cấp nhất dành cho người sưu tầm đích thực.</p>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">public</span>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">share</span>
+<span class="material-symbols-outlined text-outline hover:text-primary cursor-pointer transition-colors">thumb_up</span>
+</div>
+</div>
+<div>
+<h4 class="font-headline font-bold mb-4 text-slate-900 dark:text-white uppercase tracking-wider text-xs">Khám phá</h4>
+<ul class="space-y-3">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 hover:underline transition-all cursor-pointer" href="#">Sản phẩm mới</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 hover:underline transition-all cursor-pointer" href="#">Bán chạy nhất</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 hover:underline transition-all cursor-pointer" href="#">Sản phẩm giới hạn</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 hover:underline transition-all cursor-pointer" href="#">Pre-order</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-headline font-bold mb-4 text-slate-900 dark:text-white uppercase tracking-wider text-xs">Hỗ trợ</h4>
+<ul class="space-y-3">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 hover:underline transition-all cursor-pointer" href="#">Chính sách bảo mật</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 hover:underline transition-all cursor-pointer" href="#">Điều khoản dịch vụ</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 hover:underline transition-all cursor-pointer" href="#">Hướng dẫn mua hàng</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 hover:underline transition-all cursor-pointer" href="#">Hệ thống cửa hàng</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-headline font-bold mb-4 text-slate-900 dark:text-white uppercase tracking-wider text-xs">Đăng ký bản tin</h4>
+<p class="text-slate-500 dark:text-slate-400 mb-4 text-xs">Nhận thông báo về các bộ sưu tập giới hạn mới nhất.</p>
+<div class="flex gap-2">
+<input class="bg-white dark:bg-slate-900 border-none rounded-lg px-4 py-2 text-xs flex-1 focus:ring-1 focus:ring-primary" placeholder="Email của bạn" type="email"/>
+<button class="signature-gradient text-white px-4 py-2 rounded-lg text-xs font-bold active:scale-95 transition-transform">Gửi</button>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-6 py-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-slate-500 dark:text-slate-400 text-xs">© 2024 Mô Hình Cao Cấp. Bản quyền thuộc về Digital Curator.</p>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-outline text-2xl">payments</span>
+<span class="material-symbols-outlined text-outline text-2xl">local_shipping</span>
+<span class="material-symbols-outlined text-outline text-2xl">verified_user</span>
+</div>
+</div>
+</footer>
+</body></html>

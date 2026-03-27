@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Giỏ hàng - FigureCurator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "error": "#ba1a1a",
+              "inverse-on-surface": "#eef1f3",
+              "secondary": "#585e6c",
+              "surface-tint": "#00658d",
+              "on-secondary": "#ffffff",
+              "secondary-container": "#dde2f3",
+              "on-surface": "#181c1e",
+              "tertiary-container": "#ff7d36",
+              "surface-dim": "#d7dadc",
+              "on-secondary-fixed": "#161c27",
+              "on-background": "#181c1e",
+              "surface-container-highest": "#e0e3e5",
+              "surface-bright": "#f7fafc",
+              "primary-container": "#00adef",
+              "on-primary-container": "#003d57",
+              "background": "#f7fafc",
+              "surface-container-low": "#f1f4f6",
+              "on-tertiary-fixed-variant": "#7a3000",
+              "surface": "#f7fafc",
+              "on-tertiary-fixed": "#351000",
+              "primary-fixed-dim": "#83cfff",
+              "inverse-primary": "#83cfff",
+              "outline-variant": "#bdc8d1",
+              "surface-container-high": "#e5e9eb",
+              "on-primary-fixed": "#001e2e",
+              "surface-container-lowest": "#ffffff",
+              "secondary-fixed-dim": "#c1c6d7",
+              "surface-variant": "#e0e3e5",
+              "inverse-surface": "#2d3133",
+              "primary-fixed": "#c6e7ff",
+              "on-error": "#ffffff",
+              "tertiary-fixed": "#ffdbcc",
+              "secondary-fixed": "#dde2f3",
+              "on-primary-fixed-variant": "#004c6c",
+              "on-error-container": "#93000a",
+              "outline": "#6e7881",
+              "on-tertiary": "#ffffff",
+              "on-secondary-container": "#5e6473",
+              "on-primary": "#ffffff",
+              "surface-container": "#ebeef0",
+              "tertiary-fixed-dim": "#ffb693",
+              "error-container": "#ffdad6",
+              "tertiary": "#a04100",
+              "primary": "#00658d",
+              "on-surface-variant": "#3e4850",
+              "on-tertiary-container": "#642500",
+              "on-secondary-fixed-variant": "#414754"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .signature-gradient {
+        background: linear-gradient(135deg, #00658d 0%, #00adef 100%);
+      }
+      .glass-nav {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface antialiased">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm dark:shadow-none">
+<div class="flex justify-between items-center px-6 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black italic text-cyan-600 dark:text-cyan-400 tracking-tighter font-headline">FigureCurator</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-plus-jakarta-sans text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-all duration-300" href="#">Trang chủ</a>
+<a class="font-plus-jakarta-sans text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-all duration-300" href="#">Sản phẩm mới</a>
+<a class="font-plus-jakarta-sans text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-all duration-300" href="#">Thương hiệu</a>
+<a class="font-plus-jakarta-sans text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-all duration-300" href="#">Pre-order</a>
+<a class="font-plus-jakarta-sans text-sm font-medium tracking-tight text-slate-600 dark:text-slate-400 hover:text-cyan-500 transition-all duration-300" href="#">Khuyến mãi</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-600 dark:text-slate-400 hover:opacity-80 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</button>
+<button class="p-2 text-slate-600 dark:text-slate-400 hover:opacity-80 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</button>
+<button class="relative p-2 signature-gradient text-white rounded-lg shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute -top-1 -right-1 bg-tertiary-container text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-white">3</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-20 px-6 max-w-screen-2xl mx-auto">
+<div class="flex flex-col lg:flex-row gap-12">
+<!-- Cart Items Section -->
+<div class="flex-1">
+<header class="mb-10">
+<h1 class="font-headline text-4xl font-extrabold text-on-surface tracking-tight mb-2">Giỏ hàng của bạn</h1>
+<p class="text-on-surface-variant font-medium">Bạn có <span class="text-primary font-bold">3 sản phẩm</span> được giám tuyển trong danh sách.</p>
+</header>
+<div class="space-y-6">
+<!-- Item 1 -->
+<div class="group relative flex flex-col md:flex-row gap-6 p-6 bg-surface-container-lowest rounded-xl hover:bg-surface-container-low transition-all duration-300 border border-outline-variant/20">
+<div class="relative w-full md:w-40 h-48 md:h-40 rounded-lg overflow-hidden bg-surface-container-high shrink-0">
+<img alt="Scale Figure Product" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="high-end anime scale figure of a female character in an elegant kimono standing on a traditional wooden bridge with cherry blossoms" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOlX4YLm6VJZvzPNmfYxF7YE_eXmNVYVPdAOroyoe1OppuYWu8D8OKRIYiea_FnyPKBpXDc5r30UWdfDnNzlEO2dK-tLQZDXcNAlOrSGAk5UbCV0c7cLUr6Jd3UbN2vt2FL12qloNTQKMpYRJOeKu0W7a4ijySYHEosBTjJjRepFrh1I8DhvJrcmV32AjMFsgFevkuVC8SDrJOaoS3iUXGs-W1b__6Ge4Sd2V93TKtFJvGuxIX_JRfv-gcK-y7JtfAxwo-FUtYKNg"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-full uppercase tracking-wider">Scale 1/7</div>
+</div>
+<div class="flex flex-col justify-between flex-1">
+<div>
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline font-bold text-lg text-on-surface leading-tight">Miku Nakano: Date Style Ver.</h3>
+<span class="font-headline font-bold text-lg text-primary">3,250,000₫</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-4 uppercase tracking-widest font-semibold">Good Smile Company • ABS &amp; PVC</p>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-high rounded-lg p-1">
+<button class="w-8 h-8 flex items-center justify-center text-on-surface hover:bg-white rounded-md transition-colors"><span class="material-symbols-outlined text-sm" data-icon="remove">remove</span></button>
+<span class="w-10 text-center font-bold text-sm">1</span>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface hover:bg-white rounded-md transition-colors"><span class="material-symbols-outlined text-sm" data-icon="add">add</span></button>
+</div>
+<button class="text-error text-xs font-semibold hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="delete">delete</span> Gỡ bỏ
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="group relative flex flex-col md:flex-row gap-6 p-6 bg-surface-container-lowest rounded-xl hover:bg-surface-container-low transition-all duration-300 border border-outline-variant/20">
+<div class="relative w-full md:w-40 h-48 md:h-40 rounded-lg overflow-hidden bg-surface-container-high shrink-0">
+<img alt="Nendoroid Product" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="detailed nendoroid figure of a chibi style anime character with expressive face and small accessories on a clean white studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD2Sr6-f9SRGkobGwUN8cRmKIxciUH_2Ai5s5dCHrS5Mxlt4P6Q_HXLfGIwSZvF-vAXB4vb7fPaYLLUanJFkLSB-rSj_nXpZP1h2_jvcoJ0kcMVcl51ATiochhu72w35I-Ps5RDhJCt0iY3moGiZQUZaqTexmMSncEs01FQ7zfl_2_F9UdCbOsNln4cUdJZjAD0IkwsJLyU2em6-4BCr_f7eNqVPpBi7QHGV1PdSHD8iVvn5HpK6-V58kY8rkbUh_781nJVzzyT-E"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-full uppercase tracking-wider">Nendoroid</div>
+</div>
+<div class="flex flex-col justify-between flex-1">
+<div>
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline font-bold text-lg text-on-surface leading-tight">Denji: Chainsaw Man #1560</h3>
+<span class="font-headline font-bold text-lg text-primary">1,450,000₫</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-4 uppercase tracking-widest font-semibold">Good Smile Company • Action Figure</p>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-high rounded-lg p-1">
+<button class="w-8 h-8 flex items-center justify-center text-on-surface hover:bg-white rounded-md transition-colors"><span class="material-symbols-outlined text-sm" data-icon="remove">remove</span></button>
+<span class="w-10 text-center font-bold text-sm">2</span>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface hover:bg-white rounded-md transition-colors"><span class="material-symbols-outlined text-sm" data-icon="add">add</span></button>
+</div>
+<button class="text-error text-xs font-semibold hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="delete">delete</span> Gỡ bỏ
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="group relative flex flex-col md:flex-row gap-6 p-6 bg-surface-container-lowest rounded-xl hover:bg-surface-container-low transition-all duration-300 border border-outline-variant/20">
+<div class="relative w-full md:w-40 h-48 md:h-40 rounded-lg overflow-hidden bg-surface-container-high shrink-0">
+<img alt="Limited Edition Product" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="rare limited edition anime figure with dynamic posing and glowing elements set in a futuristic dark room with cyan neon lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMZe525IrMrA-LA2rzTkb1yXmzsmPnvPizGitayHmAlgkd8DVCsYnhyoTgwbEGSsUa89j_Ld-DP0ThSmTxLy4MVzHCaiSGTYAyCZXwRurP7zHVtxG7QO2g8KB7ZWF_Lc7617E22a8q1J6EZ96o1t_Z9BH3SmouAGgBAvZ07Z7lXZC8I9x6sg9J8y-1wyMSKDM97WgnpQi6Gp4Ev7vF_08a0selU3LoyP8qT-LEAcvrTEugYBPn_9OEZvMlSJvbJjn_vtWf6UEGnfI"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 bg-tertiary-container text-white text-[10px] font-bold rounded-full uppercase tracking-wider">Pre-order</div>
+</div>
+<div class="flex flex-col justify-between flex-1">
+<div>
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline font-bold text-lg text-on-surface leading-tight">Joker: Crystal Dress Ver.</h3>
+<span class="font-headline font-bold text-lg text-primary">8,900,000₫</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-4 uppercase tracking-widest font-semibold">eStream • Shibuya Scrapy</p>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-surface-container-high rounded-lg p-1">
+<button class="w-8 h-8 flex items-center justify-center text-on-surface hover:bg-white rounded-md transition-colors"><span class="material-symbols-outlined text-sm" data-icon="remove">remove</span></button>
+<span class="w-10 text-center font-bold text-sm">1</span>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface hover:bg-white rounded-md transition-colors"><span class="material-symbols-outlined text-sm" data-icon="add">add</span></button>
+</div>
+<button class="text-error text-xs font-semibold hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="delete">delete</span> Gỡ bỏ
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-10">
+<a class="inline-flex items-center gap-2 text-primary font-bold hover:underline group" href="#">
+<span class="material-symbols-outlined transition-transform group-hover:-translate-x-1" data-icon="arrow_back">arrow_back</span>
+                        Tiếp tục mua sắm
+                    </a>
+</div>
+</div>
+<!-- Summary Sidebar -->
+<aside class="w-full lg:w-96">
+<div class="sticky top-32 bg-surface-container-low rounded-2xl p-8 border border-outline-variant/10 shadow-sm">
+<h2 class="font-headline text-2xl font-bold mb-6 text-on-surface">Tổng cộng</h2>
+<div class="space-y-4 mb-8">
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">Tạm tính</span>
+<span class="font-semibold text-on-surface">15,050,000₫</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">Phí vận chuyển</span>
+<span class="text-on-surface-variant">Tính khi thanh toán</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">Ưu đãi thành viên</span>
+<span class="text-primary font-bold">-150,000₫</span>
+</div>
+<div class="pt-4 border-t border-outline-variant/30 flex justify-between items-end">
+<span class="font-bold text-on-surface">Tổng đơn hàng</span>
+<div class="text-right">
+<span class="block text-3xl font-black text-primary tracking-tighter">14,900,000₫</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-bold">Đã bao gồm VAT</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<button class="w-full signature-gradient text-white font-headline font-bold py-4 rounded-xl shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+<span>Thanh Toán Ngay</span>
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+<div class="bg-white/50 p-4 rounded-xl border border-outline-variant/10">
+<div class="flex items-center gap-3 mb-2">
+<span class="material-symbols-outlined text-primary" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-[11px] font-bold text-on-surface uppercase tracking-wider">Đảm bảo an toàn</span>
+</div>
+<p class="text-[10px] text-on-surface-variant leading-relaxed">
+                                FigureCurator cam kết 100% hàng chính hãng. Toàn bộ giao dịch được mã hóa đầu cuối.
+                            </p>
+</div>
+</div>
+<div class="mt-8 flex items-center justify-center gap-4 opacity-40 grayscale">
+<span class="material-symbols-outlined text-2xl" data-icon="credit_card">credit_card</span>
+<span class="material-symbols-outlined text-2xl" data-icon="account_balance">account_balance</span>
+<span class="material-symbols-outlined text-2xl" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="bg-slate-100 dark:bg-slate-900 w-full mt-20 border-t border-slate-200 dark:border-slate-800">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-8 py-12 max-w-screen-2xl mx-auto">
+<div class="col-span-1 md:col-span-1">
+<span class="text-lg font-bold text-cyan-600 mb-4 block">FigureCurator</span>
+<p class="text-slate-500 dark:text-slate-400 font-inter text-xs leading-relaxed mb-6">
+                    Điểm đến hàng đầu cho những nhà sưu tầm figure cao cấp tại Việt Nam.
+                </p>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-4 text-on-surface">Khám phá</h4>
+<ul class="space-y-2">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 font-inter text-xs transition-colors" href="#">Về chúng tôi</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 font-inter text-xs transition-colors" href="#">Chính sách bảo mật</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 font-inter text-xs transition-colors" href="#">Điều khoản dịch vụ</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-4 text-on-surface">Hỗ trợ</h4>
+<ul class="space-y-2">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 font-inter text-xs transition-colors" href="#">Liên hệ</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 font-inter text-xs transition-colors" href="#">Hỗ trợ</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 font-inter text-xs transition-colors" href="#">Câu hỏi thường gặp</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-4 text-on-surface">Bản tin</h4>
+<div class="flex gap-2">
+<input class="bg-white dark:bg-slate-800 border-none rounded-lg text-xs flex-1 focus:ring-1 focus:ring-cyan-500" placeholder="Email của bạn" type="email"/>
+<button class="bg-cyan-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors">Gửi</button>
+</div>
+</div>
+</div>
+<div class="px-8 py-6 border-t border-slate-200 dark:border-slate-800 text-center">
+<p class="text-slate-500 dark:text-slate-400 font-inter text-xs">© 2024 FigureCurator. Bản quyền thuộc về Digital Curator.</p>
+</div>
+</footer>
+</body></html>
