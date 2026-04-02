@@ -126,6 +126,7 @@ export default function SearchPage({ addToCart, wishlist, toggleWishlist, cartCo
                   addToCart={addToCart}
                   wishlist={wishlist}
                   toggleWishlist={toggleWishlist}
+                  user={user}
                 />
               ))}
             </div>

@@ -242,7 +242,7 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
           {relatedProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
               {relatedProducts.map(p => (
-                <ProductCard key={p._id || p.id} product={p} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />
+                <ProductCard key={p._id || p.id} product={p} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} user={user} />
               ))}
             </div>
           ) : null}

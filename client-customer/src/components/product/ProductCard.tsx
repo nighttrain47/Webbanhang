@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link, useNavigate, useLocation } from 'react-router';
 import { Product } from '../../App';
 
 interface ProductCardProps {
@@ -7,6 +7,7 @@ interface ProductCardProps {
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
   showAddToCartButton?: boolean; // full-width button for category pages
+  user?: any;
 }
 
 const pid = (p: Product) => p._id || p.id || '';
@@ -32,7 +33,9 @@ function getScaleBadge(product: Product): string | null {
   return null;
 }
 
-export default function ProductCard({ product, addToCart, wishlist, toggleWishlist, showAddToCartButton }: ProductCardProps) {
+export default function ProductCard({ product, addToCart, wishlist, toggleWishlist, showAddToCartButton, user }: ProductCardProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const productId = pid(product);
   const isInWishlist = wishlist.includes(productId);
   const badge = getBadge(product);
@@ -105,7 +108,14 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
 
         {/* Wishlist Heart */}
         <button
-          onClick={(e) => { e.preventDefault(); toggleWishlist(productId); }}
+          onClick={(e) => {
+            e.preventDefault();
+            if (!user) {
+              navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
+              return;
+            }
+            toggleWishlist(productId);
+          }}
           style={{
             position: 'absolute',
             top: '10px',

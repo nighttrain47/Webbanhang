@@ -729,6 +729,7 @@ function WishlistSection({ wishlistProducts, toggleWishlist, addToCart, wishlist
               addToCart={addToCart}
               wishlist={wishlist || []}
               toggleWishlist={toggleWishlist}
+              user={true} // User is always logged in in MyAccount
             />
           ))}
         </div>

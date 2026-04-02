@@ -281,7 +281,7 @@ function App() {
                 clearCart={clearCart}
               />
             ) : (
-              <Navigate to="/login?redirect=/checkout" />
+              <Navigate to="/login?redirect=/checkout" replace />
             )
           }
         />

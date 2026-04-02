@@ -411,6 +411,7 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
                       wishlist={wishlist}
                       toggleWishlist={toggleWishlist}
                       showAddToCartButton
+                      user={user}
                     />
                   ))}
                 </div>

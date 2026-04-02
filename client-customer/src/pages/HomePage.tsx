@@ -299,7 +299,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
             {newProducts.length > 0 ? (
               <div className="product-grid-3">
                 {newProducts.slice(0, 3).map(product => (
-                  <ProductCard key={product._id || product.id} product={product} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />
+                  <ProductCard key={product._id || product.id} product={product} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} user={user} />
                 ))}
               </div>
             ) : (
@@ -542,7 +542,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
         {hotProducts.length > 0 ? (
           <div className="product-grid-4">
             {hotProducts.slice(0, 4).map(product => (
-              <ProductCard key={product._id || product.id} product={product} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />
+              <ProductCard key={product._id || product.id} product={product} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} user={user} />
             ))}
           </div>
         ) : (
