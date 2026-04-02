@@ -35,19 +35,26 @@ export default function CustomerManagement() {
         });
         const data = await res.json();
         if (Array.isArray(data)) {
-          const fetchedCustomers = data.map((c: any) => ({
-            id: c._id,
-            name: c.name || c.username || 'Khách hàng',
-            email: c.email || '',
-            phone: c.phone || 'Chưa cập nhật',
-            address: c.address || 'Chưa cập nhật',
-            joinDate: new Date(c.createdAt).toLocaleDateString('vi-VN'),
-            totalOrders: c.totalOrders || 0,
-            totalSpent: c.totalSpent || 0,
-            points: c.points || 0,
-            tier: c.tier || 'Cấp 3',
-            status: 'active' as 'active' | 'inactive'
-          }));
+          const fetchedCustomers = data.map((c: any) => {
+            let addr = c.address || 'Chưa cập nhật';
+            if (c.addresses && c.addresses.length > 0) {
+              const def = c.addresses.find((a: any) => a.isDefault) || c.addresses[0];
+              if (def) addr = `${def.address}, ${def.city}`;
+            }
+            return {
+              id: c._id,
+              name: c.name || c.username || 'Khách hàng',
+              email: c.email || '',
+              phone: c.phone || 'Chưa cập nhật',
+              address: addr,
+              joinDate: new Date(c.createdAt).toLocaleDateString('vi-VN'),
+              totalOrders: c.totalOrders || 0,
+              totalSpent: c.totalSpent || 0,
+              points: c.points || 0,
+              tier: c.tier || 'Cấp 3',
+              status: 'active' as 'active' | 'inactive'
+            };
+          });
           setCustomers(fetchedCustomers);
         }
       } catch (err) {
