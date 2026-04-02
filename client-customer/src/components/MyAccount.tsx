@@ -112,7 +112,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
         <Header cartCount={cartCount} user={user} />
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
           <h2 className="text-2xl font-bold mb-4">Vui lòng đăng nhập để xem tài khoản</h2>
-          <Link to="/login" className="text-[#FF6B00] hover:underline">
+          <Link to="/login" className="text-orange-600 hover:underline">
             Đăng nhập
           </Link>
         </div>
@@ -125,9 +125,9 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
 
   const membershipTiers = [
     { name: 'Cấp 3', minPoints: 0, maxPoints: 9999, color: 'bg-amber-700', benefits: ['Hoàn 1% điểm', 'Hỗ trợ tiêu chuẩn'] },
-    { name: 'Cấp 2', minPoints: 10000, maxPoints: 29999, color: 'bg-gray-400', benefits: ['Hoàn 1.5% điểm', 'Hỗ trợ ưu tiên', 'Thưởng sinh nhật'] },
-    { name: 'Cấp 1', minPoints: 30000, maxPoints: 99999, color: 'bg-yellow-500', benefits: ['Hoàn 2% điểm', 'Hỗ trợ VIP', 'Truy cập sớm', 'Giao hàng nhanh miễn phí'] },
-    { name: 'Đặc Cấp', minPoints: 100000, maxPoints: Infinity, color: 'bg-purple-500', benefits: ['Hoàn 3% điểm', 'Hỗ trợ chuyên biệt', 'Sản phẩm độc quyền', 'Giao hàng toàn cầu miễn phí'] }
+    { name: 'Cấp 2', minPoints: 10000, maxPoints: 29999, color: 'bg-gray-400', benefits: ['Giảm 2% hóa đơn', 'Hoàn 1.5% điểm', 'Hỗ trợ ưu tiên', 'Thưởng sinh nhật'] },
+    { name: 'Cấp 1', minPoints: 30000, maxPoints: 99999, color: 'bg-yellow-500', benefits: ['Giảm 5% hóa đơn', 'Hoàn 2% điểm', 'Hỗ trợ VIP', 'Truy cập sớm', 'Giao hàng nhanh miễn phí'] },
+    { name: 'Đặc Cấp', minPoints: 100000, maxPoints: Infinity, color: 'bg-purple-500', benefits: ['Giảm 8% hóa đơn', 'Hoàn 3% điểm', 'Hỗ trợ chuyên biệt', 'Sản phẩm độc quyền', 'Giao hàng toàn cầu miễn phí'] }
   ];
 
   const currentTier = membershipTiers.reduce((acc, tier) => {
@@ -155,22 +155,39 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
     'cancelled': 'red'
   };
 
-  const mappedOrders = realOrders.map(order => ({
-    id: order._id,
-    date: new Date(order.createdAt).toLocaleDateString('vi-VN'),
-    status: statusMap[order.status] || order.status,
-    statusColor: statusColorMap[order.status] || 'gray',
-    total: order.total,
-    items: order.items?.length || 0,
-    pointsEarned: Math.floor(order.total * 0.01),
-    shippingAddress: order.shippingAddress || '',
-    trackingNumber: order.status === 'shipping' ? 'Đang vận chuyển' : (order.status === 'pending' ? 'Chờ xử lý' : ''),
-    products: (order.items || []).map((item: any) => ({
-      name: item.name,
-      quantity: item.quantity,
-      price: item.price
-    }))
-  }));
+  // Mock Data mappings (progressive points calculation)
+  let runningPoints = 0;
+  const sortedRealOrders = [...realOrders].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  
+  const mappedOrdersSorted = sortedRealOrders.map(order => {
+    let rate = 0.01;
+    if (runningPoints >= 100000) rate = 0.03;
+    else if (runningPoints >= 30000) rate = 0.02;
+    else if (runningPoints >= 10000) rate = 0.015;
+    
+    const earned = Math.floor(order.total * rate);
+    if (order.status === 'delivered') runningPoints += earned;
+
+    return {
+      id: order._id,
+      date: new Date(order.createdAt).toLocaleDateString('vi-VN'),
+      status: statusMap[order.status] || order.status,
+      statusColor: statusColorMap[order.status] || 'gray',
+      total: order.total,
+      items: order.items?.length || 0,
+      pointsEarned: earned,
+      shippingAddress: order.shippingAddress || '',
+      trackingNumber: order.status === 'shipping' ? 'Đang vận chuyển' : (order.status === 'pending' ? 'Chờ xử lý' : ''),
+      products: (order.items || []).map((item: any) => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      originalOrder: order
+    };
+  });
+
+  const mappedOrders = realOrders.map(ro => mappedOrdersSorted.find(mo => mo.id === ro._id)!);
 
   const filteredOrders = orderFilter === 'all'
     ? mappedOrders
@@ -178,6 +195,10 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
       const originalOrder = realOrders.find(o => o._id === order.id);
       return originalOrder?.status === orderFilter;
     });
+
+  const monthlyPoints = mappedOrdersSorted
+    .filter(o => o.originalOrder.status === 'delivered' && new Date(o.originalOrder.createdAt).getMonth() === new Date().getMonth() && new Date(o.originalOrder.createdAt).getFullYear() === new Date().getFullYear())
+    .reduce((sum, o) => sum + o.pointsEarned, 0);
 
   // Render content based on active tab
   // Points history from orders
@@ -192,7 +213,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
   const renderContent = () => {
     switch (activeTab) {
       case 'profile':
-        return <ProfileSection user={user} currentTier={currentTier} nextTier={nextTier} pointsToNextTier={pointsToNextTier} mockOrders={mappedOrders} wishlist={wishlist} />;
+        return <ProfileSection user={{ ...user, points: userPoints }} currentTier={currentTier} nextTier={nextTier} pointsToNextTier={pointsToNextTier} mockOrders={mappedOrders} wishlist={wishlist} monthlyPoints={monthlyPoints} />;
 
       case 'orders':
         return <OrdersSection orders={filteredOrders} orderFilter={orderFilter} setOrderFilter={setOrderFilter} isLoading={ordersLoading} />;
@@ -201,7 +222,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
         return <WishlistSection wishlistProducts={wishlistProducts} toggleWishlist={toggleWishlist} addToCart={addToCart} wishlist={wishlist} />;
 
       case 'points':
-        return <PointsSection user={{ ...user, points: userPoints }} currentTier={currentTier} nextTier={nextTier} pointsToNextTier={pointsToNextTier} pointsHistory={pointsHistory} membershipTiers={membershipTiers} />;
+        return <PointsSection user={{ ...user, points: userPoints }} currentTier={currentTier} nextTier={nextTier} pointsToNextTier={pointsToNextTier} pointsHistory={pointsHistory} membershipTiers={membershipTiers} monthlyPoints={monthlyPoints} />;
 
       case 'settings':
         return <SettingsSection user={user} token={token} onUpdateUser={onUpdateUser} onDeleteAccount={onDeleteAccount} />;
@@ -223,7 +244,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
           <div style={{ width: '280px', flexShrink: 0 }}>
             <div className="bg-white rounded-lg shadow-sm p-6" style={{ position: 'sticky', top: '96px', zIndex: 0 }}>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-[#FF6B00] to-[#E55D00] rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="w-20 h-20 bg-gradient-to-br from-orange-600 to-orange-700 rounded-full flex items-center justify-center mx-auto mb-3">
                   <User className="w-10 h-10 text-white" />
                 </div>
                 <h2 className="font-bold text-lg">{user.name}</h2>
@@ -236,7 +257,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
               <nav className="space-y-2">
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'profile' ? 'bg-orange-50 text-[#FF6B00]' : 'hover:bg-white text-gray-700'
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'profile' ? 'bg-orange-50 text-orange-600' : 'hover:bg-white text-gray-700'
                     }`}
                 >
                   <User className="w-5 h-5" />
@@ -244,7 +265,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
                 </button>
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'orders' ? 'bg-orange-50 text-[#FF6B00]' : 'hover:bg-white text-gray-700'
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'orders' ? 'bg-orange-50 text-orange-600' : 'hover:bg-white text-gray-700'
                     }`}
                 >
                   <Package className="w-5 h-5" />
@@ -252,7 +273,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
                 </button>
                 <button
                   onClick={() => setActiveTab('wishlist')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'wishlist' ? 'bg-orange-50 text-[#FF6B00]' : 'hover:bg-white text-gray-700'
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'wishlist' ? 'bg-orange-50 text-orange-600' : 'hover:bg-white text-gray-700'
                     }`}
                 >
                   <Heart className="w-5 h-5" />
@@ -260,7 +281,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
                 </button>
                 <button
                   onClick={() => setActiveTab('points')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'points' ? 'bg-orange-50 text-[#FF6B00]' : 'hover:bg-white text-gray-700'
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'points' ? 'bg-orange-50 text-orange-600' : 'hover:bg-white text-gray-700'
                     }`}
                 >
                   <Award className="w-5 h-5" />
@@ -268,7 +289,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
                 </button>
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'settings' ? 'bg-orange-50 text-[#FF6B00]' : 'hover:bg-white text-gray-700'
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === 'settings' ? 'bg-orange-50 text-orange-600' : 'hover:bg-white text-gray-700'
                     }`}
                 >
                   <Settings className="w-5 h-5" />
@@ -299,7 +320,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
 }
 
 // Profile Section Component
-function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrders, wishlist }: any) {
+function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrders, wishlist, monthlyPoints }: any) {
   const userPoints = user.points || 0;
   return (
     <div className="space-y-6">
@@ -338,7 +359,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
           </div>
           <div>
             <p className="text-sm opacity-90">Tháng này</p>
-            <p className="text-xl font-bold">+0</p>
+            <p className="text-xl font-bold">+{monthlyPoints.toLocaleString()}</p>
           </div>
         </div>
       </div>
@@ -410,6 +431,8 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
           </div>
         </div>
       </div>
+
+
     </div>
   );
 }
@@ -457,10 +480,12 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
               <button
                 key={filter}
                 onClick={() => setOrderFilter(filter as any)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${orderFilter === filter
-                  ? 'bg-[#FF6B00] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                className="px-4 py-2 rounded-lg font-medium transition-colors"
+                style={
+                  orderFilter === filter
+                    ? { backgroundColor: '#ea580c', color: 'white' }
+                    : { backgroundColor: '#f3f4f6', color: '#4b5563' }
+                }
               >
                 {labels[filter] || filter}
               </button>
@@ -472,7 +497,7 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
       {/* Orders List */}
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF6B00]"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600"></div>
         </div>
       ) : orders.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-12 text-center">
@@ -515,7 +540,7 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
                   </div>
                   <div>
                     <p className="text-gray-500">Điểm nhận được</p>
-                    <p className="font-semibold text-[#FF6B00]">+{order.pointsEarned}</p>
+                    <p className="font-semibold text-orange-600">+{order.pointsEarned}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Theo dõi</p>
@@ -528,7 +553,7 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
               <div className="p-6">
                 <button
                   onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                  className="flex items-center gap-2 text-[#FF6B00] hover:underline font-medium mb-4"
+                  className="flex items-center gap-2 text-orange-600 hover:underline font-medium mb-4"
                 >
                   <Eye className="w-4 h-4" />
                   {expandedOrder === order.id ? 'Ẩn chi tiết' : 'Xem chi tiết'}
@@ -561,12 +586,12 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
                     {/* Actions */}
                     <div className="flex gap-3 pt-4">
                       {order.status === 'Shipping' && (
-                        <button className="px-4 py-2 bg-[#FF6B00] text-white rounded-lg hover:bg-[#E55D00] transition-colors font-medium">
+                        <button className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium">
                           Theo dõi đơn hàng
                         </button>
                       )}
                       {order.status === 'Delivered' && (
-                        <button className="px-4 py-2 border border-[#FF6B00] text-[#FF6B00] rounded-lg hover:bg-orange-50 transition-colors font-medium">
+                        <button className="px-4 py-2 border border-orange-600 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors font-medium">
                           Đánh giá
                         </button>
                       )}
@@ -606,7 +631,7 @@ function WishlistSection({ wishlistProducts, toggleWishlist, addToCart, wishlist
           <p className="text-sm text-gray-500 mb-6">Hãy thêm những sản phẩm bạn yêu thích!</p>
           <Link
             to="/"
-            className="inline-block bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#E55D00] transition-colors font-semibold"
+            className="inline-block bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-semibold"
           >
             Khám phá sản phẩm
           </Link>
@@ -629,16 +654,16 @@ function WishlistSection({ wishlistProducts, toggleWishlist, addToCart, wishlist
 }
 
 // Points Section Component
-function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHistory, membershipTiers }: any) {
+function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHistory, membershipTiers, monthlyPoints }: any) {
   return (
     <div className="space-y-6">
       {/* Points Balance */}
       <div className="bg-gradient-to-br from-orange-500 to-yellow-500 rounded-lg shadow-lg p-8 text-white">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-sm opacity-90 mb-2">Điểm khả dụng</p>
+            <p className="text-sm opacity-90 mb-2">Tổng hạng điểm</p>
             <p className="text-5xl font-bold mb-2">{user.points.toLocaleString()}</p>
-            <p className="text-sm opacity-90">≈ {user.points.toLocaleString()}đ giá trị giảm giá</p>
+            <p className="text-sm opacity-90">Hạn mức chiết khấu hiện tại: {user.points >= 100000 ? 8 : user.points >= 30000 ? 5 : user.points >= 10000 ? 2 : 0}% trên Hóa đơn</p>
           </div>
           <Award className="w-16 h-16 opacity-80" />
         </div>
@@ -669,7 +694,7 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
             <div
               key={tier.name}
               className={`border-2 rounded-lg p-4 transition-all ${tier.name === currentTier.name
-                ? 'border-[#FF6B00] bg-orange-50'
+                ? 'border-orange-600 bg-orange-50'
                 : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
@@ -686,7 +711,7 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
                   </div>
                 </div>
                 {tier.name === currentTier.name && (
-                  <span className="bg-[#FF6B00] text-white text-xs px-3 py-1 rounded-full font-semibold">
+                  <span className="bg-orange-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
                     Hiện tại
                   </span>
                 )}
@@ -784,13 +809,169 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
     name: user.name || '',
     email: user.email || '',
     phone: user.phone || '',
-    address: '',
-    postalCode: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
   const [saveStatus, setSaveStatus] = useState('');
+
+  // Address Management
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    fullName: '',
+    phone: '',
+    address: '',
+    city: '',
+    postalCode: '',
+  });
+
+  // Payment Management
+  const [payments, setPayments] = useState<any[]>([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [newPayment, setNewPayment] = useState({
+    type: 'credit-card',
+    provider: 'Visa',
+    cardNumber: '',
+    expiryDate: '',
+    nameOnCard: '',
+  });
+
+  useEffect(() => {
+    if (token) {
+      fetch(`${API_URL}/api/customer/addresses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.addresses) {
+          setAddresses(data.addresses);
+        }
+      })
+      .catch(console.error);
+
+      // Fetch payment methods
+      fetch(`${API_URL}/api/customer/payments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.payments) {
+          setPayments(data.payments);
+        }
+      })
+      .catch(console.error);
+    }
+  }, [token]);
+
+  const handleAddAddress = async () => {
+    if (!newAddress.fullName || !newAddress.phone || !newAddress.address || !newAddress.city) return;
+    try {
+      const isDefault = addresses.length === 0;
+      const res = await fetch(`${API_URL}/api/customer/addresses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...newAddress, isDefault, label: 'Nhà riêng' }),
+      });
+      const data = await res.json();
+      if (data.success && data.addresses) {
+        setAddresses(data.addresses);
+        setNewAddress({ fullName: '', phone: '', address: '', city: '', postalCode: '' });
+        setShowAddressModal(false);
+      } else {
+        alert(data.message || 'Không thể lưu địa chỉ');
+      }
+    } catch {
+      alert('Lỗi kết nối máy chủ');
+    }
+  };
+
+  const handleDeleteAddress = async (id: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/customer/addresses/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.addresses) {
+        setAddresses(data.addresses);
+      }
+    } catch {
+      alert('Lỗi kết nối máy chủ');
+    }
+  };
+
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/customer/addresses/${id}/default`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.addresses) {
+        setAddresses(data.addresses);
+      }
+    } catch {
+      alert('Lỗi kết nối máy chủ');
+    }
+  };
+
+  const handleAddPayment = async () => {
+    if (!newPayment.cardNumber || !newPayment.nameOnCard || !newPayment.expiryDate) {
+      alert('Vui lòng điền đầy đủ thông tin thẻ');
+      return;
+    }
+    try {
+      const isDefault = payments.length === 0;
+      const last4 = newPayment.cardNumber.length > 4 ? `**** **** **** ${newPayment.cardNumber.slice(-4)}` : `**** ${newPayment.cardNumber}`;
+      const res = await fetch(`${API_URL}/api/customer/payments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...newPayment, cardNumber: last4, isDefault }),
+      });
+      const data = await res.json();
+      if (data.success && data.payments) {
+        setPayments(data.payments);
+        setNewPayment({ type: 'credit-card', provider: 'Visa', cardNumber: '', expiryDate: '', nameOnCard: '' });
+        setShowPaymentModal(false);
+      } else {
+        alert(data.message || 'Không thể lưu phương thức thanh toán');
+      }
+    } catch {
+      alert('Lỗi kết nối máy chủ');
+    }
+  };
+
+  const handleDeletePayment = async (id: string) => {
+    if (!window.confirm('Bạn có chắc muốn xóa phương thức thanh toán này?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/customer/payments/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.payments) {
+        setPayments(data.payments);
+      }
+    } catch {
+      alert('Lỗi kết nối máy chủ');
+    }
+  };
+
+  const handleSetDefaultPayment = async (id: string) => {
+    try {
+      const res = await fetch(`${API_URL}/api/customer/payments/${id}/default`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.payments) {
+        setPayments(data.payments);
+      }
+    } catch {
+      alert('Lỗi kết nối máy chủ');
+    }
+  };
 
   const [notifications, setNotifications] = useState({
     orderUpdates: true,
@@ -813,7 +994,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
             />
           </div>
           <div>
@@ -824,7 +1005,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
             />
           </div>
           <div>
@@ -835,29 +1016,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mã bưu chính
-            </label>
-            <input
-              type="text"
-              value={formData.postalCode}
-              onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Địa chỉ mặc định
-            </label>
-            <input
-              type="text"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
             />
           </div>
         </div>
@@ -890,7 +1049,9 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
                   setSaveStatus('Lỗi kết nối máy chủ');
                 }
               }}
-              className="bg-[#FF6B00] text-white px-8 py-3 rounded-lg hover:bg-[#E55D00] transition-colors font-semibold"
+              style={{ backgroundColor: '#FF6B00', color: '#fff', padding: '12px 32px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', border: 'none', transition: 'background-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#E55D00')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF6B00')}
             >
               Lưu thay đổi
             </button>
@@ -900,8 +1061,6 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
                   name: user.name || '',
                   email: user.email || '',
                   phone: user.phone || '',
-                  address: '',
-                  postalCode: '',
                   currentPassword: '',
                   newPassword: '',
                   confirmPassword: ''
@@ -921,8 +1080,124 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
         </div>
       </div>
 
-      {/* Change Password */}
+      {/* Address Book */}
       <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <MapPin className="w-6 h-6 text-gray-600" />
+            Sổ địa chỉ
+          </h2>
+          <button
+            onClick={() => setShowAddressModal(true)}
+            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm"
+          >
+            + Thêm địa chỉ mới
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          {addresses.length === 0 ? (
+            <p className="text-gray-500 text-sm">Bạn chưa có địa chỉ nào lưu trong sổ.</p>
+          ) : (
+            addresses.map((addr) => (
+              <div key={addr._id || addr.id} className="border border-gray-200 rounded-lg p-5 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="font-semibold text-gray-900">{addr.fullName}</span>
+                    <span className="text-gray-400">|</span>
+                    <span className="text-gray-600">{addr.phone}</span>
+                    {addr.isDefault && (
+                      <span className="text-white text-xs px-2 py-1 rounded font-semibold ml-2" style={{ backgroundColor: '#FF6B00' }}>
+                        Mặc định
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-lg">
+                    {addr.address}, {addr.city} {addr.postalCode && `- ${addr.postalCode}`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 md:justify-end text-sm">
+                  {!addr.isDefault && (
+                    <button
+                      onClick={() => handleSetDefaultAddress(addr._id || addr.id)}
+                      className="text-orange-600 font-medium hover:underline"
+                    >
+                      Đặt mặc định
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeleteAddress(addr._id || addr.id)}
+                    className="text-gray-500 font-medium hover:text-red-600"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Payment Methods Book */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <span className="material-symbols-outlined text-gray-600">credit_card</span>
+            Phương thức thanh toán
+          </h2>
+          <button
+            onClick={() => setShowPaymentModal(true)}
+            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm"
+          >
+            + Thêm thẻ mới
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          {payments.length === 0 ? (
+            <p className="text-gray-500 text-sm">Bạn chưa có phương thức thanh toán nào.</p>
+          ) : (
+            payments.map((pay) => (
+              <div key={pay._id || pay.id} className="border border-gray-200 rounded-lg p-5 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="font-semibold text-gray-900">{pay.provider}</span>
+                    <span className="text-gray-400">|</span>
+                    <span className="text-gray-600 font-mono">{pay.cardNumber}</span>
+                    {pay.isDefault && (
+                      <span className="text-white text-xs px-2 py-1 rounded font-semibold ml-2" style={{ backgroundColor: '#FF6B00' }}>
+                        Mặc định
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-lg">
+                    Chủ thẻ: {pay.nameOnCard} {pay.expiryDate && `| Hết hạn: ${pay.expiryDate}`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 md:justify-end text-sm">
+                  {!pay.isDefault && (
+                    <button
+                      onClick={() => handleSetDefaultPayment(pay._id || pay.id)}
+                      className="text-orange-600 font-medium hover:underline"
+                    >
+                      Đặt mặc định
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeletePayment(pay._id || pay.id)}
+                    className="text-gray-500 font-medium hover:text-red-600"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Change Password */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           <Shield className="w-6 h-6 text-gray-600" />
           Đổi mật khẩu
@@ -937,7 +1212,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               value={formData.currentPassword}
               onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
               placeholder="••••••••"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
             />
           </div>
           <div>
@@ -949,7 +1224,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               value={formData.newPassword}
               onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
               placeholder="••••••••"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
             />
           </div>
           <div>
@@ -961,10 +1236,10 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               placeholder="••••••••"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
             />
           </div>
-          <button className="bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#E55D00] transition-colors font-semibold">
+          <button className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-semibold">
             Cập nhật mật khẩu
           </button>
         </div>
@@ -994,7 +1269,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
                 type="checkbox"
                 checked={value}
                 onChange={(e) => setNotifications({ ...notifications, [key]: e.target.checked })}
-                className="w-5 h-5 text-[#FF6B00] border-gray-300 rounded focus:ring-[#FF6B00]"
+                className="w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-600"
               />
             </label>
           ))}
@@ -1014,7 +1289,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               <p className="text-sm">Chưa có phương thức thanh toán nào</p>
             </div>
           </div>
-          <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors font-medium">
+          <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-orange-600 hover:text-orange-600 transition-colors font-medium">
             + Thêm phương thức thanh toán
           </button>
         </div>
@@ -1088,6 +1363,187 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
           </div>
         )}
       </div>
+
+      {/* ═══ ADD ADDRESS MODAL ═══ */}
+      {showAddressModal && (
+        <>
+          <div
+            onClick={() => setShowAddressModal(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100 }}
+          />
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '90%', maxWidth: '480px', background: '#fff', borderRadius: '16px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)', zIndex: 101,
+          }} className="p-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900">Thêm địa chỉ</h3>
+              <button onClick={() => setShowAddressModal(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="material-symbols-outlined text-2xl">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Họ và tên *</label>
+                  <input
+                    type="text"
+                    value={newAddress.fullName}
+                    onChange={e => setNewAddress(p => ({ ...p, fullName: e.target.value }))}
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Số điện thoại *</label>
+                  <input
+                    type="tel"
+                    value={newAddress.phone}
+                    onChange={e => setNewAddress(p => ({ ...p, phone: e.target.value }))}
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Địa chỉ *</label>
+                <input
+                  type="text"
+                  value={newAddress.address}
+                  onChange={e => setNewAddress(p => ({ ...p, address: e.target.value }))}
+                  placeholder="Số nhà, đường, phường/xã"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Thành phố *</label>
+                  <input
+                    type="text"
+                    value={newAddress.city}
+                    onChange={e => setNewAddress(p => ({ ...p, city: e.target.value }))}
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Mã bưu điện</label>
+                  <input
+                    type="text"
+                    value={newAddress.postalCode}
+                    onChange={e => setNewAddress(p => ({ ...p, postalCode: e.target.value }))}
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                onClick={() => setShowAddressModal(false)}
+                className="px-5 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold text-sm hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleAddAddress}
+                className="px-5 py-2.5 rounded-lg text-white font-semibold text-sm"
+                style={{ backgroundColor: '#FF6B00', transition: 'background-color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#E55D00')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF6B00')}
+              >
+                Lưu địa chỉ
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ═══ ADD PAYMENT MODAL ═══ */}
+      {showPaymentModal && (
+        <>
+          <div
+            onClick={() => setShowPaymentModal(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100 }}
+          />
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: '90%', maxWidth: '480px', background: '#fff', borderRadius: '16px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)', zIndex: 101,
+          }} className="p-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900">Thêm thẻ thanh toán</h3>
+              <button onClick={() => setShowPaymentModal(false)} className="text-gray-400 hover:text-gray-600">
+                <span className="material-symbols-outlined text-2xl">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Loại thẻ / Ngân hàng *</label>
+                <select
+                  value={newPayment.provider}
+                  onChange={e => setNewPayment(p => ({ ...p, provider: e.target.value }))}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600 bg-white"
+                >
+                  <option value="Visa">Visa</option>
+                  <option value="Mastercard">Mastercard</option>
+                  <option value="JCB">JCB</option>
+                  <option value="Napas">Thẻ ATM Nội địa (Napas)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Số thẻ *</label>
+                <input
+                  type="text"
+                  value={newPayment.cardNumber}
+                  onChange={e => setNewPayment(p => ({ ...p, cardNumber: e.target.value }))}
+                  placeholder="4123 4567 8901 2345"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Tên in trên thẻ *</label>
+                  <input
+                    type="text"
+                    value={newPayment.nameOnCard}
+                    onChange={e => setNewPayment(p => ({ ...p, nameOnCard: e.target.value.toUpperCase() }))}
+                    placeholder="NGUYEN VAN A"
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600 uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Ngày hết hạn *</label>
+                  <input
+                    type="text"
+                    value={newPayment.expiryDate}
+                    onChange={e => setNewPayment(p => ({ ...p, expiryDate: e.target.value }))}
+                    placeholder="MM/YY"
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="px-5 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold text-sm hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleAddPayment}
+                className="px-5 py-2.5 rounded-lg text-white font-semibold text-sm"
+                style={{ backgroundColor: '#FF6B00', transition: 'background-color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#E55D00')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF6B00')}
+              >
+                Lưu thẻ
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

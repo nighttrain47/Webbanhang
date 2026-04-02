@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import { 
   Search, Filter, Eye, Truck, CheckCircle, Clock, 
   XCircle, Package, MapPin, Phone, Mail, ChevronDown 
@@ -31,9 +32,45 @@ export default function OrderManagement() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
-  const mockOrders: Order[] = [];
+  const [orders, setOrders] = useState<Order[]>([]);
 
-  const [orders, setOrders] = useState(mockOrders);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch(`${API_URL}/api/admin/orders?limit=100`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.orders) {
+          const fetchedOrders = data.orders.map((o: any) => ({
+            id: o._id,
+            customer: {
+              name: o.customer?.name || 'Khách vãng lai',
+              email: o.customer?.email || '',
+              phone: o.customer?.phone || '',
+              address: o.shippingAddress || '',
+            },
+            items: o.items.map((i: any) => ({
+              name: i.name || 'Sản phẩm',
+              quantity: i.quantity || 1,
+              price: i.price || 0,
+            })),
+            subtotal: o.total,
+            shipping: 0,
+            total: o.total,
+            status: o.status === 'confirmed' ? 'processing' : o.status,
+            paymentMethod: o.note || 'Thanh toán khi nhận hàng',
+            orderDate: new Date(o.createdAt).toLocaleDateString('vi-VN'),
+          }));
+          setOrders(fetchedOrders);
+        }
+      } catch (err) {
+        console.error('Lỗi fetch đơn hàng:', err);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -84,10 +121,32 @@ export default function OrderManagement() {
     }
   };
 
-  const updateOrderStatus = (orderId: string, newStatus: Order['status']) => {
-    setOrders(orders.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
+  const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const backendStatus = newStatus === 'processing' ? 'confirmed' : newStatus;
+      
+      const res = await fetch(`${API_URL}/api/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ status: backendStatus })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        setOrders(orders.map(order => 
+          order.id === orderId ? { ...order, status: newStatus } : order
+        ));
+      } else {
+        alert('Cập nhật trạng thái thất bại');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Lỗi cập nhật trạng thái');
+    }
   };
 
   const stats = [

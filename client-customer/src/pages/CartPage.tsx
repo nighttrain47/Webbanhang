@@ -26,8 +26,15 @@ function getTag(product: Product): string | null {
 }
 
 export default function CartPage({ cart, addToCart, removeFromCart, updateCartQuantity, cartCount, user }: CartPageProps) {
+  const userPoints = user?.points || 0;
   const subtotal = cart.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
-  const discount = -150000;
+  const getDiscount = (points: number, sub: number) => {
+    if (points >= 100000) return { amount: Math.floor(sub * -0.08), rate: 8 };
+    if (points >= 30000) return { amount: Math.floor(sub * -0.05), rate: 5 };
+    if (points >= 10000) return { amount: Math.floor(sub * -0.02), rate: 2 };
+    return { amount: 0, rate: 0 };
+  };
+  const { amount: discount, rate: discountRate } = getDiscount(userPoints, subtotal);
   const total = subtotal + discount;
 
   return (
@@ -134,10 +141,12 @@ export default function CartPage({ cart, addToCart, removeFromCart, updateCartQu
                     <span style={{ color: '#6e7881' }}>Phí vận chuyển</span>
                     <span style={{ fontWeight: 500, color: '#8a949d' }}>Tính khi thanh toán</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
-                    <span style={{ color: '#6e7881' }}>Ưu đãi thành viên</span>
-                    <span style={{ fontWeight: 600, color: '#00658d' }}>{discount.toLocaleString()}đ</span>
-                  </div>
+                  {discount < 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+                      <span style={{ color: '#6e7881' }}>Ưu đãi thành viên ({discountRate}%)</span>
+                      <span style={{ fontWeight: 600, color: '#00658d' }}>{discount.toLocaleString()}đ</span>
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ borderTop: '1px solid #e8ecef', paddingTop: '16px', marginBottom: '20px' }}>

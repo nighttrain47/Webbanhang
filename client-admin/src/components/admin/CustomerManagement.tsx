@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import { 
   Search, Filter, Eye, Mail, Phone, MapPin, 
-  ShoppingBag, Award, Calendar, TrendingUp, User 
+  ShoppingBag, Award, Calendar, TrendingUp, User, Trash2 
 } from 'lucide-react';
 
 interface Customer {
@@ -23,9 +24,60 @@ export default function CustomerManagement() {
   const [tierFilter, setTierFilter] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  const mockCustomers: Customer[] = [];
+  const [customers, setCustomers] = useState<Customer[]>([]);
 
-  const [customers] = useState(mockCustomers);
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch(`${API_URL}/api/admin/customers`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const fetchedCustomers = data.map((c: any) => ({
+            id: c._id,
+            name: c.name || c.username || 'Khách hàng',
+            email: c.email || '',
+            phone: c.phone || 'Chưa cập nhật',
+            address: c.address || 'Chưa cập nhật',
+            joinDate: new Date(c.createdAt).toLocaleDateString('vi-VN'),
+            totalOrders: 0, // Mock for now unless backend provides
+            totalSpent: 0,
+            points: c.points || 0,
+            tier: 'Bronze' as 'Bronze' | 'Silver' | 'Gold' | 'Platinum',
+            status: 'active' as 'active' | 'inactive'
+          }));
+          setCustomers(fetchedCustomers);
+        }
+      } catch (err) {
+        console.error('Lỗi fetch khách hàng:', err);
+      }
+    };
+    fetchCustomers();
+  }, []);
+
+  const handleDeleteCustomer = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm('Bạn có chắc chắn muốn xoá khách hàng này không?')) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_URL}/api/admin/customers/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCustomers(customers.filter(c => c.id !== id));
+      } else {
+        alert(data.message || 'Xoá thất bại');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi khi xoá khách hàng');
+    }
+  };
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -170,13 +222,22 @@ export default function CustomerManagement() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => setSelectedCustomer(customer)}
-                      className="p-2 hover:bg-blue-50 rounded-lg text-blue-600"
-                      title="Xem chi tiết"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedCustomer(customer)}
+                        className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"
+                        title="Xem chi tiết"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteCustomer(customer.id, e)}
+                        className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                        title="Xoá khách hàng"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

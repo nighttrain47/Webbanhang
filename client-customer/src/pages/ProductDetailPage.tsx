@@ -74,7 +74,7 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
           {/* ═══ IMAGE GALLERY ═══ */}
           <div style={{ width: '480px', flexShrink: 0 }}>
             <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', background: '#f1f4f6', marginBottom: '12px' }}>
-              <img src={images[activeImage]} alt={product.name} style={{ width: '100%', aspectRatio: '4/5', objectFit: 'cover' }} />
+              <img src={images[activeImage]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
               {/* Badges */}
               <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {isPreorder && <span style={{ padding: '4px 10px', borderRadius: '6px', background: '#e74c3c', color: '#fff', fontSize: '10px', fontWeight: 700 }}>PRE-ORDER</span>}
@@ -84,10 +84,10 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
 
             {/* Thumbnails */}
             {images.length > 1 && (
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {images.slice(0, 4).map((img: string, i: number) => (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                {images.map((img: string, i: number) => (
                   <button key={i} onClick={() => setActiveImage(i)} style={{
-                    flex: 1, aspectRatio: '1', borderRadius: '10px', overflow: 'hidden',
+                    aspectRatio: '1', borderRadius: '10px', overflow: 'hidden',
                     border: activeImage === i ? '2px solid #00658d' : '2px solid transparent',
                     cursor: 'pointer', background: '#f1f4f6', padding: 0,
                   }}>
@@ -110,7 +110,7 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
               <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: 800, color: '#00658d' }}>
                 {product.price?.toLocaleString()}đ
               </span>
-              {product.originalPrice && product.originalPrice > product.price && (
+              {product.originalPrice !== undefined && product.originalPrice > product.price && (
                 <span style={{ fontSize: '15px', color: '#8a949d', textDecoration: 'line-through' }}>
                   {product.originalPrice.toLocaleString()}đ
                 </span>
@@ -215,7 +215,7 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
         {/* ═══ PRODUCT DESCRIPTION ═══ */}
         <div style={{ marginBottom: '48px' }}>
           <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '18px', fontWeight: 700, color: '#181c1e', marginBottom: '16px' }}>Chi tiết sản phẩm</h3>
-          <div style={{ fontSize: '14px', color: '#3e4850', lineHeight: 1.8, maxWidth: '700px' }}>
+          <div style={{ fontSize: '14px', color: '#3e4850', lineHeight: 1.8, maxWidth: '700px', whiteSpace: 'pre-wrap' }}>
             {product.description || 'Mô tả sản phẩm đang được cập nhật.'}
           </div>
         </div>

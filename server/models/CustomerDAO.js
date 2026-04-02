@@ -1,6 +1,31 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+const addressSubSchema = new mongoose.Schema(
+    {
+        label: { type: String, default: 'Nhà riêng' },
+        fullName: { type: String, required: true },
+        phone: { type: String, required: true },
+        address: { type: String, required: true },
+        city: { type: String, required: true },
+        postalCode: { type: String, default: '' },
+        isDefault: { type: Boolean, default: false },
+    },
+    { _id: true }
+);
+
+const paymentMethodSubSchema = new mongoose.Schema(
+    {
+        type: { type: String, required: true },
+        provider: { type: String, required: true },
+        cardNumber: { type: String, required: true },
+        expiryDate: { type: String, default: '' },
+        nameOnCard: { type: String, default: '' },
+        isDefault: { type: Boolean, default: false },
+    },
+    { _id: true }
+);
+
 const customerSchema = new mongoose.Schema(
     {
         username: {
@@ -31,6 +56,14 @@ const customerSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        addresses: {
+            type: [addressSubSchema],
+            default: [],
+        },
+        paymentMethods: {
+            type: [paymentMethodSubSchema],
+            default: [],
+        },
         active: {
             type: Boolean,
             default: false,
@@ -46,6 +79,10 @@ const customerSchema = new mongoose.Schema(
         otpExpiry: {
             type: Date,
             default: null,
+        },
+        points: {
+            type: Number,
+            default: 0,
         },
     },
     {
@@ -140,6 +177,107 @@ const CustomerDAO = {
 
     delete: async (id) => {
         return await Customer.findByIdAndDelete(id);
+    },
+
+    // ===== Address Methods =====
+
+    getAddresses: async (customerId) => {
+        const customer = await Customer.findById(customerId).select('addresses');
+        return customer ? customer.addresses : [];
+    },
+
+    addAddress: async (customerId, addressData) => {
+        const customer = await Customer.findById(customerId);
+        if (!customer) return null;
+        // If this is the first address or marked as default, unset others
+        if (customer.addresses.length === 0 || addressData.isDefault) {
+            customer.addresses.forEach(a => (a.isDefault = false));
+            addressData.isDefault = true;
+        }
+        customer.addresses.push(addressData);
+        await customer.save();
+        return customer.addresses;
+    },
+
+    updateAddress: async (customerId, addressId, addressData) => {
+        const customer = await Customer.findById(customerId);
+        if (!customer) return null;
+        const addr = customer.addresses.id(addressId);
+        if (!addr) return null;
+        if (addressData.isDefault) {
+            customer.addresses.forEach(a => (a.isDefault = false));
+        }
+        Object.assign(addr, addressData);
+        await customer.save();
+        return customer.addresses;
+    },
+
+    deleteAddress: async (customerId, addressId) => {
+        const customer = await Customer.findById(customerId);
+        if (!customer) return null;
+        const addr = customer.addresses.id(addressId);
+        if (!addr) return null;
+        const wasDefault = addr.isDefault;
+        customer.addresses.pull(addressId);
+        // If deleted address was default, set first remaining as default
+        if (wasDefault && customer.addresses.length > 0) {
+            customer.addresses[0].isDefault = true;
+        }
+        await customer.save();
+        return customer.addresses;
+    },
+
+    setDefaultAddress: async (customerId, addressId) => {
+        const customer = await Customer.findById(customerId);
+        if (!customer) return null;
+        customer.addresses.forEach(a => {
+            a.isDefault = a._id.toString() === addressId;
+        });
+        await customer.save();
+        return customer.addresses;
+    },
+
+    // ===== Payment Method Methods =====
+
+    getPaymentMethods: async (customerId) => {
+        const customer = await Customer.findById(customerId).select('paymentMethods');
+        return customer ? customer.paymentMethods : [];
+    },
+
+    addPaymentMethod: async (customerId, paymentData) => {
+        const customer = await Customer.findById(customerId);
+        if (!customer) return null;
+        if (customer.paymentMethods.length === 0 || paymentData.isDefault) {
+            customer.paymentMethods.forEach(p => (p.isDefault = false));
+            paymentData.isDefault = true;
+        }
+        customer.paymentMethods.push(paymentData);
+        await customer.save();
+        return customer.paymentMethods;
+    },
+
+    deletePaymentMethod: async (customerId, paymentId) => {
+        const customer = await Customer.findById(customerId);
+        if (!customer) return null;
+        const method = customer.paymentMethods.id(paymentId);
+        if (!method) return null;
+        const wasDefault = method.isDefault;
+        customer.paymentMethods.pull(paymentId);
+        if (wasDefault && customer.paymentMethods.length > 0) {
+            customer.paymentMethods[0].isDefault = true;
+        }
+        await customer.save();
+        return customer.paymentMethods;
+    },
+
+    setDefaultPaymentMethod: async (customerId, paymentId) => {
+        const customer = await Customer.findById(customerId);
+        if (!customer) return null;
+        customer.paymentMethods.forEach(p => {
+            p.isDefault = p._id.toString() === paymentId;
+        });
+        await customer.save();
+        return customer.paymentMethods;
     },
 };
 

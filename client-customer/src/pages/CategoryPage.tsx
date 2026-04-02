@@ -63,6 +63,13 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [brandList, setBrandList] = useState<{_id: string; name: string}[]>([]);
   const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryId, selectedPrices, selectedBrands, sortBy]);
 
   // Fetch brands and categories from API
   useEffect(() => {
@@ -314,9 +321,14 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
           {/* ═══ PRODUCT GRID ═══ */}
           <main style={{ flex: 1 }}>
             {filteredProducts.length > 0 ? (
-              <>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-                  {filteredProducts.map(product => (
+              (() => {
+                const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+                const currentProducts = filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+                return (
+                  <>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+                      {currentProducts.map(product => (
                     <ProductCard
                       key={product._id || product.id}
                       product={product}
@@ -329,28 +341,49 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
                 </div>
 
                 {/* Pagination */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '32px' }}>
-                  <button style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e3e5', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a949d' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_left</span>
-                  </button>
-                  {[1, 2, 3].map(n => (
-                    <button key={n} style={{
-                      width: '36px', height: '36px', borderRadius: '50%',
-                      border: n === 1 ? 'none' : '1px solid #e0e3e5',
-                      background: n === 1 ? '#00658d' : '#fff',
-                      color: n === 1 ? '#fff' : '#3e4850',
-                      cursor: 'pointer', fontWeight: 600, fontSize: '13px',
-                    }}>
-                      {n}
+                {totalPages > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '32px' }}>
+                    <button 
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e3e5', background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentPage === 1 ? '#e0e3e5' : '#8a949d' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_left</span>
                     </button>
-                  ))}
-                  <span style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a949d' }}>...</span>
-                  <button style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e3e5', background: '#fff', color: '#3e4850', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>12</button>
-                  <button style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e3e5', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a949d' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
-                  </button>
-                </div>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => {
+                      if (n === 1 || n === totalPages || (n >= currentPage - 1 && n <= currentPage + 1)) {
+                        return (
+                          <button 
+                            key={n} 
+                            onClick={() => setCurrentPage(n)}
+                            style={{
+                              width: '36px', height: '36px', borderRadius: '50%',
+                              border: n === currentPage ? 'none' : '1px solid #e0e3e5',
+                              background: n === currentPage ? '#00658d' : '#fff',
+                              color: n === currentPage ? '#fff' : '#3e4850',
+                              cursor: 'pointer', fontWeight: 600, fontSize: '13px',
+                            }}>
+                            {n}
+                          </button>
+                        );
+                      }
+                      if (n === currentPage - 2 || n === currentPage + 2) {
+                        return <span key={n} style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a949d' }}>...</span>;
+                      }
+                      return null;
+                    })}
+
+                    <button 
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e0e3e5', background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentPage === totalPages ? '#e0e3e5' : '#8a949d' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chevron_right</span>
+                    </button>
+                  </div>
+                )}
               </>
+            );
+          })()
             ) : (
               <div style={{ textAlign: 'center', padding: '60px 20px' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#8a949d', opacity: 0.3, marginBottom: '8px', display: 'block' }}>inventory_2</span>

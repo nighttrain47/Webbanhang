@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { API_URL } from '../config';
 import { Link, useNavigate } from 'react-router';
 import Header from './layout/Header';
@@ -14,7 +14,8 @@ interface CheckoutProps {
 }
 
 interface Address {
-  id: string;
+  _id?: string;
+  id?: string;
   label: string;
   fullName: string;
   phone: string;
@@ -23,6 +24,8 @@ interface Address {
   postalCode: string;
   isDefault?: boolean;
 }
+
+const getAddressId = (addr: Address) => addr._id || addr.id || '';
 
 const pid = (item: CartItem) => item._id || item.id || '';
 
@@ -33,20 +36,44 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
   const [orderError, setOrderError] = useState('');
   const [showAddressModal, setShowAddressModal] = useState(false);
 
-  // Saved addresses
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: '1',
-      label: 'Nhà riêng',
-      fullName: user?.name || 'Khách hàng',
-      phone: user?.phone || '0901234567',
-      address: 'Hoàn Kiếm',
-      city: 'Hà Nội',
-      postalCode: '100000',
-      isDefault: true,
-    },
-  ]);
-  const [selectedAddressId, setSelectedAddressId] = useState('1');
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+  
+  const [savedPayments, setSavedPayments] = useState<any[]>([]);
+
+  // Fetch saved addresses from server
+  useEffect(() => {
+    if (token) {
+      fetch(`${API_URL}/api/customer/addresses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.addresses) {
+          setAddresses(data.addresses);
+          const defaultAddr = data.addresses.find((a: Address) => a.isDefault);
+          if (defaultAddr) setSelectedAddressId(getAddressId(defaultAddr));
+          else if (data.addresses.length > 0) setSelectedAddressId(getAddressId(data.addresses[0]));
+        }
+      })
+      .catch(console.error);
+
+      // Fetch saved payment methods
+      fetch(`${API_URL}/api/customer/payments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.payments) {
+          setSavedPayments(data.payments);
+          const defaultPayment = data.payments.find((p: any) => p.isDefault);
+          if (defaultPayment) setPaymentMethod(`saved-${defaultPayment._id || defaultPayment.id}`);
+          else if (data.payments.length > 0) setPaymentMethod(`saved-${data.payments[0]._id || data.payments[0].id}`);
+        }
+      })
+      .catch(console.error);
+    }
+  }, [token]);
 
   // New address form
   const [newAddress, setNewAddress] = useState({
@@ -75,20 +102,47 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
     );
   }
 
+  const userPoints = user?.points || 0;
   const subtotal = cart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+  const getDiscount = (points: number, sub: number) => {
+    if (points >= 100000) return { amount: Math.floor(sub * -0.08), rate: 8 };
+    if (points >= 30000) return { amount: Math.floor(sub * -0.05), rate: 5 };
+    if (points >= 10000) return { amount: Math.floor(sub * -0.02), rate: 2 };
+    return { amount: 0, rate: 0 };
+  };
+  const { amount: discount, rate: discountRate } = getDiscount(userPoints, subtotal);
   const shipping = subtotal > 500000 ? 0 : 30000;
-  const total = subtotal + shipping;
+  const total = subtotal + shipping + discount;
 
-  const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+  const selectedAddress = addresses.find(a => getAddressId(a) === selectedAddressId);
 
-  const handleAddAddress = () => {
+  const handleAddAddress = async () => {
     if (!newAddress.fullName || !newAddress.phone || !newAddress.address || !newAddress.city) return;
-    const id = Date.now().toString();
-    const addr: Address = { ...newAddress, id, label: 'Địa chỉ mới', isDefault: false };
-    setAddresses(prev => [...prev, addr]);
-    setSelectedAddressId(id);
-    setNewAddress({ fullName: '', phone: '', address: '', city: '', postalCode: '' });
-    setShowAddressModal(false);
+    
+    try {
+      const isDefault = addresses.length === 0; // First address becomes default automatically
+      
+      const res = await fetch(`${API_URL}/api/customer/addresses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...newAddress, isDefault, label: 'Nhà riêng' }),
+      });
+      const data = await res.json();
+      
+      if (data.success && data.addresses) {
+        setAddresses(data.addresses);
+        // Select the newly added address which should be the last one
+        const newestAddr = data.addresses[data.addresses.length - 1];
+        if (newestAddr) setSelectedAddressId(getAddressId(newestAddr));
+        
+        setNewAddress({ fullName: '', phone: '', address: '', city: '', postalCode: '' });
+        setShowAddressModal(false);
+      } else {
+        alert(data.message || 'Không thể lưu địa chỉ');
+      }
+    } catch {
+      alert('Lỗi kết nối máy chủ');
+    }
   };
 
   const handlePlaceOrder = async () => {
@@ -165,20 +219,20 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
                 {addresses.map(addr => (
                   <label
-                    key={addr.id}
+                    key={getAddressId(addr)}
                     style={{
                       display: 'flex', alignItems: 'flex-start', gap: '12px',
                       padding: '16px', borderRadius: '12px', cursor: 'pointer',
-                      border: selectedAddressId === addr.id ? '2px solid #00658d' : '1.5px solid #e0e3e5',
-                      background: selectedAddressId === addr.id ? 'rgba(0,101,141,0.03)' : '#fff',
+                      border: selectedAddressId === getAddressId(addr) ? '2px solid #00658d' : '1.5px solid #e0e3e5',
+                      background: selectedAddressId === getAddressId(addr) ? 'rgba(0,101,141,0.03)' : '#fff',
                       transition: 'all 150ms',
                     }}
                   >
                     <input
                       type="radio"
                       name="address"
-                      checked={selectedAddressId === addr.id}
-                      onChange={() => setSelectedAddressId(addr.id)}
+                      checked={selectedAddressId === getAddressId(addr)}
+                      onChange={() => setSelectedAddressId(getAddressId(addr))}
                       style={{ marginTop: '2px', accentColor: '#00658d' }}
                     />
                     <div style={{ flex: 1 }}>
@@ -218,8 +272,48 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
               <p style={{ fontSize: '12px', color: '#8a949d', marginBottom: '20px' }}>Tất cả giao dịch đều được bảo mật và mã hóa.</p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* User's Saved Cards */}
+                {savedPayments.map(pay => (
+                  <label
+                    key={`saved-${pay._id || pay.id}`}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '14px 16px', borderRadius: '10px', cursor: 'pointer',
+                      border: paymentMethod === `saved-${pay._id || pay.id}` ? '2px solid #00658d' : '1.5px solid #e0e3e5',
+                      background: paymentMethod === `saved-${pay._id || pay.id}` ? 'rgba(0,101,141,0.03)' : '#fff',
+                      transition: 'all 150ms',
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      checked={paymentMethod === `saved-${pay._id || pay.id}`}
+                      onChange={() => setPaymentMethod(`saved-${pay._id || pay.id}`)}
+                      style={{ accentColor: '#00658d' }}
+                    />
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#00658d' }}>credit_card</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: '#181c1e' }}>{pay.provider}</p>
+                        <span style={{ fontSize: '12px', color: '#6e7881', fontFamily: 'monospace' }}>{pay.cardNumber}</span>
+                      </div>
+                      <p style={{ fontSize: '11px', color: '#8a949d' }}>{pay.nameOnCard}</p>
+                    </div>
+                  </label>
+                ))}
+
+                {/* Separator if saved cards exist */}
+                {savedPayments.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', margin: '4px 0' }}>
+                    <div style={{ flex: 1, height: '1px', background: '#e8ecef' }} />
+                    <span style={{ fontSize: '11px', color: '#8a949d', margin: '0 8px' }}>hoặc các phương thức khác</span>
+                    <div style={{ flex: 1, height: '1px', background: '#e8ecef' }} />
+                  </div>
+                )}
+                
+                {/* Fallback Static Options */}
                 {[
-                  { id: 'credit-card', label: 'Thẻ tín dụng / Ghi nợ', desc: 'Visa, Mastercard, JCB', icon: 'credit_card' },
+                  { id: 'credit-card', label: 'Thẻ mới / Ghi nợ', desc: 'Visa, Mastercard, JCB', icon: 'add_card' },
                   { id: 'bank-transfer', label: 'Chuyển khoản ngân hàng', desc: 'Thanh toán trực tiếp', icon: 'account_balance' },
                   { id: 'e-wallet', label: 'Ví điện tử', desc: 'Momo, ZaloPay, VNPay', icon: 'account_balance_wallet' },
                   { id: 'cod', label: 'Thanh toán khi nhận hàng', desc: 'COD', icon: 'local_shipping' },
@@ -316,6 +410,12 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
                     {shipping === 0 ? 'MIỄN PHÍ' : `${shipping.toLocaleString()}đ`}
                   </span>
                 </div>
+                {discount < 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: '#6e7881' }}>Ưu đãi thành viên ({discountRate}%)</span>
+                    <span style={{ fontWeight: 600, color: '#00658d' }}>{discount.toLocaleString()}đ</span>
+                  </div>
+                )}
               </div>
 
               {/* Total */}

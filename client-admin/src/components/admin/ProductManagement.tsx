@@ -632,6 +632,50 @@ function ProductModal({
   });
 
   const [imageInputMode, setImageInputMode] = useState<'url' | 'file'>('url');
+  const [fetchUrl, setFetchUrl] = useState('');
+  const [isFetching, setIsFetching] = useState(false);
+
+  const handleFetchShopify = async () => {
+    if (!fetchUrl) return;
+    setIsFetching(true);
+    try {
+      let urlStr = fetchUrl.trim();
+      const urlObj = new URL(urlStr);
+      if (!urlObj.pathname.endsWith('.js')) {
+        urlStr = urlObj.origin + urlObj.pathname + '.js';
+      }
+      const res = await fetch(urlStr);
+      if (!res.ok) throw new Error('Fetch failed');
+      const data = await res.json();
+      
+      const jpyPrice = data.price / 100;
+      const originalPrice = Math.round(jpyPrice * 170);
+      const price = originalPrice + 300000;
+      
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = data.description || '';
+      const cleanDesc = tempDiv.textContent || tempDiv.innerText || '';
+
+      const fixImg = (i: string) => i?.startsWith('//') ? 'https:' + i : i;
+
+      setFormData(prev => ({
+        ...prev,
+        name: data.title || prev.name,
+        description: cleanDesc || prev.description,
+        price: price,
+        originalPrice: originalPrice,
+        imageUrl: data.featured_image ? fixImg(data.featured_image) : prev.imageUrl,
+        images: (data.images || []).map((img: string) => fixImg(img)).join('\n'),
+        manufacturer: data.vendor || prev.manufacturer
+      }));
+      setFetchUrl('');
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi: Không thể lấy dữ liệu (Kiểm tra lại link hoặc có thể do CORS).');
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -710,6 +754,29 @@ function ProductModal({
         {/* Scrollable Form */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-8">
+
+            {/* ========== KHU VỰC AUTO FETCH ========== */}
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl">
+              <h3 className="text-sm font-bold text-blue-800 mb-2">⚡ Tự động lấy dữ liệu từ FINDME STORE (Shopify)</h3>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  placeholder="Nhập link sản phẩm (VD: https://findmestore.thinkr.jp/collections/.../products/...)"
+                  value={fetchUrl}
+                  onChange={e => setFetchUrl(e.target.value)}
+                  className="flex-1 px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={handleFetchShopify}
+                  disabled={isFetching || !fetchUrl}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors shrink-0"
+                >
+                  {isFetching ? 'Đang lấy...' : 'Fetch Dữ Liệu'}
+                </button>
+              </div>
+              <p className="text-xs text-blue-600 mt-2 mt-1">Giá nhập = Giá JPY × 170. Giá bán = Giá nhập + 300,000 VND.</p>
+            </div>
 
             {/* ========== PHẦN 1: Thông tin sản phẩm ========== */}
             <div>

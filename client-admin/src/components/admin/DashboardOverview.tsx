@@ -1,19 +1,42 @@
+import { useState, useEffect } from 'react';
 import { AdminSection } from './AdminDashboard';
+import { API_URL } from '../../config';
 
 interface DashboardOverviewProps {
   onNavigate: (section: AdminSection) => void;
 }
 
 export default function DashboardOverview({ onNavigate }: DashboardOverviewProps) {
+  const [dashboardData, setDashboardData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch(`${API_URL}/api/admin/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data && data.stats) {
+          setDashboardData(data);
+        }
+      } catch (e) {
+        console.error('Error fetching dashboard data:', e);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
   const stats = [
-    { title: 'Doanh thu tháng', value: '0₫', change: '+0%', icon: 'payments', color: 'var(--dc-primary)' },
-    { title: 'Đơn hàng', value: '0', change: '+0%', icon: 'shopping_cart', color: 'var(--dc-tertiary-container)' },
-    { title: 'Người dùng mới', value: '0', change: '+0%', icon: 'person_add', color: '#8b5cf6' },
-    { title: 'Tổng sản phẩm', value: '0', change: '+0%', icon: 'inventory_2', color: '#16a34a' },
+    { title: 'Doanh thu tháng', value: dashboardData ? `${dashboardData.stats.monthlyRevenue.toLocaleString()}₫` : '0₫', change: '+0%', icon: 'payments', color: 'var(--dc-primary)' },
+    { title: 'Đơn hàng', value: dashboardData ? dashboardData.stats.monthlyOrders.toString() : '0', change: '+0%', icon: 'shopping_cart', color: 'var(--dc-tertiary-container)' },
+    { title: 'Người dùng mới', value: dashboardData ? dashboardData.stats.newUsers.toString() : '0', change: '+0%', icon: 'person_add', color: '#8b5cf6' },
+    { title: 'Tổng sản phẩm', value: dashboardData ? dashboardData.stats.totalProducts.toString() : '0', change: '+0%', icon: 'inventory_2', color: '#16a34a' },
   ];
 
-  const recentOrders: any[] = [];
-  const topProducts: any[] = [];
+  const recentOrders: any[] = dashboardData?.recentOrders || [];
+  const topProducts: any[] = dashboardData?.topProducts || [];
+  const revenue7days: number[] = dashboardData?.revenue7days || [0, 0, 0, 0, 0, 0, 0];
 
   const quickActions: { icon: string; label: string; color: string; section: AdminSection }[] = [
     { icon: 'add_circle', label: 'Thêm sản phẩm', color: 'var(--dc-primary)', section: 'products' },
@@ -134,18 +157,29 @@ export default function DashboardOverview({ onNavigate }: DashboardOverviewProps
           Doanh thu 7 ngày gần đây
         </h2>
         <div style={{ height: '200px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '0.75rem' }}>
-          {[0, 0, 0, 0, 0, 0, 0].map((h, i) => (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-              <div className="signature-gradient" style={{
-                width: '100%', borderRadius: '0.5rem 0.5rem 0 0',
-                height: `${Math.max(4, h)}%`,
-                opacity: 0.7,
-              }} />
-              <span style={{ fontSize: '0.75rem', color: 'var(--dc-outline)' }}>
-                {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][i]}
-              </span>
-            </div>
-          ))}
+          {revenue7days.map((h, i) => {
+            const maxRev = Math.max(...revenue7days, 1);
+            const percent = (h / maxRev) * 100;
+            return (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                <div className="signature-gradient" style={{
+                  width: '100%', borderRadius: '0.5rem 0.5rem 0 0',
+                  height: `${h > 0 ? Math.max(4, percent) : 0}%`,
+                  opacity: 0.7,
+                  position: 'relative',
+                  cursor: 'pointer',
+                  minHeight: h > 0 ? '4px' : '0'
+                }} title={`${h.toLocaleString()}₫`} />
+                <span style={{ fontSize: '0.75rem', color: 'var(--dc-outline)' }}>
+                  {(() => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - (6 - i));
+                    return d.getDay() === 0 ? 'CN' : `T${d.getDay() + 1}`;
+                  })()}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

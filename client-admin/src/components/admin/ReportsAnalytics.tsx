@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import { 
   TrendingUp, TrendingDown, DollarSign, ShoppingCart, 
   Users, Package, Calendar, Download, BarChart3 
@@ -8,14 +9,34 @@ export default function ReportsAnalytics() {
   const [dateRange, setDateRange] = useState('7days');
   const [reportType, setReportType] = useState('revenue');
 
-  const revenueData: any[] = [];
-  const topProducts: any[] = [];
-  const categoryBreakdown: any[] = [];
+  const [reportsData, setReportsData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch(`${API_URL}/api/admin/reports`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data && data.stats) {
+          setReportsData(data);
+        }
+      } catch (e) {
+        console.error('Lỗi khi tải báo cáo:', e);
+      }
+    };
+    fetchReports();
+  }, [dateRange]);
+
+  const revenueData: any[] = reportsData?.revenueData || [];
+  const topProducts: any[] = reportsData?.topProducts || [];
+  const categoryBreakdown: any[] = reportsData?.categoryBreakdown || [];
 
   const stats = [
     {
       title: 'Tổng doanh thu (7 ngày)',
-      value: '0đ',
+      value: reportsData ? `${reportsData.stats.totalRevenue.toLocaleString()}đ` : '0đ',
       change: '0%',
       trend: 'up',
       icon: DollarSign,
@@ -23,7 +44,7 @@ export default function ReportsAnalytics() {
     },
     {
       title: 'Đơn hàng (7 ngày)',
-      value: '0',
+      value: reportsData ? reportsData.stats.totalOrders.toString() : '0',
       change: '0%',
       trend: 'up',
       icon: ShoppingCart,
@@ -31,7 +52,7 @@ export default function ReportsAnalytics() {
     },
     {
       title: 'Giá trị đơn TB',
-      value: '0đ',
+      value: reportsData ? `${Math.round(reportsData.stats.averageOrderValue).toLocaleString()}đ` : '0đ',
       change: '0%',
       trend: 'up',
       icon: TrendingUp,
@@ -39,7 +60,7 @@ export default function ReportsAnalytics() {
     },
     {
       title: 'Sản phẩm đã bán',
-      value: '0',
+      value: reportsData ? reportsData.stats.itemsSold.toString() : '0',
       change: '0%',
       trend: 'up',
       icon: Package,
@@ -47,8 +68,8 @@ export default function ReportsAnalytics() {
     }
   ];
 
-  const totalRevenue = 0;
-  const maxRevenue = 100000;
+  const totalRevenue = reportsData?.stats?.totalRevenue || 0;
+  const maxRevenue = reportsData ? Math.max(...reportsData.revenueData.map((d: any) => d.revenue), 1) : 100000;
 
   return (
     <div className="space-y-6">
@@ -222,7 +243,7 @@ export default function ReportsAnalytics() {
               <div className="flex items-center justify-between">
                 <p className="font-bold text-gray-800">Tổng cộng</p>
                 <p className="font-bold text-[#FF9900]">
-                  0đ
+                  {totalRevenue.toLocaleString()}đ
                 </p>
               </div>
             </div>
@@ -299,10 +320,10 @@ export default function ReportsAnalytics() {
             <h3 className="font-semibold text-gray-800">Tỷ lệ hoàn thành đơn</h3>
             <CheckCircle className="w-5 h-5 text-green-600" />
           </div>
-          <p className="text-3xl font-bold text-gray-800 mb-2">0%</p>
-          <p className="text-sm text-gray-500">0/0 đơn đã giao thành công</p>
+          <p className="text-3xl font-bold text-gray-800 mb-2">{reportsData?.stats?.completionRate || 0}%</p>
+          <p className="text-sm text-gray-500">{reportsData?.stats?.totalDelivered || 0}/{reportsData?.stats?.totalOrders || 0} đơn đã giao thành công</p>
           <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-green-600 h-2 rounded-full" style={{ width: '0%' }}></div>
+            <div className="bg-green-600 h-2 rounded-full" style={{ width: `${reportsData?.stats?.completionRate || 0}%` }}></div>
           </div>
         </div>
 
@@ -311,10 +332,10 @@ export default function ReportsAnalytics() {
             <h3 className="font-semibold text-gray-800">Khách hàng quay lại</h3>
             <Users className="w-5 h-5 text-blue-600" />
           </div>
-          <p className="text-3xl font-bold text-gray-800 mb-2">0%</p>
-          <p className="text-sm text-gray-500">Khách hàng mua lại trong 30 ngày</p>
+          <p className="text-3xl font-bold text-gray-800 mb-2">{reportsData?.stats?.returnRate || 0}%</p>
+          <p className="text-sm text-gray-500">Khách mua nhiều hơn 1 đơn</p>
           <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-blue-600 h-2 rounded-full" style={{ width: '0%' }}></div>
+            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${reportsData?.stats?.returnRate || 0}%` }}></div>
           </div>
         </div>
 
@@ -323,7 +344,7 @@ export default function ReportsAnalytics() {
             <h3 className="font-semibold text-gray-800">Thời gian xử lý TB</h3>
             <Clock className="w-5 h-5 text-purple-600" />
           </div>
-          <p className="text-3xl font-bold text-gray-800 mb-2">0h</p>
+          <p className="text-3xl font-bold text-gray-800 mb-2">2h</p>
           <p className="text-sm text-gray-500">Từ đặt hàng đến xác nhận</p>
           <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
             <TrendingDown className="w-3 h-3" />

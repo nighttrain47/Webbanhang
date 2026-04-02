@@ -26,15 +26,104 @@ const SIDEBAR_CATS = [
   { icon: 'more_horiz', label: 'Khác', to: '/category/all' },
 ];
 
+// Smart date parser — handles DD/MM/YYYY, YYYY-MM-DD, ISO, range strings, and Vietnamese long format
+// For ranges like "29/03/2026 cho đến 06/04/2026", returns the LATEST date (closing date)
+function parseFlexibleDate(dateStr: string): Date | null {
+  if (!dateStr) return null;
+
+  const candidates: Date[] = [];
+
+  // Extract ALL DD/MM/YYYY dates from the string
+  const allDmyMatches = [...dateStr.matchAll(/(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})/g)];
+  for (const m of allDmyMatches) {
+    const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    if (!isNaN(d.getTime())) candidates.push(d);
+  }
+
+  // Extract "ngày DD tháng MM năm YYYY" (Vietnamese long format)
+  const vnLongMatches = [...dateStr.matchAll(/ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi)];
+  for (const m of vnLongMatches) {
+    const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    if (!isNaN(d.getTime())) candidates.push(d);
+  }
+
+  // Return the latest date found (the closing/end date)
+  if (candidates.length > 0) {
+    return candidates.reduce((latest, d) => d > latest ? d : latest);
+  }
+
+  // Try ISO / YYYY-MM-DD
+  const isoDate = new Date(dateStr);
+  if (!isNaN(isoDate.getTime())) return isoDate;
+
+  // "Tháng MM/YYYY" or just "MM/YYYY"
+  const monthYearMatch = dateStr.match(/(?:tháng\s*)?(\d{1,2})[/\-.](\d{4})/i);
+  if (monthYearMatch) {
+    const d = new Date(Number(monthYearMatch[2]), Number(monthYearMatch[1]) - 1, 1);
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  return null;
+}
+
+// Countdown timer hook
+function useCountdown(targetDate: string | null) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false });
+
+  useEffect(() => {
+    let targetMs: number;
+
+    const parsed = targetDate ? parseFlexibleDate(targetDate) : null;
+    if (parsed) {
+      targetMs = parsed.getTime();
+    } else {
+      // Default: 14 days from now for general promotion
+      const defaultTarget = new Date();
+      defaultTarget.setDate(defaultTarget.getDate() + 14);
+      targetMs = defaultTarget.getTime();
+    }
+
+    const calc = () => {
+      const now = Date.now();
+      const diff = targetMs - now;
+      if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+      return {
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+        expired: false,
+      };
+    };
+
+    setTimeLeft(calc());
+    const interval = setInterval(() => setTimeLeft(calc()), 1000);
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  return timeLeft;
+}
+
 export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCount, user }: HomePageProps) {
   const [newProducts, setNewProducts] = useState<Product[]>([]);
   const [hotProducts, setHotProducts] = useState<Product[]>([]);
+  const [preorderProducts, setPreorderProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     document.title = 'FigureCurator — Bộ sưu tập Figure & Anime Goods cao cấp';
     fetch(`${API_URL}/api/customer/products/new?limit=6`).then(r => r.json()).then(setNewProducts).catch(console.error);
     fetch(`${API_URL}/api/customer/products/hot?limit=6`).then(r => r.json()).then(setHotProducts).catch(console.error);
+    fetch(`${API_URL}/api/customer/products/preorder?limit=4`).then(r => r.json()).then(data => {
+      if (Array.isArray(data)) setPreorderProducts(data);
+    }).catch(console.error);
   }, []);
+
+  // Featured pre-order product (first one)
+  const featuredPreorder = preorderProducts[0] || null;
+  const featuredId = featuredPreorder?._id || featuredPreorder?.id || '';
+
+  // Countdown to the featured product's preorder deadline
+  const countdown = useCountdown(featuredPreorder?.preorderDeadline || null);
 
   return (
     <div style={{ minHeight: '100vh', background: '#f7fafc', fontFamily: "'Inter', sans-serif" }}>
@@ -218,75 +307,146 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
 
       {/* ═══ PRE-ORDER BENTO SECTION ═══ */}
       <section className="max-w-7xl mx-auto px-4 lg:px-6" style={{ paddingBottom: '48px' }}>
-        <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: '24px', color: '#181c1e', marginBottom: '4px' }}>
-          Pre-order Sớm
-        </h2>
-        <p style={{ fontSize: '13px', color: '#8a949d', marginBottom: '20px' }}>Đừng bỏ lỡ những tuyệt phẩm sắp ra mắt</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: '24px', color: '#181c1e' }}>
+            Pre-order Sớm
+          </h2>
+          <Link to="/category/pre-order" style={{ fontSize: '13px', fontWeight: 600, color: '#00658d', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            Xem tất cả <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
+          </Link>
+        </div>
+        <p style={{ fontSize: '13px', color: '#8a949d', marginBottom: '20px' }}>
+          Đừng bỏ lỡ những tuyệt phẩm sắp ra mắt{preorderProducts.length > 0 ? ` — ${preorderProducts.length} sản phẩm đang mở đặt trước` : ''}
+        </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          {/* Large Pre-order Card */}
-          <div style={{
-            position: 'relative',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            background: 'linear-gradient(180deg, #1a2332, #243b50)',
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-end',
-            minHeight: '320px',
-            gridRow: 'span 2',
-          }}>
-            <span style={{
-              display: 'inline-block', width: 'fit-content',
-              padding: '4px 10px', borderRadius: '6px', background: '#e74c3c',
-              color: '#fff', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
-              marginBottom: '12px',
-            }}>
-              SẮP HẾT HÀNG
-            </span>
-            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
-              Figure Exclusive Pre-order
-            </h3>
-            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginBottom: '16px', lineHeight: 1.6 }}>
-              Phát hành dự kiến: Tháng 12/2024. Cọc trước chỉ từ 500.000đ.
-            </p>
-            <Link to="/category/pre-order" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              width: 'fit-content', padding: '10px 20px', borderRadius: '8px',
-              border: '1.5px solid rgba(255,255,255,0.3)', color: '#fff',
-              fontWeight: 600, fontSize: '12px', textDecoration: 'none',
-            }}>
-              Đặt ngay
-            </Link>
-          </div>
+          {/* Large Pre-order Card — Dynamic from API */}
+          <Link
+            to={featuredPreorder ? `/product/${featuredId}` : '/category/pre-order'}
+            style={{
+              position: 'relative',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              background: 'linear-gradient(180deg, #1a2332, #243b50)',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              minHeight: '320px',
+              gridRow: 'span 2',
+              textDecoration: 'none',
+              transition: 'transform 200ms, box-shadow 200ms',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.25)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+          >
+            {/* Background image from product */}
+            {featuredPreorder?.image && (
+              <div style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: `url(${featuredPreorder.image})`,
+                backgroundSize: 'cover', backgroundPosition: 'center',
+                opacity: 0.25,
+                transition: 'opacity 300ms',
+              }} />
+            )}
+            {/* Gradient overlay */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to top, rgba(26,35,50,0.95) 30%, rgba(26,35,50,0.4) 100%)',
+            }} />
 
-          {/* Flash Sale Card */}
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              {/* Status badge */}
+              <span style={{
+                display: 'inline-block', width: 'fit-content',
+                padding: '4px 10px', borderRadius: '6px',
+                background: featuredPreorder?.stock && featuredPreorder.stock <= 5 ? '#e74c3c' : '#ff7d36',
+                color: '#fff', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+                marginBottom: '12px',
+              }}>
+                {!featuredPreorder ? 'PRE-ORDER' : featuredPreorder.stock && featuredPreorder.stock <= 5 ? 'SẮP HẾT HÀNG' : 'ĐANG MỞ ĐẶT TRƯỚC'}
+              </span>
+
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '8px', lineHeight: 1.3 }}>
+                {featuredPreorder?.name || 'Figure Exclusive Pre-order'}
+              </h3>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginBottom: '6px', lineHeight: 1.6 }}>
+                {featuredPreorder?.estimatedDelivery
+                  ? `Phát hành dự kiến: ${featuredPreorder.estimatedDelivery}`
+                  : featuredPreorder?.preorderDeadline
+                    ? `Hạn đặt: ${new Date(featuredPreorder.preorderDeadline).toLocaleDateString('vi-VN')}`
+                    : 'Đặt trước ngay để đảm bảo sở hữu'}
+              </p>
+              {featuredPreorder && (
+                <p style={{ fontSize: '16px', fontWeight: 700, color: '#5bb8d4', marginBottom: '16px' }}>
+                  {featuredPreorder.price?.toLocaleString('vi-VN')}đ
+                  {featuredPreorder.originalPrice && featuredPreorder.originalPrice > featuredPreorder.price && (
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', textDecoration: 'line-through', marginLeft: '8px', fontWeight: 400 }}>
+                      {featuredPreorder.originalPrice.toLocaleString('vi-VN')}đ
+                    </span>
+                  )}
+                </p>
+              )}
+
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                width: 'fit-content', padding: '10px 20px', borderRadius: '8px',
+                border: '1.5px solid rgba(255,255,255,0.3)', color: '#fff',
+                fontWeight: 600, fontSize: '12px',
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>shopping_cart</span>
+                Đặt ngay
+              </span>
+            </div>
+          </Link>
+
+          {/* Flash Sale Countdown Card — Real timer */}
           <div style={{
             borderRadius: '16px', background: '#f1f4f6', padding: '24px',
             display: 'flex', flexDirection: 'column', justifyContent: 'center',
           }}>
             <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#ff7d36', marginBottom: '12px' }}>
-              FLASH SALE PRE-ORDER
+              {countdown.expired ? 'ĐÃ KẾT THÚC' : 'FLASH SALE PRE-ORDER'}
             </span>
             <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: '20px', color: '#181c1e', marginBottom: '16px', lineHeight: 1.3 }}>
-              Ưu đãi 15% khi thanh toán 100%
+              {countdown.expired ? 'Đợt ưu đãi đã kết thúc' : 'Ưu đãi 15% khi thanh toán 100%'}
             </h3>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {['04', '12', '45'].map((val, i) => (
-                <div key={i} style={{ textAlign: 'center' }}>
-                  <div style={{
-                    width: '40px', height: '40px', borderRadius: '8px',
-                    border: '1px solid #e0e3e5', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 700, fontSize: '16px', color: '#181c1e',
-                  }}>{val}</div>
-                  <span style={{ fontSize: '9px', color: '#8a949d', textTransform: 'uppercase', marginTop: '4px', display: 'block' }}>
-                    {['NGÀY', 'GIỜ', 'PHÚT'][i]}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {!countdown.expired && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {[
+                  { val: String(countdown.days).padStart(2, '0'), label: 'NGÀY' },
+                  { val: String(countdown.hours).padStart(2, '0'), label: 'GIỜ' },
+                  { val: String(countdown.minutes).padStart(2, '0'), label: 'PHÚT' },
+                  { val: String(countdown.seconds).padStart(2, '0'), label: 'GIÂY' },
+                ].map((item, i) => (
+                  <div key={i} style={{ textAlign: 'center' }}>
+                    <div style={{
+                      width: '44px', height: '44px', borderRadius: '10px',
+                      border: '1px solid #e0e3e5', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, fontSize: '18px', color: '#181c1e',
+                      background: '#fff',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}>{item.val}</div>
+                    <span style={{ fontSize: '9px', color: '#8a949d', textTransform: 'uppercase', marginTop: '4px', display: 'block', letterSpacing: '0.05em' }}>
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {countdown.expired && (
+              <Link to="/category/pre-order" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                width: 'fit-content', padding: '10px 20px', borderRadius: '8px',
+                background: '#00658d', color: '#fff',
+                fontWeight: 600, fontSize: '12px', textDecoration: 'none',
+              }}>
+                Xem sản phẩm Pre-order
+              </Link>
+            )}
           </div>
 
           {/* Member Benefits Card */}
@@ -314,6 +474,52 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
             }}>star</span>
           </div>
         </div>
+
+        {/* Pre-order product thumbnails row */}
+        {preorderProducts.length > 1 && (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(preorderProducts.length - 1, 3)}, 1fr)`, gap: '16px', marginTop: '16px' }}>
+            {preorderProducts.slice(1, 4).map(product => {
+              const pid = product._id || product.id || '';
+              return (
+                <Link
+                  key={pid}
+                  to={`/product/${pid}`}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '14px',
+                    padding: '16px', borderRadius: '12px',
+                    background: '#fff', border: '1px solid #e8ecef',
+                    textDecoration: 'none', transition: 'border-color 200ms, box-shadow 200ms',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#00658d'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,101,141,0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ecef'; e.currentTarget.style.boxShadow = 'none'; }}
+                >
+                  <div style={{
+                    width: '64px', height: '64px', borderRadius: '10px',
+                    overflow: 'hidden', background: '#f1f4f6', flexShrink: 0,
+                  }}>
+                    <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{
+                      display: 'inline-block', padding: '2px 6px', borderRadius: '4px',
+                      background: '#fff3e8', color: '#ff7d36', fontSize: '9px', fontWeight: 700,
+                      textTransform: 'uppercase', marginBottom: '4px',
+                    }}>PRE-ORDER</span>
+                    <p style={{
+                      fontSize: '13px', fontWeight: 600, color: '#181c1e', lineHeight: 1.3,
+                      display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      marginBottom: '4px',
+                    }}>{product.name}</p>
+                    <p style={{ fontSize: '13px', fontWeight: 700, color: '#00658d' }}>
+                      {product.price?.toLocaleString('vi-VN')}đ
+                    </p>
+                  </div>
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#8a949d' }}>chevron_right</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* ═══ HOT PRODUCTS ═══ */}

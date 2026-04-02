@@ -46,7 +46,7 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
           <div
             style={{
               position: 'relative',
-              paddingBottom: '125%', /* 4:5 ratio */
+              paddingBottom: '100%', /* 1:1 ratio for 540x540 thumbnails */
               borderRadius: '12px',
               overflow: 'hidden',
               background: '#f1f4f6',

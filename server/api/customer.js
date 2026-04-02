@@ -7,6 +7,7 @@ const OrderDAO = require('../models/OrderDAO');
 const ReviewDAO = require('../models/ReviewDAO');
 const ArticleDAO = require('../models/ArticleDAO');
 const BrandDAO = require('../models/BrandDAO');
+const EmailUtil = require('../utils/EmailUtil');
 const { createToken, verifyToken } = require('../utils/jwtAuth');
 const { generateOTP, sendOTP } = require('../utils/EmailUtil');
 
@@ -406,6 +407,18 @@ router.post('/orders', verifyToken, async (req, res) => {
             status: 'pending'
         });
 
+        // Get customer email to send confirmation email
+        const customer = await CustomerDAO.selectById(req.user.id);
+        if (customer && customer.email) {
+            await EmailUtil.sendOrderPlacedEmail(
+                customer.email, 
+                order._id, 
+                items, 
+                total, 
+                shippingAddress || ''
+            );
+        }
+
         res.status(201).json({ success: true, order });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
@@ -467,6 +480,127 @@ router.delete('/profile', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
         }
         res.json({ success: true, message: 'Tài khoản đã được xóa thành công' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== ADDRESSES (cần token) ====================
+
+// GET /api/customer/addresses
+router.get('/addresses', verifyToken, async (req, res) => {
+    try {
+        const addresses = await CustomerDAO.getAddresses(req.user.id);
+        res.json({ success: true, addresses });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/customer/addresses
+router.post('/addresses', verifyToken, async (req, res) => {
+    try {
+        const { label, fullName, phone, address, city, postalCode, isDefault } = req.body;
+        if (!fullName || !phone || !address || !city) {
+            return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ thông tin địa chỉ hợp lệ' });
+        }
+        
+        const addresses = await CustomerDAO.addAddress(req.user.id, {
+            label, fullName, phone, address, city, postalCode, isDefault
+        });
+        
+        if (!addresses) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+        res.json({ success: true, addresses, message: 'Thêm địa chỉ thành công' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// PUT /api/customer/addresses/:id
+router.put('/addresses/:id', verifyToken, async (req, res) => {
+    try {
+        const { label, fullName, phone, address, city, postalCode, isDefault } = req.body;
+        const addresses = await CustomerDAO.updateAddress(req.user.id, req.params.id, {
+            label, fullName, phone, address, city, postalCode, isDefault
+        });
+        
+        if (!addresses) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản hoặc địa chỉ' });
+        res.json({ success: true, addresses, message: 'Cập nhật địa chỉ thành công' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE /api/customer/addresses/:id
+router.delete('/addresses/:id', verifyToken, async (req, res) => {
+    try {
+        const addresses = await CustomerDAO.deleteAddress(req.user.id, req.params.id);
+        if (!addresses) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản hoặc địa chỉ' });
+        res.json({ success: true, addresses, message: 'Xóa địa chỉ thành công' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// PUT /api/customer/addresses/:id/default
+router.put('/addresses/:id/default', verifyToken, async (req, res) => {
+    try {
+        const addresses = await CustomerDAO.setDefaultAddress(req.user.id, req.params.id);
+        if (!addresses) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản hoặc địa chỉ' });
+        res.json({ success: true, addresses, message: 'Thiết lập địa chỉ mặc định thành công' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ==================== PAYMENT METHODS (cần token) ====================
+
+// GET /api/customer/payments
+router.get('/payments', verifyToken, async (req, res) => {
+    try {
+        const payments = await CustomerDAO.getPaymentMethods(req.user.id);
+        res.json({ success: true, payments });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/customer/payments
+router.post('/payments', verifyToken, async (req, res) => {
+    try {
+        const { type, provider, cardNumber, expiryDate, nameOnCard, isDefault } = req.body;
+        if (!type || !provider || !cardNumber) {
+            return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ thông tin thẻ/tài khoản' });
+        }
+        
+        const payments = await CustomerDAO.addPaymentMethod(req.user.id, {
+            type, provider, cardNumber, expiryDate, nameOnCard, isDefault
+        });
+        
+        if (!payments) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+        res.json({ success: true, payments, message: 'Thêm phương thức thành công' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE /api/customer/payments/:id
+router.delete('/payments/:id', verifyToken, async (req, res) => {
+    try {
+        const payments = await CustomerDAO.deletePaymentMethod(req.user.id, req.params.id);
+        if (!payments) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản hoặc phương thức' });
+        res.json({ success: true, payments, message: 'Xóa phương thức thành công' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// PUT /api/customer/payments/:id/default
+router.put('/payments/:id/default', verifyToken, async (req, res) => {
+    try {
+        const payments = await CustomerDAO.setDefaultPaymentMethod(req.user.id, req.params.id);
+        if (!payments) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản hoặc phương thức' });
+        res.json({ success: true, payments, message: 'Thiết lập phương thức mặc định thành công' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
