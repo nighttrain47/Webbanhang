@@ -104,6 +104,16 @@ function useCountdown(targetDate: string | null) {
   return timeLeft;
 }
 
+// Responsive grid style helper
+function responsiveGrid(mobileCols: number, desktopCols: number, gap = '20px') {
+  return {
+    display: 'grid' as const,
+    gridTemplateColumns: `repeat(${mobileCols}, 1fr)`,
+    gap,
+    // CSS override via class will handle desktop
+  };
+}
+
 export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCount, user }: HomePageProps) {
   const [newProducts, setNewProducts] = useState<Product[]>([]);
   const [hotProducts, setHotProducts] = useState<Product[]>([]);
@@ -137,11 +147,11 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
             borderRadius: '16px',
             overflow: 'hidden',
             background: 'linear-gradient(135deg, #1a2332, #1e3044, #243b50)',
-            padding: '48px',
-            minHeight: '380px',
+            minHeight: '320px',
             display: 'flex',
             alignItems: 'center',
           }}
+          className="hero-section"
         >
           {/* Content */}
           <div style={{ position: 'relative', zIndex: 2, maxWidth: '480px' }}>
@@ -160,9 +170,8 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
               DIGITAL CURATOR PREMIERE
             </span>
 
-            <h1 style={{
+            <h1 className="hero-title" style={{
               fontFamily: "'Plus Jakarta Sans', serif",
-              fontSize: '42px',
               fontWeight: 800,
               lineHeight: 1.1,
               color: '#ffffff',
@@ -182,7 +191,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
               Khám phá bộ sưu tập Figure cao cấp nhất, được tuyển chọn kỹ lưỡng dành cho những nhà sưu tầm tinh hoa.
             </p>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <Link
                 to="/category/new-arrivals"
                 style={{
@@ -240,16 +249,14 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
       {/* ═══ NEW PRODUCTS SECTION ═══ */}
       <section className="max-w-7xl mx-auto px-4 lg:px-6" style={{ paddingBottom: '48px' }}>
         {/* Section Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <div>
+        <div className="section-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+          <div className="hidden lg:block">
             <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8a949d', marginBottom: '2px' }}>BỘ LỌC SẢN PHẨM</p>
             <p style={{ fontSize: '11px', color: '#8a949d' }}>Tìm kiếm theo sở thích</p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px' }}>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: '24px', color: '#181c1e' }}>
-              Sản Phẩm Mới
-            </h2>
-          </div>
+          <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: '24px', color: '#181c1e' }}>
+            Sản Phẩm Mới
+          </h2>
           <Link to="/category/new-arrivals" style={{ fontSize: '13px', fontWeight: 600, color: '#00658d', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
             Xem tất cả <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
           </Link>
@@ -288,9 +295,9 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
           </aside>
 
           {/* Product Grid */}
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             {newProducts.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+              <div className="product-grid-3">
                 {newProducts.slice(0, 3).map(product => (
                   <ProductCard key={product._id || product.id} product={product} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />
                 ))}
@@ -319,10 +326,11 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
           Đừng bỏ lỡ những tuyệt phẩm sắp ra mắt{preorderProducts.length > 0 ? ` — ${preorderProducts.length} sản phẩm đang mở đặt trước` : ''}
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="preorder-bento">
           {/* Large Pre-order Card — Dynamic from API */}
           <Link
             to={featuredPreorder ? `/product/${featuredId}` : '/category/pre-order'}
+            className="preorder-featured"
             style={{
               position: 'relative',
               borderRadius: '16px',
@@ -332,8 +340,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'flex-end',
-              minHeight: '320px',
-              gridRow: 'span 2',
+              minHeight: '280px',
               textDecoration: 'none',
               transition: 'transform 200ms, box-shadow 200ms',
               cursor: 'pointer',
@@ -369,7 +376,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
                 {!featuredPreorder ? 'PRE-ORDER' : featuredPreorder.stock && featuredPreorder.stock <= 5 ? 'SẮP HẾT HÀNG' : 'ĐANG MỞ ĐẶT TRƯỚC'}
               </span>
 
-              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '8px', lineHeight: 1.3 }}>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '8px', lineHeight: 1.3 }}>
                 {featuredPreorder?.name || 'Figure Exclusive Pre-order'}
               </h3>
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginBottom: '6px', lineHeight: 1.6 }}>
@@ -410,7 +417,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
             <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#ff7d36', marginBottom: '12px' }}>
               {countdown.expired ? 'ĐÃ KẾT THÚC' : 'FLASH SALE PRE-ORDER'}
             </span>
-            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: '20px', color: '#181c1e', marginBottom: '16px', lineHeight: 1.3 }}>
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: '18px', color: '#181c1e', marginBottom: '16px', lineHeight: 1.3 }}>
               {countdown.expired ? 'Đợt ưu đãi đã kết thúc' : 'Ưu đãi 15% khi thanh toán 100%'}
             </h3>
             {!countdown.expired && (
@@ -477,7 +484,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
 
         {/* Pre-order product thumbnails row */}
         {preorderProducts.length > 1 && (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(preorderProducts.length - 1, 3)}, 1fr)`, gap: '16px', marginTop: '16px' }}>
+          <div className="preorder-thumbs">
             {preorderProducts.slice(1, 4).map(product => {
               const pid = product._id || product.id || '';
               return (
@@ -533,7 +540,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
           </Link>
         </div>
         {hotProducts.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+          <div className="product-grid-4">
             {hotProducts.slice(0, 4).map(product => (
               <ProductCard key={product._id || product.id} product={product} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />
             ))}
@@ -562,13 +569,14 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
             style={{
               flex: 1, padding: '12px 16px', borderRadius: '10px',
               border: '1px solid #e0e3e5', fontSize: '13px',
-              outline: 'none', background: '#fff',
+              outline: 'none', background: '#fff', minWidth: 0,
             }}
           />
           <button style={{
             padding: '12px 20px', borderRadius: '10px',
             background: '#00658d', color: '#fff', fontWeight: 600,
             fontSize: '13px', border: 'none', cursor: 'pointer',
+            whiteSpace: 'nowrap',
           }}>
             Đăng ký
           </button>

@@ -103,7 +103,7 @@ export default function Header({ cartCount, user }: HeaderProps) {
         </Link>
 
         {/* Nav Links - Desktop */}
-        <nav className="hidden lg:flex" style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
+        <nav className="hidden lg:flex" style={{ alignItems: 'center', gap: '4px', flex: 1 }}>
           {NAV_LINKS.map((link) => {
             const isActive = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to));
             return (

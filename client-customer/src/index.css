@@ -2869,13 +2869,60 @@ body {
 
 /* ═══ Responsive Utility Classes ═══ */
 
+/* ── Component-level responsive layouts ── */
+
+/* Hero */
+.hero-section { padding: 32px 24px; }
+.hero-title { font-size: 32px; }
+
+/* Product grids: mobile-first (2 cols), scale up on larger screens */
+.product-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.product-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Pre-order bento: stack vertically on mobile */
+.preorder-bento {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.preorder-featured { min-height: 260px; }
+
+/* Pre-order thumbnails: stack on mobile */
+.preorder-thumbs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Footer: stack on mobile */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
 /* Small screens (640px+) */
 @media (min-width: 640px) {
   .sm\:inline { display: inline !important; }
   .sm\:flex { display: flex !important; }
   .sm\:block { display: block !important; }
   .sm\:hidden { display: none !important; }
-  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+  .hero-section { padding: 40px 36px; }
+  .hero-title { font-size: 36px; }
+
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .preorder-thumbs { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* Medium screens (768px+) */
@@ -2888,6 +2935,15 @@ body {
   .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
   .md\:flex-row { flex-direction: row !important; }
   .md\:items-start { align-items: flex-start !important; }
+
+  .preorder-bento {
+    grid-template-columns: 1fr 1fr;
+  }
+  .preorder-featured {
+    grid-row: span 2;
+    min-height: 320px;
+  }
+  .preorder-thumbs { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* Large screens (1024px+) */
@@ -2898,6 +2954,14 @@ body {
   .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
   .lg\:px-6 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+
+  .hero-section { padding: 48px; }
+  .hero-title { font-size: 42px; }
+
+  .product-grid-3 { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .product-grid-4 { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+  .footer-grid { grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 48px; }
 }
 
 /* XL screens (1280px+) */
@@ -2905,4 +2969,5 @@ body {
   .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
   .xl\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
 }
+
 

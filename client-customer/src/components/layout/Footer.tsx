@@ -3,8 +3,8 @@ import { Link } from 'react-router';
 export default function Footer() {
   return (
     <footer style={{ background: '#ffffff', borderTop: '1px solid #e8ecef', fontFamily: "'Inter', sans-serif" }}>
-      <div className="max-w-7xl mx-auto px-4 lg:px-6" style={{ padding: '48px 24px 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr', gap: '48px', marginBottom: '32px' }}>
+      <div className="max-w-7xl mx-auto" style={{ padding: '48px 24px 24px' }}>
+        <div className="footer-grid">
           {/* Brand */}
           <div>
             <Link to="/" style={{ textDecoration: 'none' }}>
@@ -69,10 +69,12 @@ export default function Footer() {
                   fontSize: '12px',
                   outline: 'none',
                   background: '#f7fafc',
+                  minWidth: 0,
                 }}
               />
               <button style={{
                 width: '38px',
+                minWidth: '38px',
                 height: '38px',
                 borderRadius: '8px',
                 background: '#00658d',
