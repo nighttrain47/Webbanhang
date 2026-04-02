@@ -14,7 +14,7 @@
 
 **Hệ thống thương mại điện tử toàn diện dành cho cộng đồng đam mê mô hình và đồ chơi sưu tầm anime.**
 
-[🌐 Customer Site](https://hobby-shop-client.vercel.app) · [🛠️ Admin Panel](https://hobby-shop-admin.vercel.app) · [☁️ Backend API](https://hobbyshop-api.onrender.com/api/health)
+[🌐 Customer Site](https://hobbyshop-customer.vercel.app) · [🛠️ Admin Panel](https://hobbyshop-admin.vercel.app) · [☁️ Backend API](https://hobbyshop-api.onrender.com/api/health)
 
 </div>
 
