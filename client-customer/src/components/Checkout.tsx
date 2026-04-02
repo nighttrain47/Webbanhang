@@ -339,29 +339,42 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
                   { id: 'e-wallet', label: 'Ví điện tử', desc: 'Momo, ZaloPay, VNPay', icon: 'account_balance_wallet' },
                   { id: 'cod', label: 'Thanh toán khi nhận hàng', desc: 'COD', icon: 'local_shipping' },
                 ].map(method => (
-                  <label
-                    key={method.id}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '12px',
-                      padding: '14px 16px', borderRadius: '10px', cursor: 'pointer',
-                      border: paymentMethod === method.id ? '2px solid #00658d' : '1.5px solid #e0e3e5',
-                      background: paymentMethod === method.id ? 'rgba(0,101,141,0.03)' : '#fff',
-                      transition: 'all 150ms',
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      checked={paymentMethod === method.id}
-                      onChange={() => setPaymentMethod(method.id)}
-                      style={{ accentColor: '#00658d' }}
-                    />
-                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#6e7881' }}>{method.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#181c1e' }}>{method.label}</p>
-                      <p style={{ fontSize: '11px', color: '#8a949d' }}>{method.desc}</p>
-                    </div>
-                  </label>
+                  <div key={method.id}>
+                    <label
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        padding: '14px 16px', 
+                        borderRadius: paymentMethod === method.id && method.id === 'credit-card' ? '10px 10px 0 0' : '10px',
+                        cursor: 'pointer',
+                        border: paymentMethod === method.id ? '2px solid #00658d' : '1.5px solid #e0e3e5',
+                        background: paymentMethod === method.id ? 'rgba(0,101,141,0.03)' : '#fff',
+                        transition: 'all 150ms',
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="payment"
+                        checked={paymentMethod === method.id}
+                        onChange={() => setPaymentMethod(method.id)}
+                        style={{ accentColor: '#00658d' }}
+                      />
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#6e7881' }}>{method.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: '#181c1e' }}>{method.label}</p>
+                        <p style={{ fontSize: '11px', color: '#8a949d' }}>{method.desc}</p>
+                      </div>
+                    </label>
+                    {paymentMethod === method.id && method.id === 'credit-card' && (
+                      <div style={{ padding: '16px', background: 'rgba(0,101,141,0.03)', border: '2px solid #00658d', borderTop: 'none', borderRadius: '0 0 10px 10px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <input type="text" placeholder="Số thẻ (VD: 4123 4567 8901 2345)" style={{ gridColumn: 'span 2', padding: '10px 12px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '13px', outline: 'none' }} />
+                          <input type="text" placeholder="Tên in trên thẻ" style={{ gridColumn: 'span 2', padding: '10px 12px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '13px', outline: 'none' }} />
+                          <input type="text" placeholder="Tháng/Năm (MM/YY)" style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '13px', outline: 'none' }} />
+                          <input type="text" placeholder="CVC" style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '13px', outline: 'none' }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
