@@ -1417,55 +1417,6 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
         </div>
       </div>
 
-      {/* Payment Methods */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <CreditCard className="w-6 h-6 text-gray-600" />
-            Phương thức thanh toán đã lưu
-          </h2>
-          <button
-            onClick={() => setShowPaymentModal(true)}
-            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm"
-          >
-            + Thêm thẻ mới
-          </button>
-        </div>
-        <div className="space-y-3">
-          {payments.length === 0 ? (
-            <div className="flex items-center justify-center p-8 border border-gray-200 rounded-lg text-gray-400">
-              <div className="text-center">
-                <CreditCard className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Chưa có phương thức thanh toán nào</p>
-              </div>
-            </div>
-          ) : (
-            payments.map((pay) => (
-              <div key={pay._id || pay.id} className="border border-gray-200 rounded-lg p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="flex items-center gap-2 flex-wrap mb-2">
-                      <span className="font-semibold text-gray-900">{pay.provider}</span>
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-600 font-mono">{pay.cardNumber}</span>
-                      {pay.isDefault && (
-                        <span className="text-white text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: '#FF6B00' }}>Mặc định</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-500">Chủ thẻ: {pay.nameOnCard} {pay.expiryDate && `| Hết hạn: ${pay.expiryDate}`}</p>
-                  </div>
-                  <div className="flex items-center gap-3 flex-shrink-0 pt-1">
-                    {!pay.isDefault && (
-                      <button onClick={() => handleSetDefaultPayment(pay._id || pay.id)} className="text-orange-600 font-medium hover:underline text-sm whitespace-nowrap">Đặt mặc định</button>
-                    )}
-                    <button onClick={() => handleDeletePayment(pay._id || pay.id)} className="text-gray-400 font-medium hover:text-red-600 text-sm whitespace-nowrap">Xóa</button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
 
       {/* Danger Zone */}
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
