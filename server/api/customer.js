@@ -63,6 +63,16 @@ router.get('/categories', async (req, res) => {
 
 // ==================== PRODUCTS ====================
 
+// GET /api/customer/products/all — lấy toàn bộ sản phẩm active (cho trang "Tất cả sản phẩm")
+router.get('/products/all', async (req, res) => {
+    try {
+        const products = await ProductDAO.selectAllActive();
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // GET /api/customer/products/new
 router.get('/products/new', async (req, res) => {
     try {

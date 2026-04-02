@@ -120,14 +120,27 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
     setCustomPriceMax('');
     setAppliedCustomPrice(null);
 
-    if (['new-arrivals', 'all'].includes(categoryId)) {
-      fetch(`${API_URL}/api/customer/products/new?limit=50`).then(r => r.json()).then(setProducts).catch(console.error);
+    if (categoryId === 'all') {
+      // Fetch ALL active products for full brand/price filtering
+      fetch(`${API_URL}/api/customer/products/all`).then(r => r.json()).then(data => {
+        setProducts(Array.isArray(data) ? data : []);
+      }).catch(console.error);
+    } else if (categoryId === 'new-arrivals') {
+      fetch(`${API_URL}/api/customer/products/new?limit=200`).then(r => r.json()).then(data => {
+        setProducts(Array.isArray(data) ? data : []);
+      }).catch(console.error);
     } else if (categoryId === 'ranking') {
-      fetch(`${API_URL}/api/customer/products/hot?limit=50`).then(r => r.json()).then(setProducts).catch(console.error);
+      fetch(`${API_URL}/api/customer/products/hot?limit=200`).then(r => r.json()).then(data => {
+        setProducts(Array.isArray(data) ? data : []);
+      }).catch(console.error);
     } else if (categoryId === 'pre-order') {
-      fetch(`${API_URL}/api/customer/products/preorder?limit=50`).then(r => r.json()).then(setProducts).catch(console.error);
+      fetch(`${API_URL}/api/customer/products/preorder?limit=200`).then(r => r.json()).then(data => {
+        setProducts(Array.isArray(data) ? data : []);
+      }).catch(console.error);
     } else if (categoryId === 'sale') {
-      fetch(`${API_URL}/api/customer/products/promotion?limit=50`).then(r => r.json()).then(setProducts).catch(console.error);
+      fetch(`${API_URL}/api/customer/products/promotion?limit=200`).then(r => r.json()).then(data => {
+        setProducts(Array.isArray(data) ? data : []);
+      }).catch(console.error);
     } else {
       // Find matching category from API data or fetch fresh
       const findAndFetch = async () => {
@@ -140,14 +153,14 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
         }
         const match = cats.find((c: any) => c.slug === categoryId || c._id === categoryId);
         if (match) {
-          const res = await fetch(`${API_URL}/api/customer/products/category/${match._id}?limit=50`);
+          const res = await fetch(`${API_URL}/api/customer/products/category/${match._id}?limit=200`);
           const data = await res.json();
           if (data?.products) setProducts(data.products);
           else if (Array.isArray(data)) setProducts(data);
           else setProducts([]);
         } else {
           // Fallback: fetch all
-          const res = await fetch(`${API_URL}/api/customer/products/new?limit=50`);
+          const res = await fetch(`${API_URL}/api/customer/products/all`);
           const data = await res.json();
           setProducts(Array.isArray(data) ? data : []);
         }
@@ -163,10 +176,10 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
     );
   };
 
-  // Toggle brand filter
-  const toggleBrand = (brand: string) => {
+  // Toggle brand filter — store brand _id for accurate matching
+  const toggleBrand = (brandId: string) => {
     setSelectedBrands(prev =>
-      prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
+      prev.includes(brandId) ? prev.filter(b => b !== brandId) : [...prev, brandId]
     );
   };
 
@@ -192,14 +205,27 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
       });
     }
 
-    // Brand filter
+    // Brand filter — match by brand._id (populated object), or fallback to name/manufacturer
     if (selectedBrands.length > 0) {
-      result = result.filter(p =>
-        selectedBrands.some(brand =>
-          p.manufacturer?.toLowerCase().includes(brand.toLowerCase()) ||
-          (p as any).brand?.name?.toLowerCase().includes(brand.toLowerCase())
-        )
-      );
+      result = result.filter(p => {
+        const pBrand = (p as any).brand;
+        return selectedBrands.some(brandId => {
+          // Match by brand object _id (after populate)
+          if (pBrand && typeof pBrand === 'object') {
+            if (String(pBrand._id) === brandId) return true;
+          }
+          // Fallback: check manufacturer string contains the brand id (as name match via brandList)
+          const matchedBrand = brandList.find(b => b._id === brandId);
+          if (matchedBrand) {
+            const bName = matchedBrand.name.toLowerCase();
+            return (
+              p.manufacturer?.toLowerCase().includes(bName) ||
+              (pBrand?.name?.toLowerCase().includes(bName))
+            );
+          }
+          return false;
+        });
+      });
     }
 
     // Sort
@@ -383,8 +409,8 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
                 <label key={brand._id} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#3e4850', padding: '4px 0', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
-                    checked={selectedBrands.includes(brand.name)}
-                    onChange={() => toggleBrand(brand.name)}
+                    checked={selectedBrands.includes(brand._id)}
+                    onChange={() => toggleBrand(brand._id)}
                     style={{ width: '16px', height: '16px', accentColor: '#00658d' }}
                   />
                   {brand.name}

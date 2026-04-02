@@ -169,6 +169,13 @@ const ProductDAO = {
             .limit(limit);
     },
 
+    // Lấy tất cả sản phẩm active (cho trang "Tất cả sản phẩm")
+    selectAllActive: async () => {
+        return await Product.find({ status: { $in: ['active', 'pre-order'] } })
+            .populate(populateFields)
+            .sort({ createdAt: -1 });
+    },
+
     // Lấy sản phẩm hot (isHot flag, fallback to best-selling)
     selectHotProducts: async (limit = 8) => {
         // First try products marked as hot
