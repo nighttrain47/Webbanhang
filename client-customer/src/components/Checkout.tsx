@@ -197,7 +197,7 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
           Thanh toán
         </h1>
 
-        <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start' }}>
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* ═══ LEFT: Checkout Form ═══ */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
@@ -365,7 +365,7 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
           </div>
 
           {/* ═══ RIGHT: Order Summary ═══ */}
-          <aside style={{ width: '380px', flexShrink: 0, position: 'sticky', top: '88px' }}>
+          <aside className="w-full lg:w-[380px] shrink-0 lg:sticky top-[88px] mt-8 lg:mt-0">
             <div style={{ borderRadius: '16px', background: '#fff', border: '1px solid #e8ecef', overflow: 'hidden' }}>
               {/* Cart Items */}
               <div style={{ maxHeight: '340px', overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -462,12 +462,7 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
             onClick={() => setShowAddressModal(false)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100 }}
           />
-          <div style={{
-            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            width: '480px', background: '#fff', borderRadius: '16px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.2)', zIndex: 101,
-            fontFamily: "'Inter', sans-serif",
-          }}>
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-[480px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] z-[101] font-['Inter']">
             {/* Modal Header */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -484,8 +479,7 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
 
             {/* Form */}
             <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Name + Phone row */}
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: '12px', fontWeight: 600, color: '#3e4850', display: 'block', marginBottom: '6px' }}>Họ và tên *</label>
                   <input
@@ -538,8 +532,7 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
                 />
               </div>
 
-              {/* City + Postal row */}
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: '12px', fontWeight: 600, color: '#3e4850', display: 'block', marginBottom: '6px' }}>Thành phố *</label>
                   <input

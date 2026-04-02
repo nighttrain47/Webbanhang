@@ -49,17 +49,13 @@ export default function CartPage({ cart, addToCart, removeFromCart, updateCartQu
           Bạn có <span style={{ fontWeight: 700, color: '#00658d' }}>{cart.length} sản phẩm</span> được giám tuyển trong danh sách.
         </p>
 
-        <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start' }}>
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* ═══ CART ITEMS ═══ */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {cart.length > 0 ? cart.map(item => {
               const tag = getTag(item);
               return (
-                <div key={pid(item)} style={{
-                  display: 'flex', gap: '20px', padding: '24px',
-                  borderRadius: '16px', background: '#fff',
-                  border: '1px solid #e8ecef',
-                }}>
+                <div key={pid(item)} className="flex flex-col sm:flex-row gap-4 sm:gap-5 p-4 md:p-6 rounded-2xl bg-white border border-[#e8ecef]">
                   {/* Image */}
                   <Link to={`/product/${pid(item)}`} style={{ flexShrink: 0, position: 'relative' }}>
                     <div style={{ width: '120px', height: '120px', borderRadius: '12px', overflow: 'hidden', background: '#f1f4f6' }}>
@@ -103,7 +99,7 @@ export default function CartPage({ cart, addToCart, removeFromCart, updateCartQu
                   </div>
 
                   {/* Price */}
-                  <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '16px', fontWeight: 700, color: '#00658d', flexShrink: 0 }}>
+                  <span className="font-['Plus_Jakarta_Sans'] text-base md:text-lg font-bold text-[#00658d] shrink-0 sm:text-right mt-2 sm:mt-0">
                     {((item.price || 0) * (item.quantity || 1)).toLocaleString()}đ
                   </span>
                 </div>
@@ -128,7 +124,7 @@ export default function CartPage({ cart, addToCart, removeFromCart, updateCartQu
 
           {/* ═══ ORDER SUMMARY ═══ */}
           {cart.length > 0 && (
-            <aside style={{ width: '340px', flexShrink: 0, position: 'sticky', top: '88px' }}>
+            <aside className="w-full lg:w-[340px] shrink-0 lg:sticky top-[88px] mt-8 lg:mt-0">
               <div style={{ borderRadius: '16px', background: '#fff', border: '1px solid #e8ecef', padding: '28px' }}>
                 <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '20px', fontWeight: 800, color: '#181c1e', marginBottom: '24px' }}>Tổng cộng</h2>
 

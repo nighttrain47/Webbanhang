@@ -25,6 +25,8 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
 
   useEffect(() => {
     if (!productId) return;
+    setActiveImage(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     fetch(`${API_URL}/api/customer/products/${productId}`)
       .then(r => r.json()).then(data => { setProduct(data); document.title = `${data.name} | FigureCurator`; }).catch(console.error);
     fetch(`${API_URL}/api/customer/products/hot?limit=4`)
@@ -70,9 +72,9 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
         </div>
 
         {/* Product Main */}
-        <div style={{ display: 'flex', gap: '40px', marginBottom: '48px' }}>
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 mb-12">
           {/* ═══ IMAGE GALLERY ═══ */}
-          <div style={{ width: '480px', flexShrink: 0 }}>
+          <div className="w-full lg:w-[480px] shrink-0">
             <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', background: '#f1f4f6', marginBottom: '12px' }}>
               <img src={images[activeImage]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
               {/* Badges */}
@@ -169,7 +171,7 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
             </button>
 
             {/* Trust badges */}
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="flex flex-col sm:flex-row gap-3">
               {[
                 { icon: 'verified_user', text: 'Chính hãng 100%', label: 'CAM KẾT' },
                 { icon: 'local_shipping', text: 'Miễn phí toàn quốc', label: 'VẬN CHUYỂN' },
@@ -230,7 +232,7 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
           </div>
           <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: '22px', color: '#181c1e', marginBottom: '20px' }}>Sản phẩm liên quan</h2>
           {relatedProducts.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
               {relatedProducts.map(p => (
                 <ProductCard key={p._id || p.id} product={p} addToCart={addToCart} wishlist={wishlist} toggleWishlist={toggleWishlist} />
               ))}
