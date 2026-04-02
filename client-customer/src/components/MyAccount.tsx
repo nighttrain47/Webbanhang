@@ -671,7 +671,10 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
                           Đánh giá
                         </button>
                       )}
-                      <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors font-medium">
+                      <button
+                        onClick={() => window.location.href = `mailto:support@figurecurator.vn?subject=Hỗ trợ đơn hàng #${order.id}`}
+                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors font-medium"
+                      >
                         Liên hệ hỗ trợ
                       </button>
                     </div>
