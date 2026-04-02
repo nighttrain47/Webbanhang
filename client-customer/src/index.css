@@ -2866,3 +2866,43 @@ body {
   background-color: var(--dc-surface);
   color: var(--dc-on-surface);
 }
+
+/* ═══ Responsive Utility Classes ═══ */
+
+/* Small screens (640px+) */
+@media (min-width: 640px) {
+  .sm\:inline { display: inline !important; }
+  .sm\:flex { display: flex !important; }
+  .sm\:block { display: block !important; }
+  .sm\:hidden { display: none !important; }
+  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+/* Medium screens (768px+) */
+@media (min-width: 768px) {
+  .md\:flex { display: flex !important; }
+  .md\:block { display: block !important; }
+  .md\:hidden { display: none !important; }
+  .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .md\:flex-row { flex-direction: row !important; }
+  .md\:items-start { align-items: flex-start !important; }
+}
+
+/* Large screens (1024px+) */
+@media (min-width: 1024px) {
+  .lg\:flex { display: flex !important; }
+  .lg\:block { display: block !important; }
+  .lg\:hidden { display: none !important; }
+  .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .lg\:px-6 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+}
+
+/* XL screens (1280px+) */
+@media (min-width: 1280px) {
+  .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .xl\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+}
+

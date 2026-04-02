@@ -18,6 +18,7 @@ export default function Header({ cartCount, user }: HeaderProps) {
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -26,10 +27,11 @@ export default function Header({ cartCount, user }: HeaderProps) {
     }
   }, [searchOpen]);
 
-  // Close search on route change
+  // Close search & menu on route change
   useEffect(() => {
     setSearchOpen(false);
     setSearchQuery('');
+    setMobileMenuOpen(false);
   }, [location.pathname]);
 
   const handleSearch = () => {
@@ -58,9 +60,32 @@ export default function Header({ cartCount, user }: HeaderProps) {
           display: 'flex',
           alignItems: 'center',
           height: '64px',
-          gap: '32px',
+          gap: '16px',
         }}
       >
+        {/* Hamburger - Mobile Only */}
+        <button
+          className="lg:hidden"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+            color: '#3e4850',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>
+            {mobileMenuOpen ? 'close' : 'menu'}
+          </span>
+        </button>
+
         {/* Brand */}
         <Link to="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
           <span
@@ -77,7 +102,7 @@ export default function Header({ cartCount, user }: HeaderProps) {
           </span>
         </Link>
 
-        {/* Nav Links */}
+        {/* Nav Links - Desktop */}
         <nav className="hidden lg:flex" style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
           {NAV_LINKS.map((link) => {
             const isActive = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to));
@@ -103,8 +128,11 @@ export default function Header({ cartCount, user }: HeaderProps) {
           })}
         </nav>
 
+        {/* Spacer for mobile */}
+        <div className="lg:hidden" style={{ flex: 1 }} />
+
         {/* Right Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
           {/* Search - Expandable */}
           <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div
@@ -116,11 +144,10 @@ export default function Header({ cartCount, user }: HeaderProps) {
                 border: searchOpen ? '1.5px solid #00658d' : '1.5px solid transparent',
                 background: searchOpen ? '#f8fafb' : 'transparent',
                 transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-                width: searchOpen ? '280px' : '40px',
+                width: searchOpen ? 'min(280px, 50vw)' : '40px',
                 height: '40px',
               }}
             >
-              {/* Search Icon / Button */}
               <button
                 onClick={() => {
                   if (!searchOpen) {
@@ -155,7 +182,6 @@ export default function Header({ cartCount, user }: HeaderProps) {
                 <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>search</span>
               </button>
 
-              {/* Search Input */}
               <input
                 ref={searchInputRef}
                 type="text"
@@ -168,7 +194,7 @@ export default function Header({ cartCount, user }: HeaderProps) {
                     setSearchQuery('');
                   }
                 }}
-                placeholder="Tìm kiếm sản phẩm..."
+                placeholder="Tìm kiếm..."
                 style={{
                   flex: 1,
                   border: 'none',
@@ -180,10 +206,10 @@ export default function Header({ cartCount, user }: HeaderProps) {
                   padding: '0 4px',
                   opacity: searchOpen ? 1 : 0,
                   transition: 'opacity 200ms',
+                  minWidth: 0,
                 }}
               />
 
-              {/* Close Button */}
               {searchOpen && (
                 <button
                   onClick={() => {
@@ -241,7 +267,7 @@ export default function Header({ cartCount, user }: HeaderProps) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '8px 18px',
+              padding: '8px 12px',
               borderRadius: '24px',
               background: '#00658d',
               color: '#ffffff',
@@ -255,7 +281,7 @@ export default function Header({ cartCount, user }: HeaderProps) {
             onMouseLeave={(e) => (e.currentTarget.style.background = '#00658d')}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>shopping_cart</span>
-            Giỏ hàng
+            <span className="hidden sm:inline">Giỏ hàng</span>
             {cartCount > 0 && (
               <span
                 style={{
@@ -281,6 +307,42 @@ export default function Header({ cartCount, user }: HeaderProps) {
           </Link>
         </div>
       </div>
+
+      {/* Mobile Navigation Menu */}
+      {mobileMenuOpen && (
+        <div
+          className="lg:hidden"
+          style={{
+            borderTop: '1px solid #e8ecef',
+            background: '#ffffff',
+            padding: '8px 16px 16px',
+          }}
+        >
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {NAV_LINKS.map((link) => {
+              const isActive = location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to));
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  style={{
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? '#00658d' : '#3e4850',
+                    textDecoration: 'none',
+                    borderRadius: '10px',
+                    background: isActive ? '#f0f7fb' : 'transparent',
+                    transition: 'background 150ms, color 150ms',
+                  }}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

@@ -237,11 +237,67 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
       <Header cartCount={cartCount} user={user} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Tài khoản của tôi</h1>
+        <h1 className="text-3xl font-bold mb-6" style={{ fontSize: 'clamp(1.25rem, 5vw, 1.875rem)' }}>Tài khoản của tôi</h1>
+
+        {/* Mobile Tab Bar */}
+        <div className="lg:hidden" style={{ marginBottom: '24px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ display: 'flex', gap: '8px', paddingBottom: '4px', minWidth: 'max-content' }}>
+            {[
+              { key: 'profile' as ActiveTab, icon: <User className="w-4 h-4" />, label: 'Tổng quan' },
+              { key: 'orders' as ActiveTab, icon: <Package className="w-4 h-4" />, label: 'Đơn hàng' },
+              { key: 'wishlist' as ActiveTab, icon: <Heart className="w-4 h-4" />, label: 'Yêu thích' },
+              { key: 'points' as ActiveTab, icon: <Award className="w-4 h-4" />, label: 'Điểm' },
+              { key: 'settings' as ActiveTab, icon: <Settings className="w-4 h-4" />, label: 'Cài đặt' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '10px 16px',
+                  borderRadius: '24px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: activeTab === tab.key ? '#FFF7ED' : '#f3f4f6',
+                  color: activeTab === tab.key ? '#ea580c' : '#4b5563',
+                  transition: 'all 150ms',
+                }}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+            <button
+              onClick={onLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '10px 16px',
+                borderRadius: '24px',
+                fontSize: '13px',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                border: 'none',
+                cursor: 'pointer',
+                background: '#FEF2F2',
+                color: '#dc2626',
+              }}
+            >
+              <LogOut className="w-4 h-4" />
+              Đăng xuất
+            </button>
+          </div>
+        </div>
 
         <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-          {/* Sidebar */}
-          <div style={{ width: '280px', flexShrink: 0 }}>
+          {/* Sidebar - Desktop Only */}
+          <div className="hidden lg:block" style={{ width: '280px', flexShrink: 0 }}>
             <div className="bg-white rounded-lg shadow-sm p-6" style={{ position: 'sticky', top: '96px', zIndex: 0 }}>
               <div className="text-center mb-6">
                 <div className="w-20 h-20 bg-gradient-to-br from-orange-600 to-orange-700 rounded-full flex items-center justify-center mx-auto mb-3">
