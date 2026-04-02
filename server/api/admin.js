@@ -163,8 +163,58 @@ router.delete('/categories/:id', verifyToken, async (req, res) => {
 // GET /api/admin/customers
 router.get('/customers', verifyToken, async (req, res) => {
     try {
-        const customers = await CustomerDAO.selectAll();
-        res.json(customers);
+        const CustomerModel = require('mongoose').model('Customer');
+        const customers = await CustomerModel.aggregate([
+            {
+                $lookup: {
+                    from: 'orders',
+                    localField: '_id',
+                    foreignField: 'customer',
+                    as: 'orders'
+                }
+            },
+            {
+               $addFields: {
+                   validOrders: {
+                       $filter: {
+                           input: '$orders',
+                           as: 'order',
+                           cond: { $ne: ['$$order.status', 'cancelled'] }
+                       }
+                   }
+               }
+            },
+            {
+                $project: {
+                    password: 0,
+                    orders: 0
+                }
+            },
+            {
+                $addFields: {
+                    totalOrders: { $size: '$validOrders' },
+                    totalSpent: { $sum: '$validOrders.total' }
+                }
+            },
+            {
+                $project: {
+                    validOrders: 0
+                }
+            },
+            { $sort: { createdAt: -1 } }
+        ]);
+
+        const result = customers.map(c => {
+            const points = c.points || 0;
+            let tier = 'Cấp 3';
+            if (points >= 100000) tier = 'Đặc Cấp';
+            else if (points >= 30000) tier = 'Cấp 1';
+            else if (points >= 10000) tier = 'Cấp 2';
+
+            return { ...c, tier };
+        });
+
+        res.json(result);
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

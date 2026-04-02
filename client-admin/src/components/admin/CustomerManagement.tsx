@@ -15,7 +15,7 @@ interface Customer {
   totalOrders: number;
   totalSpent: number;
   points: number;
-  tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+  tier: 'Cấp 3' | 'Cấp 2' | 'Cấp 1' | 'Đặc Cấp';
   status: 'active' | 'inactive';
 }
 
@@ -42,10 +42,10 @@ export default function CustomerManagement() {
             phone: c.phone || 'Chưa cập nhật',
             address: c.address || 'Chưa cập nhật',
             joinDate: new Date(c.createdAt).toLocaleDateString('vi-VN'),
-            totalOrders: 0, // Mock for now unless backend provides
-            totalSpent: 0,
+            totalOrders: c.totalOrders || 0,
+            totalSpent: c.totalSpent || 0,
             points: c.points || 0,
-            tier: 'Bronze' as 'Bronze' | 'Silver' | 'Gold' | 'Platinum',
+            tier: c.tier || 'Cấp 3',
             status: 'active' as 'active' | 'inactive'
           }));
           setCustomers(fetchedCustomers);
@@ -90,13 +90,13 @@ export default function CustomerManagement() {
 
   const getTierColor = (tier: string) => {
     switch (tier) {
-      case 'Bronze':
+      case 'Cấp 3':
         return 'bg-amber-700';
-      case 'Silver':
+      case 'Cấp 2':
         return 'bg-gray-400';
-      case 'Gold':
+      case 'Cấp 1':
         return 'bg-yellow-500';
-      case 'Platinum':
+      case 'Đặc Cấp':
         return 'bg-purple-500';
       default:
         return 'bg-gray-400';
@@ -159,10 +159,10 @@ export default function CustomerManagement() {
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
           >
             <option value="all">Tất cả hạng thành viên</option>
-            <option value="Bronze">Bronze</option>
-            <option value="Silver">Silver</option>
-            <option value="Gold">Gold</option>
-            <option value="Platinum">Platinum</option>
+            <option value="Cấp 3">Cấp 3</option>
+            <option value="Cấp 2">Cấp 2</option>
+            <option value="Cấp 1">Cấp 1</option>
+            <option value="Đặc Cấp">Đặc Cấp</option>
           </select>
         </div>
       </div>
@@ -286,7 +286,7 @@ function CustomerDetailModal({ customer, onClose }: { customer: Customer; onClos
                 <h3 className="text-2xl font-bold mb-2">{customer.name}</h3>
                 <p className="text-sm opacity-90 mb-4">{customer.id}</p>
                 <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${customer.tier === 'Bronze' ? 'bg-amber-700' : customer.tier === 'Silver' ? 'bg-gray-400' : customer.tier === 'Gold' ? 'bg-yellow-500' : 'bg-purple-500'}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${customer.tier === 'Cấp 3' ? 'bg-amber-700' : customer.tier === 'Cấp 2' ? 'bg-gray-400' : customer.tier === 'Cấp 1' ? 'bg-yellow-500' : 'bg-purple-500'}`}>
                     {customer.tier}
                   </span>
                   <span className="text-sm opacity-90">Thành viên từ {customer.joinDate}</span>
