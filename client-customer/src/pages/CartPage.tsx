@@ -40,6 +40,14 @@ export default function CartPage({ cart, addToCart, removeFromCart, updateCartQu
   return (
     <div style={{ minHeight: '100vh', background: '#f7fafc', fontFamily: "'Inter', sans-serif" }}>
       <Header cartCount={cartCount} user={user} />
+      <style>{`
+        .cart-main-container { display: flex; flex-direction: column; gap: 32px; align-items: flex-start; }
+        .cart-sidebar { width: 100%; flex-shrink: 0; margin-top: 32px; }
+        @media (min-width: 1024px) {
+          .cart-main-container { flex-direction: row; gap: 32px; }
+          .cart-sidebar { width: 340px; position: sticky; top: 88px; margin-top: 0; }
+        }
+      `}</style>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-6" style={{ paddingTop: '32px', paddingBottom: '48px' }}>
         <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, color: '#181c1e', marginBottom: '4px' }}>
@@ -49,7 +57,7 @@ export default function CartPage({ cart, addToCart, removeFromCart, updateCartQu
           Bạn có <span style={{ fontWeight: 700, color: '#00658d' }}>{cart.length} sản phẩm</span> được giám tuyển trong danh sách.
         </p>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="cart-main-container">
           {/* ═══ CART ITEMS ═══ */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {cart.length > 0 ? cart.map(item => {
@@ -124,7 +132,7 @@ export default function CartPage({ cart, addToCart, removeFromCart, updateCartQu
 
           {/* ═══ ORDER SUMMARY ═══ */}
           {cart.length > 0 && (
-            <aside className="w-full lg:w-[340px] shrink-0 lg:sticky top-[88px] mt-8 lg:mt-0">
+            <aside className="cart-sidebar">
               <div style={{ borderRadius: '16px', background: '#fff', border: '1px solid #e8ecef', padding: '28px' }}>
                 <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '20px', fontWeight: 800, color: '#181c1e', marginBottom: '24px' }}>Tổng cộng</h2>
 

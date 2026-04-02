@@ -60,6 +60,14 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
   return (
     <div style={{ minHeight: '100vh', background: '#f7fafc', fontFamily: "'Inter', sans-serif" }}>
       <Header cartCount={cartCount} user={user} />
+      <style>{`
+        .product-main-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 48px; }
+        .product-image-container { width: 100%; flex-shrink: 0; }
+        @media (min-width: 1024px) {
+          .product-main-container { flex-direction: row; gap: 40px; }
+          .product-image-container { width: 480px; }
+        }
+      `}</style>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-6" style={{ paddingTop: '16px', paddingBottom: '48px' }}>
         {/* Breadcrumb */}
@@ -72,9 +80,9 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
         </div>
 
         {/* Product Main */}
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 mb-12">
+        <div className="product-main-container">
           {/* ═══ IMAGE GALLERY ═══ */}
-          <div className="w-full lg:w-[480px] shrink-0">
+          <div className="product-image-container">
             <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', background: '#f1f4f6', marginBottom: '12px' }}>
               <img src={images[activeImage]} alt={product.name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} />
               {/* Badges */}

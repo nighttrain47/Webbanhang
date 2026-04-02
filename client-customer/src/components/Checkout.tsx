@@ -185,7 +185,15 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
   return (
     <div style={{ minHeight: '100vh', background: '#f7fafc', fontFamily: "'Inter', sans-serif" }}>
       <Header cartCount={cartCount} user={user} />
-
+      <style>{`
+        .checkout-main-container { display: flex; flex-direction: column; gap: 32px; align-items: flex-start; }
+        .checkout-sidebar { width: 100%; flex-shrink: 0; margin-top: 32px; }
+        @media (min-width: 1024px) {
+          .checkout-main-container { flex-direction: row; gap: 32px; }
+          .checkout-sidebar { width: 380px; position: sticky; top: 88px; margin-top: 0; }
+        }
+      `}</style>
+      
       <div className="max-w-7xl mx-auto px-4 lg:px-6" style={{ paddingTop: '32px', paddingBottom: '48px' }}>
         {/* Back link */}
         <Link to="/cart" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#6e7881', textDecoration: 'none', marginBottom: '24px' }}>
@@ -197,7 +205,7 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
           Thanh toán
         </h1>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="checkout-main-container">
           {/* ═══ LEFT: Checkout Form ═══ */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
@@ -365,7 +373,7 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
           </div>
 
           {/* ═══ RIGHT: Order Summary ═══ */}
-          <aside className="w-full lg:w-[380px] shrink-0 lg:sticky top-[88px] mt-8 lg:mt-0">
+          <aside className="checkout-sidebar">
             <div style={{ borderRadius: '16px', background: '#fff', border: '1px solid #e8ecef', overflow: 'hidden' }}>
               {/* Cart Items */}
               <div style={{ maxHeight: '340px', overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
