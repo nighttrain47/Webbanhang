@@ -2,9 +2,9 @@
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Customer_Site-4F46E5?style=for-the-badge)](https://hobby-shop-client.vercel.app)
-[![Admin Panel](https://img.shields.io/badge/🛠️_Live_Demo-Admin_Panel-DC2626?style=for-the-badge)](https://hobby-shop-admin.vercel.app)
-[![API Backend](https://img.shields.io/badge/☁️_Backend_API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://hobbyshop-api.onrender.com)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Customer_Site-4F46E5?style=for-the-badge)](https://hobbyshop-customer.vercel.app)
+[![Admin Panel](https://img.shields.io/badge/🛠️_Live_Demo-Admin_Panel-DC2626?style=for-the-badge)](https://hobbyshop-admin.vercel.app)
+[![API Backend](https://img.shields.io/badge/☁️_Backend_API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://hobbyshop-api.onrender.com/api/health)
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
