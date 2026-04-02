@@ -12,23 +12,23 @@ function App() {
         } catch { return null; }
     });
 
-    // Always refresh token on mount to avoid stale tokens after server restart
+    // Verify stored token is still valid on mount
     useEffect(() => {
-        fetch(`${API_URL}/api/admin/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: 'admin', password: 'admin123' }),
+        const token = localStorage.getItem('adminToken');
+        if (!token || !user) return;
+
+        fetch(`${API_URL}/api/admin/dashboard`, {
+            headers: { 'Authorization': `Bearer ${token}` },
         })
-            .then(r => r.json())
-            .then(data => {
-                if (data.token) {
-                    localStorage.setItem('adminToken', data.token);
-                    if (!user) {
-                        handleLogin({ username: data.username, role: 'admin', token: data.token });
-                    }
+            .then(r => {
+                if (!r.ok) {
+                    // Token expired or invalid — force re-login
+                    handleLogout();
                 }
             })
-            .catch(() => { /* silently fail, user will see login page */ });
+            .catch(() => {
+                // Server unreachable — keep user logged in with cached state
+            });
     }, []);
 
     const handleLogin = (userData: any) => {

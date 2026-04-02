@@ -122,11 +122,9 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm font-semibold text-blue-800 mb-2">Demo Credentials:</p>
-            <p className="text-xs text-blue-700">Username: <code className="font-mono bg-white px-2 py-0.5 rounded">admin</code></p>
-            <p className="text-xs text-blue-700">Password: <code className="font-mono bg-white px-2 py-0.5 rounded">admin123</code></p>
+          {/* Security Notice */}
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-xs text-amber-700 text-center">🔒 Chỉ quản trị viên được ủy quyền mới có thể đăng nhập</p>
           </div>
         </div>
 
