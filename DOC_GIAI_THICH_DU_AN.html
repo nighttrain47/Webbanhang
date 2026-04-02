@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🛒 HobbyShop – Báo cáo Kỹ thuật Dự án</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #6c63ff;
+      --primary-glow: rgba(108, 99, 255, 0.35);
+      --accent: #00d4ff;
+      --accent2: #ff6b6b;
+      --accent3: #f5a623;
+      --green: #00e896;
+      --bg-dark: #0c0e1a;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.8;
+      overflow-x: hidden;
+    }
+
+    /* ─── ANIMATED BG ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 0%, rgba(108,99,255,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 85% 100%, rgba(0,212,255,.13) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0,232,150,.06) 0%, transparent 70%),
+        #0c0e1a;
+    }
+
+    /* ─── TOP NAV ─── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(20px) saturate(180%);
+      background: rgba(12, 14, 26, 0.8);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex; align-items: center; gap: 2rem;
+      height: 60px;
+    }
+    nav .logo { font-weight: 800; font-size: 1.05rem; color: #fff; letter-spacing: -.5px; white-space: nowrap; }
+    nav .logo span { color: var(--primary); }
+    nav ul { display: flex; gap: 0; list-style: none; overflow-x: auto; }
+    nav ul li a {
+      display: block; padding: .4rem .8rem; border-radius: 8px;
+      color: var(--text-muted); font-size: .8rem; font-weight: 500;
+      text-decoration: none; white-space: nowrap; transition: all .2s;
+    }
+    nav ul li a:hover { color: #fff; background: rgba(108,99,255,.2); }
+
+    /* ─── PAGE LAYOUT ─── */
+    .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+    /* ─── HERO ─── */
+    .hero {
+      text-align: center; padding: 5rem 1rem 4rem;
+      position: relative;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(108,99,255,.15); border: 1px solid rgba(108,99,255,.4);
+      color: var(--primary); font-size: .75rem; font-weight: 600; letter-spacing: .08em;
+      padding: .35rem 1rem; border-radius: 50px;
+      text-transform: uppercase; margin-bottom: 1.5rem;
+      animation: fadeUp .6s ease both;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 900; line-height: 1.1;
+      letter-spacing: -2px; margin-bottom: 1.2rem;
+      animation: fadeUp .7s .1s ease both;
+    }
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero p {
+      color: var(--text-muted); font-size: 1.05rem; max-width: 600px; margin: 0 auto 2.5rem;
+      animation: fadeUp .7s .2s ease both;
+    }
+    .hero-pills {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem;
+      animation: fadeUp .7s .3s ease both;
+    }
+    .pill {
+      padding: .4rem 1rem; border-radius: 50px; font-size: .78rem; font-weight: 600;
+      border: 1px solid; transition: transform .2s;
+    }
+    .pill:hover { transform: translateY(-2px); }
+    .pill-blue  { color: #60a5fa; border-color: rgba(96,165,250,.4); background: rgba(96,165,250,.08); }
+    .pill-green { color: var(--green); border-color: rgba(0,232,150,.3); background: rgba(0,232,150,.07); }
+    .pill-purple{ color: #c084fc; border-color: rgba(192,132,252,.35); background: rgba(192,132,252,.08); }
+    .pill-cyan  { color: var(--accent); border-color: rgba(0,212,255,.35); background: rgba(0,212,255,.07); }
+    .pill-orange { color: var(--accent3); border-color: rgba(245,166,35,.35); background: rgba(245,166,35,.07); }
+
+    /* ─── SECTION ─── */
+    section { margin-bottom: 3.5rem; }
+    .section-label {
+      display: flex; align-items: center; gap: .6rem;
+      font-size: .7rem; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--primary); margin-bottom: .75rem;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, var(--primary-glow), transparent);
+    }
+    .section-title {
+      font-size: 1.55rem; font-weight: 800; letter-spacing: -.7px;
+      color: #fff; margin-bottom: .5rem;
+    }
+    .section-desc { color: var(--text-muted); margin-bottom: 1.8rem; font-size: .92rem; }
+
+    /* ─── GLASS CARD ─── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      backdrop-filter: blur(12px);
+      transition: border-color .3s, transform .3s, box-shadow .3s;
+    }
+    .card:hover {
+      border-color: rgba(108,99,255,.4);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(0,0,0,.35), 0 0 0 1px rgba(108,99,255,.15);
+    }
+
+    /* ─── TECH GRID ─── */
+    .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .tech-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.4rem 1.2rem;
+      transition: all .3s; cursor: default;
+    }
+    .tech-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.4); }
+    .tech-card .icon { font-size: 2rem; margin-bottom: .7rem; display: block; }
+    .tech-card h3 { font-size: .9rem; font-weight: 700; color: #fff; margin-bottom: .35rem; }
+    .tech-card p { font-size: .78rem; color: var(--text-muted); line-height: 1.6; }
+    .tech-card.blue  { border-color: rgba(96,165,250,.25); }
+    .tech-card.green { border-color: rgba(0,232,150,.2); }
+    .tech-card.purple{ border-color: rgba(192,132,252,.25); }
+    .tech-card.cyan  { border-color: rgba(0,212,255,.25); }
+    .tech-card.orange{ border-color: rgba(245,166,35,.25); }
+    .tech-card.red   { border-color: rgba(255,107,107,.25); }
+
+    .tech-card.blue:hover   { border-color: rgba(96,165,250,.6); box-shadow: 0 0 24px rgba(96,165,250,.15); }
+    .tech-card.green:hover  { border-color: rgba(0,232,150,.5); box-shadow: 0 0 24px rgba(0,232,150,.12); }
+    .tech-card.purple:hover { border-color: rgba(192,132,252,.5); box-shadow: 0 0 24px rgba(192,132,252,.12); }
+    .tech-card.cyan:hover   { border-color: rgba(0,212,255,.5); box-shadow: 0 0 24px rgba(0,212,255,.12); }
+    .tech-card.orange:hover { border-color: rgba(245,166,35,.5); box-shadow: 0 0 24px rgba(245,166,35,.12); }
+    .tech-card.red:hover    { border-color: rgba(255,107,107,.5); box-shadow: 0 0 24px rgba(255,107,107,.12); }
+
+    /* ─── DIAGRAM CONTAINER ─── */
+    .diagram-box {
+      background: rgba(255,255,255,.025);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem;
+      overflow-x: auto;
+      margin: 1.2rem 0;
+    }
+    .diagram-box .mermaid { display: flex; justify-content: center; }
+
+    /* ─── FLOW STEPS ─── */
+    .flow-steps { display: flex; flex-direction: column; gap: .75rem; }
+    .flow-step {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 1.1rem 1.3rem;
+      transition: all .2s;
+    }
+    .flow-step:hover { border-color: rgba(108,99,255,.35); background: rgba(108,99,255,.06); }
+    .flow-step .step-num {
+      width: 2rem; height: 2rem; min-width: 2rem;
+      border-radius: 50%; display: grid; place-items: center;
+      font-size: .75rem; font-weight: 800; background: rgba(108,99,255,.2);
+      color: var(--primary); border: 1.5px solid rgba(108,99,255,.4);
+    }
+    .flow-step strong { display: block; color: #fff; font-size: .88rem; margin-bottom: .2rem; }
+    .flow-step span { font-size: .8rem; color: var(--text-muted); }
+
+    /* ─── INFO CHIPS ─── */
+    .info-chips { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+    .chip {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .3rem .8rem; border-radius: 50px; font-size: .74rem; font-weight: 600;
+      background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text-muted);
+    }
+    .chip .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+    /* ─── DEPLOY ARCH ─── */
+    .deploy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .deploy-card {
+      border-radius: var(--radius); padding: 1.5rem;
+      border: 1px solid; text-align: center; transition: all .3s;
+    }
+    .deploy-card:hover { transform: translateY(-4px); }
+    .deploy-card .d-icon { font-size: 2.2rem; margin-bottom: .7rem; }
+    .deploy-card h4 { font-size: .85rem; font-weight: 700; margin-bottom: .5rem; }
+    .deploy-card p  { font-size: .76rem; color: var(--text-muted); line-height: 1.6; }
+    .dc-black  { background: rgba(0,0,0,.3); border-color: rgba(255,255,255,.15); }
+    .dc-teal   { background: rgba(70,227,183,.06); border-color: rgba(70,227,183,.3); }
+    .dc-green  { background: rgba(19,170,82,.06); border-color: rgba(19,170,82,.35); }
+    .dc-gray   { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.12); }
+
+    /* ─── HIGHLIGHT BOX ─── */
+    .hbox {
+      border-radius: var(--radius-sm); padding: 1.1rem 1.4rem;
+      border-left: 3px solid; margin: 1.2rem 0; font-size: .85rem; line-height: 1.7;
+    }
+    .hbox.purple { border-color: var(--primary); background: rgba(108,99,255,.08); }
+    .hbox.cyan   { border-color: var(--accent); background: rgba(0,212,255,.06); }
+    .hbox.green  { border-color: var(--green); background: rgba(0,232,150,.06); }
+    .hbox strong { color: #fff; }
+
+    /* ─── CODE INLINE ─── */
+    code {
+      font-family: 'JetBrains Mono', monospace; font-size: .82em;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 4px; padding: .1em .4em; color: #a5f3fc;
+    }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      height: 1px; margin: 3rem 0;
+      background: linear-gradient(to right, transparent, var(--border) 30%, var(--border) 70%, transparent);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--text-muted); font-size: .8rem;
+      border-top: 1px solid var(--border);
+    }
+    footer strong { color: var(--primary); }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal { animation: fadeUp .6s ease both; }
+
+    /* ─── SCROLL TO TOP ─── */
+    #top-btn {
+      position: fixed; bottom: 2rem; right: 2rem;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--primary); border: none; color: #fff;
+      font-size: 1.1rem; cursor: pointer;
+      display: grid; place-items: center;
+      box-shadow: 0 4px 20px var(--primary-glow);
+      transition: transform .2s, opacity .2s;
+      opacity: .85;
+    }
+    #top-btn:hover { transform: scale(1.1); opacity: 1; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      nav ul li a { font-size: .72rem; padding: .3rem .5rem; }
+      .hero h1 { letter-spacing: -1px; }
+      .tech-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ─── MERMAID THEME OVERRIDE ─── */
+    .mermaid svg { max-width: 100%; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">🛒 Hobby<span>Shop</span></div>
+  <ul>
+    <li><a href="#intro">Giới thiệu</a></li>
+    <li><a href="#tech">Công nghệ</a></li>
+    <li><a href="#architecture">Kiến trúc</a></li>
+    <li><a href="#auth">Xác thực</a></li>
+    <li><a href="#checkout">Checkout</a></li>
+    <li><a href="#deploy">Triển khai</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero" id="intro">
+    <div class="hero-badge">📄 Báo cáo Kỹ thuật · Phiên bản 1.0</div>
+    <h1>Dự án <span class="gradient">HobbyShop</span><br/>FigureCurator</h1>
+    <p>Hệ thống E-Commerce toàn diện dành cho cộng đồng đam mê mô hình &amp; đồ chơi sưu tầm. Được xây dựng trên nền tảng MERN Stack với kiến trúc hiện đại, bảo mật và có thể phát triển mở rộng.</p>
+    <div class="hero-pills">
+      <span class="pill pill-blue">⚛️ ReactJS + Vite</span>
+      <span class="pill pill-green">🟢 Node.js + Express</span>
+      <span class="pill pill-purple">🍃 MongoDB Atlas</span>
+      <span class="pill pill-cyan">☁️ Vercel + Render</span>
+      <span class="pill pill-orange">🔐 JWT + OTP</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 1: ARCHITECTURE OVERVIEW -->
+  <section id="architecture">
+    <div class="section-label">🏗️ Mục 1</div>
+    <h2 class="section-title">Kiến trúc Hệ thống Tổng thể</h2>
+    <p class="section-desc">Hệ thống hoạt động theo mô hình Client-Server 3 tầng, giao tiếp thông qua RESTful API chuẩn JSON. Mỗi tầng có trách nhiệm riêng biệt, dễ bảo trì và mở rộng độc lập.</p>
+
+    <div class="diagram-box">
+      <div class="mermaid">
+graph TD
+    subgraph FE["🖥️  Tầng Giao Diện (Frontend)"]
+        CC["👤 Client Customer\nMua sắm · Giỏ hàng · Pre-order"]
+        CA["🔑 Client Admin\nQuản lý Kho · Đơn · Doanh thu"]
+    end
+
+    subgraph BE["⚡  Tầng Xử Lý (Backend · Node.js)"]
+        EX["🚀 ExpressJS Router"]
+        MW["🛡️ JWT Middleware"]
+        DAO["📦 Data Access Objects\nOrder · Product · Customer"]
+    end
+
+    subgraph DB["🗄️  Tầng Dữ Liệu (MongoDB Atlas)"]
+        COL["📂 Collections\nOrders · Products · Customers · Categories"]
+    end
+
+    CC -->|"HTTP · JSON"| EX
+    CA -->|"HTTP · JSON"| EX
+    EX --> MW
+    MW --> DAO
+    DAO <-->|"Mongoose ODM"| COL
+
+    style CC fill:#4285F4,color:#fff,stroke:none
+    style CA fill:#EA4335,color:#fff,stroke:none
+    style EX fill:#34A853,color:#fff,stroke:none
+    style COL fill:#FBBC05,color:#222,stroke:none
+    style FE fill:#1e2035,color:#aaa,stroke:#444
+    style BE fill:#12201a,color:#aaa,stroke:#3a5
+    style DB fill:#1a1a0e,color:#aaa,stroke:#aa6
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.5rem">👥</div>
+        <strong style="color:#fff;font-size:.9rem">Client Customer</strong>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-top:.3rem">Duyệt sản phẩm, tìm kiếm, lọc theo giá & danh mục. Quản lý giỏ hàng, Pre-order, sổ địa chỉ, theo dõi hạng thành viên (Loyalty Tiers).</p>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:.5rem">🔑</div>
+        <strong style="color:#fff;font-size:.9rem">Client Admin</strong>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-top:.3rem">Dashboard quản lý tồn kho, đơn hàng, khách hàng. Thống kê doanh thu bằng biểu đồ trực quan và xuất báo cáo.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 2: TECH STACK -->
+  <section id="tech">
+    <div class="section-label">💻 Mục 2</div>
+    <h2 class="section-title">Nền tảng Công nghệ (MERN Stack)</h2>
+    <p class="section-desc">Dự án áp dụng MERN Stack – hệ sinh thái JavaScript/TypeScript đồng bộ từ Frontend đến Backend, giúp tiết kiệm chi phí bảo trì và dễ dàng tích hợp các thư viện mới.</p>
+
+    <div class="tech-grid">
+      <div class="tech-card blue">
+        <span class="icon">⚛️</span>
+        <h3>ReactJS + TypeScript</h3>
+        <p>Single Page Application với Virtual DOM. TypeScript kiểm tra lỗi kiểu ngay trong IDE, tránh bug logic khi build.</p>
+      </div>
+      <div class="tech-card orange">
+        <span class="icon">⚡</span>
+        <h3>Vite (Build Tool)</h3>
+        <p>Khởi động Dev Server tính bằng mili-giây. Build bundle cực nhanh dựa trên ES Modules gốc của trình duyệt.</p>
+      </div>
+      <div class="tech-card purple">
+        <span class="icon">🎨</span>
+        <h3>Tailwind CSS</h3>
+        <p>Utility-first CSS Framework. Class có sẵn đắp thẳng vào HTML, dựng giao diện Responsive siêu nhanh.</p>
+      </div>
+      <div class="tech-card green">
+        <span class="icon">🟢</span>
+        <h3>Node.js</h3>
+        <p>Runtime JavaScript bên ngoài trình duyệt. Kiến trúc Event-Driven phục vụ nhiều request đồng thời mà không bị nghẽn.</p>
+      </div>
+      <div class="tech-card cyan">
+        <span class="icon">🚀</span>
+        <h3>ExpressJS</h3>
+        <p>Web Framework nhỏ gọn thiết lập RESTful API Endpoints và quản lý chuỗi Middleware kiểm soát quyền.</p>
+      </div>
+      <div class="tech-card red">
+        <span class="icon">🍃</span>
+        <h3>MongoDB + Mongoose</h3>
+        <p>NoSQL Document Database linh hoạt. Mongoose ODM hỗ trợ Aggregation Pipeline mạnh để phân tích dữ liệu đơn hàng.</p>
+      </div>
+    </div>
+
+    <div class="hbox cyan" style="margin-top:1.4rem">
+      <strong>💡 Tại sao MERN?</strong><br/>
+      Toàn bộ dự án chỉ sử dụng một ngôn ngữ duy nhất — JavaScript/TypeScript — từ giao diện người dùng đến máy chủ và cơ sở dữ liệu. Điều này giúp giảm thiểu đáng kể thời gian chuyển đổi ngữ cảnh (context switching) và làm tăng tốc quá trình phát triển.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 3: AUTH FLOW -->
+  <section id="auth">
+    <div class="section-label">🔐 Mục 3</div>
+    <h2 class="section-title">Luồng Xác thực & Phân quyền</h2>
+    <p class="section-desc">Hệ thống sử dụng hai lớp bảo mật: OTP qua Email để xác minh danh tính khi đăng ký, và JWT Token để duy trì phiên đăng nhập an toàn.</p>
+
+    <div class="diagram-box">
+      <div class="mermaid">
+sequenceDiagram
+    actor User as 👤 Khách Hàng
+    participant React as ⚛️ Frontend (React)
+    participant Express as 🚀 Backend (Express)
+    participant Nodemailer as 📧 Email (SMTP)
+    participant MongoDB as 🍃 MongoDB
+
+    User->>React: Nhập thông tin Đăng ký
+    React->>Express: POST /api/register
+    Express->>MongoDB: Lưu User (pending) + Sinh OTP
+    Express->>Nodemailer: Yêu cầu gửi Email OTP
+    Nodemailer-->>User: 📩 OTP đến Inbox (hết hạn sau 5 phút)
+    User->>React: Nhập mã OTP
+    React->>Express: POST /api/verify-otp
+    Express->>MongoDB: Kích hoạt tài khoản
+    Express-->>React: Cấp phát JWT Token (signed)
+    React->>React: Lưu Token vào LocalStorage
+    Note over React,Express: Mọi request sau đó đính kèm Token vào Authorization Header
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.5rem">
+      <div class="hbox purple">
+        <strong>🔑 JWT Token</strong><br/>
+        Hoạt động như "chìa khóa điện tử" chứa thông tin role (Customer/Admin). Middleware <code>verifyToken</code> chặn đứng mọi request không hợp lệ với status <code>401/403</code>.
+      </div>
+      <div class="hbox green">
+        <strong>📧 OTP (Nodemailer)</strong><br/>
+        Mã OTP có thời hạn 5 phút, gửi qua SMTP thực. Admin sử dụng Token riêng biệt, tách hoàn toàn khỏi luồng Customer, đảm bảo không thể giả mạo quyền.
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 4: CHECKOUT FLOW -->
+  <section id="checkout">
+    <div class="section-label">🛒 Mục 4</div>
+    <h2 class="section-title">Kiến trúc Luồng Thanh Toán (Checkout)</h2>
+    <p class="section-desc">Luồng thanh toán được thiết kế để gom đủ dữ liệu từ nhiều nguồn (giỏ hàng, địa chỉ, phương thức thanh toán) và xử lý an toàn, đồng thời kích hoạt thông báo Email tự động.</p>
+
+    <div class="diagram-box">
+      <div class="mermaid">
+flowchart TD
+    A["🛒 Giỏ Hàng\n(Cart State - React Context)"] -->|Khởi chạy Checkout| B["📋 Trang Checkout"]
+    B --> C{"🔍 Thu thập & Validate\nDữ liệu"}
+
+    C -->|"📍 Địa chỉ Giao hàng\n(từ Sổ Địa Chỉ)"| D
+    C -->|"💳 Phương thức\nThanh toán"| D
+    C -->|"📦 Danh sách\nSản phẩm"| D
+
+    D["📦 Gom dữ liệu thành Order Object"] -->|"POST /api/orders"| E["⚡ Backend (OrderDAO)"]
+    E -->|"Mongoose Insert"| F[("🍃 MongoDB\nCollection Orders")]
+
+    F -->|"Trigger Email"| G["📧 Nodemailer\nHóa đơn xác nhận"]
+    F -->|"Response 200 OK"| H["✅ Frontend Reset\nGiỏ Hàng & Chuyển trang"]
+
+    G -->|"Gửi đến Inbox"| I["👤 Khách Hàng\nnhận Email hóa đơn"]
+
+    style D fill:#4a3f8a,color:#fff,stroke:none
+    style E fill:#2d6a4f,color:#fff,stroke:none
+    style F fill:#1b4332,color:#fff,stroke:none
+    style G fill:#a44a1a,color:#fff,stroke:none
+      </div>
+    </div>
+
+    <div class="flow-steps" style="margin-top:1rem">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div>
+          <strong>Thu thập trạng thái giỏ hàng</strong>
+          <span>Frontend duy trì Cart State toàn cục qua React Context. Mọi thay đổi số lượng, xóa sản phẩm được cập nhật real-time mà không cần tải lại trang.</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div>
+          <strong>Gom dữ liệu thanh toán</strong>
+          <span>Tại bước Checkout, hệ thống gộp: danh sách Items + Shipping Address (từ sổ địa chỉ đã lưu) + Payment Method (thẻ/COD) thành một Object duy nhất.</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div>
+          <strong>Backend xử lý & lưu MongoDB</strong>
+          <span>OrderDAO nhận Object, kiểm tra tồn kho, tính tổng tiền (có áp dụng chiết khấu hạng thành viên nếu có), sau đó Insert Document vào Collection <code>Orders</code>.</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div>
+          <strong>Gửi Email & Reset giỏ hàng</strong>
+          <span>Sau khi lưu thành công, hệ thống song song: bắn Email hóa đơn xác nhận cho khách và gửi phản hồi <code>200 OK</code> để Frontend reset giỏ hàng về rỗng.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 5: LOYALTY -->
+  <section>
+    <div class="section-label">⭐ Mục 4.1</div>
+    <h2 class="section-title">Hệ thống Hạng Thành Viên (Loyalty Tiers)</h2>
+    <p class="section-desc">Tự động phân hạng thành viên dựa vào tổng chi tiêu lịch sử, sử dụng MongoDB Aggregation Pipeline để tính toán và cập nhật realtime.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem">
+      <div class="card" style="border-color:rgba(156,163,175,.3);text-align:center">
+        <div style="font-size:1.8rem">🥉</div>
+        <strong style="color:#9ca3af">Cấp 1 – Thành Viên</strong>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-top:.4rem">Chi tiêu &lt; 5.000.000₫<br/><span style="color:#9ca3af;font-weight:700">Chiết khấu 2%</span></p>
+      </div>
+      <div class="card" style="border-color:rgba(245,166,35,.3);text-align:center">
+        <div style="font-size:1.8rem">🥈</div>
+        <strong style="color:#f5a623">Cấp 2 – Bạch Kim</strong>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-top:.4rem">Chi tiêu 5tr – 20tr ₫<br/><span style="color:#f5a623;font-weight:700">Chiết khấu 5%</span></p>
+      </div>
+      <div class="card" style="border-color:rgba(192,132,252,.4);text-align:center">
+        <div style="font-size:1.8rem">👑</div>
+        <strong style="color:#c084fc">Đặc Cấp – VIP</strong>
+        <p style="font-size:.78rem;color:var(--text-muted);margin-top:.4rem">Chi tiêu &gt; 20.000.000₫<br/><span style="color:#c084fc;font-weight:700">Chiết khấu 8%</span></p>
+      </div>
+    </div>
+
+    <div class="hbox purple" style="margin-top:1rem">
+      <strong>🗄️ Cơ chế xử lý:</strong> Backend sử dụng Mongoose Aggregation Pipeline với <code>$lookup</code> (nối bảng Orders với Customers), <code>$group</code> (tính tổng chi tiêu) và <code>$match</code> (lọc theo mốc tiền) để tự động cập nhật hạng mỗi khi có đơn hàng mới.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 6: DEPLOYMENT -->
+  <section id="deploy">
+    <div class="section-label">☁️ Mục 5</div>
+    <h2 class="section-title">Kiến trúc Triển khai Lên Mây</h2>
+    <p class="section-desc">Hệ thống được vận hành hoàn toàn miễn phí trên nền tảng Cloud với bộ combo tối ưu, đảm bảo uptime gần 100% và tốc độ phản hồi cao.</p>
+
+    <div class="diagram-box">
+      <div class="mermaid">
+graph LR
+    User(["👤 Người Dùng\nTruy cập HTTPS"]) -->|"Global CDN\nTốc độ cao"| Vercel["☁️ Vercel\nFrontend Host\nReact + Vite"]
+    Vercel -->|"Trả về UI/JS/CSS"| User
+    Vercel -->|"API Cross-Origin\nXHR / Fetch"| Render["☁️ Render\nBackend Host\nNode.js + Express"]
+    Render <-->|"Mongoose\nRead / Write"| Atlas[("☁️ MongoDB Atlas\nCloud Database\nFully Managed")]
+    UR["🤖 UptimeRobot\nPing mỗi 5 phút"] -->|"GET /api/health"| Render
+
+    style Vercel fill:#000,color:#fff,stroke:#555
+    style Render fill:#46E3B7,color:#0a2a20,stroke:none
+    style Atlas fill:#13AA52,color:#fff,stroke:none
+    style UR fill:#1a1a2e,color:#aaa,stroke:#444
+    style User fill:#4a3f8a,color:#fff,stroke:none
+      </div>
+    </div>
+
+    <div class="deploy-grid" style="margin-top:1.2rem">
+      <div class="deploy-card dc-black">
+        <div class="d-icon">▲</div>
+        <h4 style="color:#fff">Vercel</h4>
+        <p>Host Frontend ReactJS. Global CDN cực mạnh giúp assets UI được phân phối đến người dùng với độ trễ thấp nhất.</p>
+      </div>
+      <div class="deploy-card dc-teal">
+        <div class="d-icon">🌐</div>
+        <h4 style="color:#46E3B7">Render</h4>
+        <p>Host Backend Node.js/Express. Tự động scale, SSL miễn phí, tích hợp CI/CD từ GitHub repo.</p>
+      </div>
+      <div class="deploy-card dc-green">
+        <div class="d-icon">🍃</div>
+        <h4 style="color:#13AA52">MongoDB Atlas</h4>
+        <p>Cloud Database managed service. Backup tự động, replica set sẵn sàng cao, dashboard monitoring.</p>
+      </div>
+      <div class="deploy-card dc-gray">
+        <div class="d-icon">🤖</div>
+        <h4 style="color:#aaa">UptimeRobot</h4>
+        <p>Giám sát và ping định kỳ 5 phút/lần, "đánh thức" server Render khỏi ngủ đông, đảm bảo API luôn hoạt động.</p>
+      </div>
+    </div>
+
+    <div class="hbox green" style="margin-top:1.2rem">
+      <strong>💡 Vì sao combo này?</strong><br/>
+      Render gói Free sẽ cho server "ngủ" sau 15 phút không có request. UptimeRobot cứ 5 phút gọi <code>GET /api/health</code> — đủ để giữ server tỉnh táo 24/7, đảm bảo trải nghiệm khách hàng không bị gián đoạn hoàn toàn miễn phí.
+    </div>
+  </section>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>📄 Báo cáo Kỹ thuật · <strong>HobbyShop (FigureCurator)</strong></p>
+  <p style="margin-top:.4rem;font-size:.75rem">MERN Stack · ReactJS · Node.js · MongoDB Atlas · Vercel · Render</p>
+</footer>
+
+<!-- SCROLL TOP -->
+<button id="top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Lên đầu trang">↑</button>
+
+<script>
+  // Init Mermaid with dark theme
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#6c63ff',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#4a4080',
+      lineColor: '#64748b',
+      secondaryColor: '#1e2035',
+      tertiaryColor: '#0c0e1a',
+      background: '#0c0e1a',
+      mainBkg: '#1e2035',
+      nodeBorder: '#4a4080',
+      clusterBkg: '#0e1020',
+      titleColor: '#e2e8f0',
+      edgeLabelBackground: '#1e2035',
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 60, boxMargin: 8 },
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.animation = 'fadeUp .6s ease both';
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('section, .card, .tech-card, .flow-step, .deploy-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    observer.observe(el);
+  });
+
+  // Fix: re-set opacity after animation triggers
+  document.querySelectorAll('section, .card, .tech-card, .flow-step, .deploy-card').forEach(el => {
+    el.addEventListener('animationend', () => {
+      el.style.opacity = '1';
+      el.style.transform = '';
+    });
+  });
+</script>
+</body>
+</html>
