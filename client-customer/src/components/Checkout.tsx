@@ -462,7 +462,7 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
             onClick={() => setShowAddressModal(false)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 100 }}
           />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-[480px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] z-[101] font-['Inter']">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-[480px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] font-['Inter']" style={{ zIndex: 101 }}>
             {/* Modal Header */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
