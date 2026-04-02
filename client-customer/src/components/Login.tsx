@@ -326,6 +326,10 @@ export default function Login({ onLogin }: LoginProps) {
       case 'login':
         return (
           <>
+            <button onClick={() => navigate('/')} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 500, color: '#6e7881', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '24px', padding: 0 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
+              Quay lại trang chủ
+            </button>
             <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, color: '#181c1e', marginBottom: '8px' }}>Chào mừng trở lại</h1>
             <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px' }}>Đăng nhập bằng email để tiếp tục.</p>
 
