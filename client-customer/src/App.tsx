@@ -272,13 +272,17 @@ function App() {
         <Route
           path="/checkout"
           element={
-            <Checkout
-              cart={cart}
-              user={user}
-              token={token}
-              cartCount={cartCount}
-              clearCart={clearCart}
-            />
+            user ? (
+              <Checkout
+                cart={cart}
+                user={user}
+                token={token}
+                cartCount={cartCount}
+                clearCart={clearCart}
+              />
+            ) : (
+              <Navigate to="/login?redirect=/checkout" />
+            )
           }
         />
         <Route

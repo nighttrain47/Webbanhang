@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 interface LoginProps {
   onLogin: (user: any) => void;
@@ -9,6 +9,9 @@ type ViewState = 'login' | 'register' | 'verify-otp' | 'forgot-password' | 'forg
 
 export default function Login({ onLogin }: LoginProps) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/';
+  
   const [view, setView] = useState<ViewState>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +57,7 @@ export default function Login({ onLogin }: LoginProps) {
         body: JSON.stringify({ email: formData.email, password: formData.password })
       });
       const data = await res.json();
-      if (data.success) { onLogin(data); navigate('/'); }
+      if (data.success) { onLogin(data); navigate(redirect); }
       else if (data.needVerify) {
         // Account not verified yet - redirect to OTP
         setOtpEmail(data.email);
