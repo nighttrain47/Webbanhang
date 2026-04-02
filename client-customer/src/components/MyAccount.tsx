@@ -814,6 +814,8 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
     confirmPassword: ''
   });
   const [saveStatus, setSaveStatus] = useState('');
+  const [passwordStatus, setPasswordStatus] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Address Management
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -1100,37 +1102,39 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
             <p className="text-gray-500 text-sm">Bạn chưa có địa chỉ nào lưu trong sổ.</p>
           ) : (
             addresses.map((addr) => (
-              <div key={addr._id || addr.id} className="border border-gray-200 rounded-lg p-5 flex flex-col md:flex-row md:items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="font-semibold text-gray-900">{addr.fullName}</span>
-                    <span className="text-gray-400">|</span>
-                    <span className="text-gray-600">{addr.phone}</span>
-                    {addr.isDefault && (
-                      <span className="text-white text-xs px-2 py-1 rounded font-semibold ml-2" style={{ backgroundColor: '#FF6B00' }}>
-                        Mặc định
-                      </span>
-                    )}
+              <div key={addr._id || addr.id} className="border border-gray-200 rounded-lg p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span className="font-semibold text-gray-900">{addr.fullName}</span>
+                      <span className="text-gray-300">|</span>
+                      <span className="text-gray-600">{addr.phone}</span>
+                      {addr.isDefault && (
+                        <span className="text-white text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: '#FF6B00' }}>
+                          Mặc định
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 leading-relaxed">
+                      {addr.address}, {addr.city} {addr.postalCode && `- ${addr.postalCode}`}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed max-w-lg">
-                    {addr.address}, {addr.city} {addr.postalCode && `- ${addr.postalCode}`}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 md:justify-end text-sm">
-                  {!addr.isDefault && (
+                  <div className="flex items-center gap-3 flex-shrink-0 pt-1">
+                    {!addr.isDefault && (
+                      <button
+                        onClick={() => handleSetDefaultAddress(addr._id || addr.id)}
+                        className="text-orange-600 font-medium hover:underline text-sm whitespace-nowrap"
+                      >
+                        Đặt mặc định
+                      </button>
+                    )}
                     <button
-                      onClick={() => handleSetDefaultAddress(addr._id || addr.id)}
-                      className="text-orange-600 font-medium hover:underline"
+                      onClick={() => handleDeleteAddress(addr._id || addr.id)}
+                      className="text-gray-400 font-medium hover:text-red-600 text-sm whitespace-nowrap"
                     >
-                      Đặt mặc định
+                      Xóa
                     </button>
-                  )}
-                  <button
-                    onClick={() => handleDeleteAddress(addr._id || addr.id)}
-                    className="text-gray-500 font-medium hover:text-red-600"
-                  >
-                    Xóa
-                  </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -1239,9 +1243,62 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
             />
           </div>
-          <button className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-semibold">
-            Cập nhật mật khẩu
-          </button>
+          {passwordStatus && (
+            <p className={`text-sm font-medium mb-3 ${passwordStatus.includes('thành công') ? 'text-green-600' : 'text-red-600'}`}>
+              {passwordStatus}
+            </p>
+          )}
+          <div className="flex gap-3">
+            <button
+              disabled={passwordLoading}
+              onClick={async () => {
+                setPasswordStatus('');
+                if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
+                  setPasswordStatus('Vui lòng điền đầy đủ các trường');
+                  return;
+                }
+                if (formData.newPassword.length < 6) {
+                  setPasswordStatus('Mật khẩu mới phải có ít nhất 6 ký tự');
+                  return;
+                }
+                if (formData.newPassword !== formData.confirmPassword) {
+                  setPasswordStatus('Mật khẩu xác nhận không khớp');
+                  return;
+                }
+                setPasswordLoading(true);
+                try {
+                  const res = await fetch(`${API_URL}/api/customer/change-password`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ currentPassword: formData.currentPassword, newPassword: formData.newPassword })
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    setPasswordStatus('Đổi mật khẩu thành công!');
+                    setFormData(f => ({ ...f, currentPassword: '', newPassword: '', confirmPassword: '' }));
+                  } else {
+                    setPasswordStatus(data.message || 'Đổi mật khẩu thất bại');
+                  }
+                } catch {
+                  setPasswordStatus('Lỗi kết nối máy chủ');
+                } finally {
+                  setPasswordLoading(false);
+                }
+              }}
+              style={{ backgroundColor: '#FF6B00', color: '#fff', padding: '12px 32px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', border: 'none', opacity: passwordLoading ? 0.6 : 1 }}
+            >
+              {passwordLoading ? 'Đang xử lý...' : 'Cập nhật mật khẩu'}
+            </button>
+            <button
+              onClick={() => {
+                setFormData(f => ({ ...f, currentPassword: '', newPassword: '', confirmPassword: '' }));
+                setPasswordStatus('');
+              }}
+              className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+            >
+              Huỷ
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1278,20 +1335,51 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
 
       {/* Payment Methods */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <CreditCard className="w-6 h-6 text-gray-600" />
-          Phương thức thanh toán đã lưu
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-center p-8 border border-gray-200 rounded-lg text-gray-400">
-            <div className="text-center">
-              <CreditCard className="w-10 h-10 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Chưa có phương thức thanh toán nào</p>
-            </div>
-          </div>
-          <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-orange-600 hover:text-orange-600 transition-colors font-medium">
-            + Thêm phương thức thanh toán
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <CreditCard className="w-6 h-6 text-gray-600" />
+            Phương thức thanh toán đã lưu
+          </h2>
+          <button
+            onClick={() => setShowPaymentModal(true)}
+            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm"
+          >
+            + Thêm thẻ mới
           </button>
+        </div>
+        <div className="space-y-3">
+          {payments.length === 0 ? (
+            <div className="flex items-center justify-center p-8 border border-gray-200 rounded-lg text-gray-400">
+              <div className="text-center">
+                <CreditCard className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Chưa có phương thức thanh toán nào</p>
+              </div>
+            </div>
+          ) : (
+            payments.map((pay) => (
+              <div key={pay._id || pay.id} className="border border-gray-200 rounded-lg p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span className="font-semibold text-gray-900">{pay.provider}</span>
+                      <span className="text-gray-300">|</span>
+                      <span className="text-gray-600 font-mono">{pay.cardNumber}</span>
+                      {pay.isDefault && (
+                        <span className="text-white text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: '#FF6B00' }}>Mặc định</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500">Chủ thẻ: {pay.nameOnCard} {pay.expiryDate && `| Hết hạn: ${pay.expiryDate}`}</p>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0 pt-1">
+                    {!pay.isDefault && (
+                      <button onClick={() => handleSetDefaultPayment(pay._id || pay.id)} className="text-orange-600 font-medium hover:underline text-sm whitespace-nowrap">Đặt mặc định</button>
+                    )}
+                    <button onClick={() => handleDeletePayment(pay._id || pay.id)} className="text-gray-400 font-medium hover:text-red-600 text-sm whitespace-nowrap">Xóa</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
