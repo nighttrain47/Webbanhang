@@ -113,7 +113,7 @@ HobbyShop/
 ### Bước 1 — Clone & Cài đặt
 
 ```bash
-git clone https://github.com/your-username/HobbyShop.git
+git clone https://github.com/nighttrain47/Webbanhang.git
 cd HobbyShop
 
 # Cài đặt toàn bộ dependencies một lệnh duy nhất
