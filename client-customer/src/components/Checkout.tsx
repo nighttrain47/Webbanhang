@@ -151,6 +151,18 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
     setOrderError('');
 
     try {
+      const paymentMethodMap: Record<string, string> = {
+        'credit-card': 'Thẻ tín dụng / Ghi nợ',
+        'bank-transfer': 'Chuyển khoản ngân hàng',
+        'e-wallet': 'Ví điện tử',
+        'cod': 'Thanh toán khi nhận hàng',
+      };
+      
+      let actualPaymentMethod = paymentMethodMap[paymentMethod] || paymentMethod;
+      if (paymentMethod.startsWith('saved-')) {
+        actualPaymentMethod = 'Thanh toán qua Thẻ đã lưu';
+      }
+
       const orderData = {
         items: cart.map(item => ({
           productId: item._id || item.id,
@@ -158,8 +170,9 @@ export default function Checkout({ cart, user, token, cartCount, clearCart }: Ch
           price: item.price,
           quantity: item.quantity,
         })),
-        shippingAddress: `${selectedAddress.fullName}, ${selectedAddress.phone}, ${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.postalCode}`,
-        note: `Payment: ${paymentMethod}`,
+        shippingAddress: `${selectedAddress.fullName}, ${selectedAddress.phone}, ${selectedAddress.address}, ${selectedAddress.city}${selectedAddress.postalCode ? `, ${selectedAddress.postalCode}` : ''}`,
+        paymentMethod: actualPaymentMethod,
+        note: '',
       };
 
       const res = await fetch(`${API_URL}/api/customer/orders`, {

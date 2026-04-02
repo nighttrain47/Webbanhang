@@ -60,7 +60,7 @@ export default function OrderManagement() {
             shipping: 0,
             total: o.total,
             status: o.status === 'confirmed' ? 'processing' : o.status,
-            paymentMethod: o.note || 'Thanh toán khi nhận hàng',
+            paymentMethod: o.paymentMethod || o.note || 'Thanh toán khi nhận hàng',
             orderDate: new Date(o.createdAt).toLocaleDateString('vi-VN'),
           }));
           setOrders(fetchedOrders);

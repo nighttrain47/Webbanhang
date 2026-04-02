@@ -177,6 +177,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
       items: order.items?.length || 0,
       pointsEarned: earned,
       shippingAddress: order.shippingAddress || '',
+      paymentMethod: order.paymentMethod || order.note || 'Thanh toán trực tiếp',
       trackingNumber: order.status === 'shipping' ? 'Đang vận chuyển' : (order.status === 'pending' ? 'Chờ xử lý' : ''),
       products: (order.items || []).map((item: any) => ({
         name: item.name,
@@ -617,6 +618,10 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
                   <div>
                     <p className="text-gray-500">Điểm nhận được</p>
                     <p className="font-semibold text-orange-600">+{order.pointsEarned}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Thanh toán</p>
+                    <p className="font-semibold text-gray-800">{order.paymentMethod}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Theo dõi</p>

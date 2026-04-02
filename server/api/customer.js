@@ -386,7 +386,7 @@ router.get('/active', async (req, res) => {
 // POST /api/customer/orders
 router.post('/orders', verifyToken, async (req, res) => {
     try {
-        const { items, shippingAddress, note } = req.body;
+        const { items, shippingAddress, note, paymentMethod } = req.body;
         if (!items || items.length === 0) {
             return res.status(400).json({ success: false, message: 'Giỏ hàng trống' });
         }
@@ -404,6 +404,7 @@ router.post('/orders', verifyToken, async (req, res) => {
             total,
             shippingAddress: shippingAddress || '',
             note: note || '',
+            paymentMethod: paymentMethod || 'Thanh toán trực tiếp',
             status: 'pending'
         });
 
