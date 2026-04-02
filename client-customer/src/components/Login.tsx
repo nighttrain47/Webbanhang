@@ -329,23 +329,6 @@ export default function Login({ onLogin }: LoginProps) {
             <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, color: '#181c1e', marginBottom: '8px' }}>Chào mừng trở lại</h1>
             <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px' }}>Đăng nhập bằng email để tiếp tục.</p>
 
-            {/* Social Buttons */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
-              <button type="button" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '10px', border: '1px solid #e0e3e5', background: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500, color: '#3e4850' }}>
-                <img src="https://www.google.com/favicon.ico" alt="" style={{ width: '16px', height: '16px' }} />
-                Google
-              </button>
-              <button type="button" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '10px', border: '1px solid #e0e3e5', background: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500, color: '#3e4850' }}>
-                <span style={{ color: '#1877f2', fontWeight: 700, fontSize: '16px' }}>f</span>
-                Facebook
-              </button>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-              <div style={{ flex: 1, height: '1px', background: '#e8ecef' }} />
-              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8a949d' }}>HOẶC SỬ DỤNG EMAIL</span>
-              <div style={{ flex: 1, height: '1px', background: '#e8ecef' }} />
-            </div>
-
             <form onSubmit={handleLogin}>
               {renderAlerts()}
               {renderInputField('ĐỊA CHỈ EMAIL', 'email', 'email', 'example@curator.vn', 'mail')}
