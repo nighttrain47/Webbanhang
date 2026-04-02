@@ -1,55 +1,543 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router';
 
 interface LoginProps {
   onLogin: (user: any) => void;
 }
 
+type ViewState = 'login' | 'register' | 'verify-otp' | 'forgot-password' | 'forgot-otp' | 'reset-password';
+
 export default function Login({ onLogin }: LoginProps) {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
+  const [view, setView] = useState<ViewState>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    username: '', email: '', password: '', name: '', confirmPassword: '',
+    username: '', email: '', password: '', confirmPassword: '', newPassword: '', confirmNewPassword: '',
   });
+
+  // OTP state
+  const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
+  const [otpEmail, setOtpEmail] = useState('');
+  const [otpPurpose, setOtpPurpose] = useState<'verify' | 'reset'>('verify');
+  const [countdown, setCountdown] = useState(0);
+  const [verifiedOtp, setVerifiedOtp] = useState(''); // store verified OTP for reset-password step
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Countdown timer
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => setCountdown(c => c - 1), 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const resetForm = useCallback(() => {
+    setFormData({ username: '', email: '', password: '', confirmPassword: '', newPassword: '', confirmNewPassword: '' });
+    setOtpValues(['', '', '', '', '', '']);
     setError('');
-    setIsLoading(true);
+    setSuccessMsg('');
+    setVerifiedOtp('');
+  }, []);
+
+  // ===== HANDLERS =====
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); setIsLoading(true);
     try {
-      if (isLogin) {
-        const res = await fetch(`${API_URL}/api/customer/login`, {
+      const res = await fetch(`${API_URL}/api/customer/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password })
+      });
+      const data = await res.json();
+      if (data.success) { onLogin(data); navigate('/'); }
+      else if (data.needVerify) {
+        // Account not verified yet - redirect to OTP
+        setOtpEmail(data.email);
+        setOtpPurpose('verify');
+        setView('verify-otp');
+        setCountdown(0); // Allow immediate resend
+        setError('');
+      }
+      else setError(data.message || 'Đăng nhập thất bại');
+    } catch { setError('Lỗi kết nối máy chủ.'); }
+    finally { setIsLoading(false); }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); setIsLoading(true);
+    try {
+      if (formData.password !== formData.confirmPassword) { setError('Mật khẩu xác nhận không khớp'); setIsLoading(false); return; }
+      if (formData.password.length < 6) { setError('Mật khẩu phải có ít nhất 6 ký tự'); setIsLoading(false); return; }
+      const res = await fetch(`${API_URL}/api/customer/signup`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: formData.username, email: formData.email, password: formData.password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpEmail(data.email || formData.email);
+        setOtpPurpose('verify');
+        setOtpValues(['', '', '', '', '', '']);
+        setCountdown(60);
+        setView('verify-otp');
+        setSuccessMsg('Đã gửi mã xác thực tới email của bạn!');
+      }
+      else setError(data.message || 'Đăng ký thất bại');
+    } catch { setError('Lỗi kết nối máy chủ.'); }
+    finally { setIsLoading(false); }
+  };
+
+  const handleVerifyOtp = async () => {
+    const otp = otpValues.join('');
+    if (otp.length !== 6) { setError('Vui lòng nhập đủ 6 số'); return; }
+    setError(''); setIsLoading(true);
+    try {
+      if (otpPurpose === 'verify') {
+        const res = await fetch(`${API_URL}/api/customer/verify-otp`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: formData.username, password: formData.password })
+          body: JSON.stringify({ email: otpEmail, otp, purpose: 'verify' })
         });
         const data = await res.json();
-        if (data.success) { onLogin(data); navigate('/'); }
-        else setError(data.message || 'Đăng nhập thất bại');
+        if (data.success) {
+          setSuccessMsg('Xác thực thành công! Đang chuyển tới đăng nhập...');
+          setTimeout(() => { resetForm(); setView('login'); }, 2000);
+        }
+        else setError(data.message || 'Xác thực thất bại');
       } else {
-        if (formData.password !== formData.confirmPassword) { setError('Mật khẩu xác nhận không khớp'); setIsLoading(false); return; }
-        const res = await fetch(`${API_URL}/api/customer/signup`, {
+        // Forgot password - verify OTP first, then show reset password form
+        const res = await fetch(`${API_URL}/api/customer/verify-otp`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: formData.username, password: formData.password, name: formData.name, email: formData.email })
+          body: JSON.stringify({ email: otpEmail, otp, purpose: 'reset' })
         });
         const data = await res.json();
-        if (data.success) { setIsLogin(true); alert('Đăng ký thành công!'); }
-        else setError(data.message || 'Đăng ký thất bại');
+        if (data.success) {
+          setVerifiedOtp(otp);
+          setError('');
+          setView('reset-password');
+        }
+        else setError(data.message || 'Mã OTP không đúng');
       }
     } catch { setError('Lỗi kết nối máy chủ.'); }
     finally { setIsLoading(false); }
   };
 
+  const handleResendOtp = async () => {
+    if (countdown > 0) return;
+    setError(''); setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/customer/resend-otp`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: otpEmail, purpose: otpPurpose })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpValues(['', '', '', '', '', '']);
+        setCountdown(60);
+        setSuccessMsg('Đã gửi lại mã xác thực!');
+        setTimeout(() => setSuccessMsg(''), 3000);
+      }
+      else setError(data.message || 'Gửi lại thất bại');
+    } catch { setError('Lỗi kết nối máy chủ.'); }
+    finally { setIsLoading(false); }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/customer/forgot-password`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpEmail(formData.email);
+        setOtpPurpose('reset');
+        setOtpValues(['', '', '', '', '', '']);
+        setCountdown(60);
+        setView('forgot-otp');
+        setSuccessMsg('Đã gửi mã xác thực tới email!');
+      }
+      else setError(data.message || 'Không thể gửi OTP');
+    } catch { setError('Lỗi kết nối máy chủ.'); }
+    finally { setIsLoading(false); }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); setIsLoading(true);
+    try {
+      if (formData.newPassword !== formData.confirmNewPassword) { setError('Mật khẩu xác nhận không khớp'); setIsLoading(false); return; }
+      if (formData.newPassword.length < 6) { setError('Mật khẩu phải có ít nhất 6 ký tự'); setIsLoading(false); return; }
+      const res = await fetch(`${API_URL}/api/customer/reset-password`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: otpEmail, otp: verifiedOtp, newPassword: formData.newPassword })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccessMsg('Đổi mật khẩu thành công! Đang chuyển tới đăng nhập...');
+        setTimeout(() => { resetForm(); setView('login'); }, 2000);
+      }
+      else setError(data.message || 'Đổi mật khẩu thất bại');
+    } catch { setError('Lỗi kết nối máy chủ.'); }
+    finally { setIsLoading(false); }
+  };
+
+  // OTP input handlers
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otpValues];
+    newOtp[index] = value.slice(-1);
+    setOtpValues(newOtp);
+    if (value && index < 5) otpRefs.current[index + 1]?.focus();
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+    if (e.key === 'Enter' && otpValues.join('').length === 6) {
+      handleVerifyOtp();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted.length > 0) {
+      const newOtp = [...otpValues];
+      for (let i = 0; i < 6; i++) newOtp[i] = pasted[i] || '';
+      setOtpValues(newOtp);
+      const focusIdx = Math.min(pasted.length, 5);
+      otpRefs.current[focusIdx]?.focus();
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  const switchToView = (v: ViewState) => {
+    resetForm();
+    setView(v);
+  };
+
+  // ===== STYLES =====
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '14px 16px 14px 48px', borderRadius: '12px',
     border: '1px solid #e0e3e5', background: '#f7fafc',
     color: '#181c1e', fontSize: '14px', outline: 'none',
+    transition: 'border-color 200ms, box-shadow 200ms',
+    boxSizing: 'border-box',
+  };
+
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = '#00658d'; e.target.style.boxShadow = '0 0 0 3px rgba(0,101,141,0.1)'; };
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = '#e0e3e5'; e.target.style.boxShadow = 'none'; };
+
+  const btnPrimary: React.CSSProperties = {
+    width: '100%', padding: '14px', borderRadius: '12px',
+    background: 'linear-gradient(135deg, #00658d, #00adef)',
+    color: '#fff', fontWeight: 700, fontSize: '14px',
+    border: 'none', cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+    opacity: isLoading ? 0.6 : 1,
+    transition: 'opacity 200ms, transform 100ms',
+  };
+
+  // ===== RENDER HELPERS =====
+
+  const renderAlerts = () => (
+    <>
+      {error && (
+        <div style={{ padding: '10px 14px', borderRadius: '10px', background: '#fef2f2', color: '#ef4444', fontSize: '13px', marginBottom: '16px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
+          {error}
+        </div>
+      )}
+      {successMsg && (
+        <div style={{ padding: '10px 14px', borderRadius: '10px', background: '#f0fdf4', color: '#16a34a', fontSize: '13px', marginBottom: '16px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
+          {successMsg}
+        </div>
+      )}
+    </>
+  );
+
+  const renderOtpInput = () => (
+    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '24px' }} onPaste={handleOtpPaste}>
+      {otpValues.map((val, i) => (
+        <input
+          key={i}
+          ref={el => { otpRefs.current[i] = el; }}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={val}
+          onChange={e => handleOtpChange(i, e.target.value)}
+          onKeyDown={e => handleOtpKeyDown(i, e)}
+          style={{
+            width: '52px', height: '60px', textAlign: 'center',
+            fontSize: '24px', fontWeight: 800, fontFamily: 'monospace',
+            borderRadius: '12px', border: `2px solid ${val ? '#00658d' : '#e0e3e5'}`,
+            background: val ? '#f0f7fb' : '#f7fafc',
+            color: '#00658d', outline: 'none',
+            transition: 'all 200ms',
+          }}
+          onFocus={e => { e.target.style.borderColor = '#00adef'; e.target.style.boxShadow = '0 0 0 3px rgba(0,173,239,0.15)'; }}
+          onBlur={e => { e.target.style.borderColor = val ? '#00658d' : '#e0e3e5'; e.target.style.boxShadow = 'none'; }}
+        />
+      ))}
+    </div>
+  );
+
+  const renderInputField = (label: string, name: string, type: string, placeholder: string, icon: string, required = true) => (
+    <div style={{ marginBottom: '14px' }}>
+      <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850', marginBottom: '6px', display: 'block' }}>{label}</label>
+      <div style={{ position: 'relative' }}>
+        <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>{icon}</span>
+        <input
+          type={type === 'password' ? (showPassword ? 'text' : 'password') : type}
+          name={name}
+          value={(formData as any)[name]}
+          onChange={handleChange}
+          placeholder={placeholder}
+          required={required}
+          minLength={type === 'password' ? 6 : undefined}
+          style={inputStyle}
+          onFocus={onFocus}
+          onBlur={onBlur}
+        />
+        {type === 'password' && (
+          <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPassword ? 'visibility_off' : 'visibility'}</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  // ===== VIEW RENDERS =====
+
+  const renderFormContent = () => {
+    switch (view) {
+      case 'login':
+        return (
+          <>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, color: '#181c1e', marginBottom: '8px' }}>Chào mừng trở lại</h1>
+            <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px' }}>Đăng nhập bằng email để tiếp tục.</p>
+
+            {/* Social Buttons */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+              <button type="button" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '10px', border: '1px solid #e0e3e5', background: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500, color: '#3e4850' }}>
+                <img src="https://www.google.com/favicon.ico" alt="" style={{ width: '16px', height: '16px' }} />
+                Google
+              </button>
+              <button type="button" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '10px', border: '1px solid #e0e3e5', background: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500, color: '#3e4850' }}>
+                <span style={{ color: '#1877f2', fontWeight: 700, fontSize: '16px' }}>f</span>
+                Facebook
+              </button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+              <div style={{ flex: 1, height: '1px', background: '#e8ecef' }} />
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8a949d' }}>HOẶC SỬ DỤNG EMAIL</span>
+              <div style={{ flex: 1, height: '1px', background: '#e8ecef' }} />
+            </div>
+
+            <form onSubmit={handleLogin}>
+              {renderAlerts()}
+              {renderInputField('ĐỊA CHỈ EMAIL', 'email', 'email', 'example@curator.vn', 'mail')}
+              <div style={{ marginBottom: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850' }}>MẬT KHẨU</label>
+                  <button type="button" onClick={() => switchToView('forgot-password')} style={{ fontSize: '12px', fontWeight: 600, color: '#00658d', background: 'none', border: 'none', cursor: 'pointer' }}>Quên mật khẩu?</button>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>lock</span>
+                  <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required minLength={6} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPassword ? 'visibility_off' : 'visibility'}</span>
+                  </button>
+                </div>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#3e4850', marginBottom: '20px', cursor: 'pointer' }}>
+                <input type="checkbox" style={{ width: '16px', height: '16px', accentColor: '#00658d' }} />
+                Ghi nhớ đăng nhập cho lần sau
+              </label>
+              <button type="submit" disabled={isLoading} style={btnPrimary}>
+                {isLoading ? 'Đang xử lý...' : 'Đăng Nhập'}
+                {!isLoading && <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_forward</span>}
+              </button>
+            </form>
+
+            <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#6e7881' }}>
+              Chưa có tài khoản?{' '}
+              <button onClick={() => switchToView('register')} style={{ fontWeight: 600, color: '#ff7d36', background: 'none', border: 'none', cursor: 'pointer' }}>Đăng ký ngay</button>
+            </p>
+          </>
+        );
+
+      case 'register':
+        return (
+          <>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, color: '#181c1e', marginBottom: '8px' }}>Tạo tài khoản</h1>
+            <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px' }}>Đăng ký tài khoản mới bằng email.</p>
+
+            <form onSubmit={handleRegister}>
+              {renderAlerts()}
+              {renderInputField('TÊN ĐĂNG NHẬP', 'username', 'text', 'Tên đăng nhập', 'person')}
+              {renderInputField('ĐỊA CHỈ EMAIL', 'email', 'email', 'example@curator.vn', 'mail')}
+              {renderInputField('MẬT KHẨU', 'password', 'password', '••••••••', 'lock')}
+              {renderInputField('XÁC NHẬN MẬT KHẨU', 'confirmPassword', 'password', '••••••••', 'lock')}
+              <button type="submit" disabled={isLoading} style={btnPrimary}>
+                {isLoading ? 'Đang xử lý...' : 'Tạo Tài Khoản'}
+                {!isLoading && <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_forward</span>}
+              </button>
+            </form>
+
+            <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#6e7881' }}>
+              Đã có tài khoản?{' '}
+              <button onClick={() => switchToView('login')} style={{ fontWeight: 600, color: '#ff7d36', background: 'none', border: 'none', cursor: 'pointer' }}>Đăng nhập</button>
+            </p>
+          </>
+        );
+
+      case 'verify-otp':
+      case 'forgot-otp':
+        return (
+          <>
+            <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+              <div style={{
+                width: '64px', height: '64px', borderRadius: '16px',
+                background: 'linear-gradient(135deg, #00658d, #00adef)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 20px',
+                boxShadow: '0 8px 24px rgba(0,101,141,0.25)',
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#fff' }}>
+                  {view === 'verify-otp' ? 'verified_user' : 'lock_reset'}
+                </span>
+              </div>
+            </div>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: 800, color: '#181c1e', marginBottom: '8px', textAlign: 'center' }}>
+              {view === 'verify-otp' ? 'Xác thực tài khoản' : 'Nhập mã xác thực'}
+            </h1>
+            <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px', textAlign: 'center', lineHeight: 1.6 }}>
+              Chúng tôi đã gửi mã xác thực 6 số tới<br />
+              <strong style={{ color: '#181c1e' }}>{otpEmail}</strong>
+            </p>
+
+            {renderAlerts()}
+            {renderOtpInput()}
+
+            <button
+              onClick={handleVerifyOtp}
+              disabled={isLoading || otpValues.join('').length !== 6}
+              style={{
+                ...btnPrimary,
+                opacity: (isLoading || otpValues.join('').length !== 6) ? 0.5 : 1,
+                marginBottom: '16px',
+              }}
+            >
+              {isLoading ? 'Đang xác thực...' : 'Xác Nhận'}
+              {!isLoading && <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check</span>}
+            </button>
+
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              {countdown > 0 ? (
+                <p style={{ fontSize: '13px', color: '#8a949d' }}>
+                  Gửi lại mã sau <strong style={{ color: '#00658d' }}>{countdown}s</strong>
+                </p>
+              ) : (
+                <button onClick={handleResendOtp} disabled={isLoading} style={{ fontSize: '13px', fontWeight: 600, color: '#00658d', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                  Gửi lại mã xác thực
+                </button>
+              )}
+            </div>
+
+            <p style={{ textAlign: 'center', fontSize: '13px', color: '#6e7881' }}>
+              <button onClick={() => switchToView('login')} style={{ fontWeight: 600, color: '#ff7d36', background: 'none', border: 'none', cursor: 'pointer' }}>
+                ← Quay lại đăng nhập
+              </button>
+            </p>
+          </>
+        );
+
+      case 'forgot-password':
+        return (
+          <>
+            <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+              <div style={{
+                width: '64px', height: '64px', borderRadius: '16px',
+                background: 'linear-gradient(135deg, #ff7d36, #ffaa5b)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 20px',
+                boxShadow: '0 8px 24px rgba(255,125,54,0.25)',
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#fff' }}>lock_reset</span>
+              </div>
+            </div>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: 800, color: '#181c1e', marginBottom: '8px', textAlign: 'center' }}>Quên mật khẩu?</h1>
+            <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px', textAlign: 'center', lineHeight: 1.6 }}>
+              Nhập email đã đăng ký để nhận mã xác thực.
+            </p>
+
+            <form onSubmit={handleForgotPassword}>
+              {renderAlerts()}
+              {renderInputField('ĐỊA CHỈ EMAIL', 'email', 'email', 'example@curator.vn', 'mail')}
+              <button type="submit" disabled={isLoading} style={{ ...btnPrimary, marginBottom: '16px' }}>
+                {isLoading ? 'Đang gửi...' : 'Gửi Mã Xác Thực'}
+                {!isLoading && <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>}
+              </button>
+            </form>
+
+            <p style={{ textAlign: 'center', fontSize: '13px', color: '#6e7881' }}>
+              <button onClick={() => switchToView('login')} style={{ fontWeight: 600, color: '#ff7d36', background: 'none', border: 'none', cursor: 'pointer' }}>
+                ← Quay lại đăng nhập
+              </button>
+            </p>
+          </>
+        );
+
+      case 'reset-password':
+        return (
+          <>
+            <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+              <div style={{
+                width: '64px', height: '64px', borderRadius: '16px',
+                background: 'linear-gradient(135deg, #16a34a, #22c55e)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 20px',
+                boxShadow: '0 8px 24px rgba(22,163,74,0.25)',
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '32px', color: '#fff' }}>password</span>
+              </div>
+            </div>
+            <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: 800, color: '#181c1e', marginBottom: '8px', textAlign: 'center' }}>Đặt mật khẩu mới</h1>
+            <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px', textAlign: 'center', lineHeight: 1.6 }}>
+              Nhập mật khẩu mới cho tài khoản <strong style={{ color: '#181c1e' }}>{otpEmail}</strong>
+            </p>
+
+            <form onSubmit={handleResetPassword}>
+              {renderAlerts()}
+              {renderInputField('MẬT KHẨU MỚI', 'newPassword', 'password', '••••••••', 'lock')}
+              {renderInputField('XÁC NHẬN MẬT KHẨU MỚI', 'confirmNewPassword', 'password', '••••••••', 'lock')}
+              <button type="submit" disabled={isLoading} style={{ ...btnPrimary, background: 'linear-gradient(135deg, #16a34a, #22c55e)' }}>
+                {isLoading ? 'Đang xử lý...' : 'Đổi Mật Khẩu'}
+                {!isLoading && <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check</span>}
+              </button>
+            </form>
+
+            <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#6e7881' }}>
+              <button onClick={() => switchToView('login')} style={{ fontWeight: 600, color: '#ff7d36', background: 'none', border: 'none', cursor: 'pointer' }}>
+                ← Quay lại đăng nhập
+              </button>
+            </p>
+          </>
+        );
+    }
   };
 
   return (
@@ -67,7 +555,6 @@ export default function Login({ onLogin }: LoginProps) {
           background: '#0e1a28',
         }}
       >
-        {/* Background Image */}
         <img
           src="/login-bg.png"
           alt=""
@@ -93,7 +580,6 @@ export default function Login({ onLogin }: LoginProps) {
             Khám phá những tuyệt tác mô hình được tuyển chọn kỹ lưỡng. Nơi nghệ thuật gặp gỡ niềm đam mê sưu tầm.
           </p>
 
-          {/* Trust Cards */}
           <div style={{ display: 'flex', gap: '12px' }}>
             {[
               { icon: 'verified', title: 'Chính hãng 100%', desc: 'Cam kết nguồn gốc rõ ràng từ các studio danh tiếng.' },
@@ -114,7 +600,6 @@ export default function Login({ onLogin }: LoginProps) {
           </div>
         </div>
 
-        {/* Footer */}
         <div style={{ position: 'relative', zIndex: 2, marginTop: '32px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00adef' }} />
           <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)' }}>
@@ -126,126 +611,7 @@ export default function Login({ onLogin }: LoginProps) {
       {/* ═══ RIGHT PANEL (Form) ═══ */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px', background: '#fff' }}>
         <div style={{ width: '100%', maxWidth: '420px' }}>
-          <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, color: '#181c1e', marginBottom: '8px' }}>
-            {isLogin ? 'Chào mừng trở lại' : 'Tạo tài khoản'}
-          </h1>
-          <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px' }}>
-            {isLogin ? 'Vui lòng đăng nhập để quản lý bộ sưu tập của bạn.' : 'Đăng ký để bắt đầu sưu tầm.'}
-          </p>
-
-          {/* Social Buttons */}
-          {isLogin && (
-            <>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
-                <button style={{
-                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  padding: '12px', borderRadius: '10px', border: '1px solid #e0e3e5',
-                  background: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500, color: '#3e4850',
-                }}>
-                  <img src="https://www.google.com/favicon.ico" alt="" style={{ width: '16px', height: '16px' }} />
-                  Google
-                </button>
-                <button style={{
-                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  padding: '12px', borderRadius: '10px', border: '1px solid #e0e3e5',
-                  background: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500, color: '#3e4850',
-                }}>
-                  <span style={{ color: '#1877f2', fontWeight: 700, fontSize: '16px' }}>f</span>
-                  Facebook
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-                <div style={{ flex: 1, height: '1px', background: '#e8ecef' }} />
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8a949d' }}>HOẶC SỬ DỤNG EMAIL</span>
-                <div style={{ flex: 1, height: '1px', background: '#e8ecef' }} />
-              </div>
-            </>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {error && (
-              <div style={{ padding: '10px 14px', borderRadius: '10px', background: '#fef2f2', color: '#ef4444', fontSize: '13px', marginBottom: '16px', fontWeight: 500 }}>
-                {error}
-              </div>
-            )}
-
-            {/* Username / Email */}
-            <div style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850', marginBottom: '6px', display: 'block' }}>
-                {isLogin ? 'ĐỊA CHỈ EMAIL' : 'TÊN ĐĂNG NHẬP'}
-              </label>
-              <div style={{ position: 'relative' }}>
-                <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>mail</span>
-                <input type="text" name="username" value={formData.username} onChange={handleChange} placeholder={isLogin ? 'example@curator.vn' : 'Tên đăng nhập'} required style={inputStyle} />
-              </div>
-            </div>
-
-            {!isLogin && (
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850', marginBottom: '6px', display: 'block' }}>HỌ VÀ TÊN</label>
-                <div style={{ position: 'relative' }}>
-                  <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>badge</span>
-                  <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Họ và tên" required style={inputStyle} />
-                </div>
-              </div>
-            )}
-
-            {/* Password */}
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850' }}>MẬT KHẨU</label>
-                {isLogin && <button type="button" style={{ fontSize: '12px', fontWeight: 600, color: '#00658d', background: 'none', border: 'none', cursor: 'pointer' }}>Quên mật khẩu?</button>}
-              </div>
-              <div style={{ position: 'relative' }}>
-                <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>lock</span>
-                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required style={inputStyle} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPassword ? 'visibility_off' : 'visibility'}</span>
-                </button>
-              </div>
-            </div>
-
-            {!isLogin && (
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850', marginBottom: '6px', display: 'block' }}>XÁC NHẬN MẬT KHẨU</label>
-                <div style={{ position: 'relative' }}>
-                  <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>lock</span>
-                  <input type={showPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••" required style={inputStyle} />
-                </div>
-              </div>
-            )}
-
-            {isLogin && (
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#3e4850', marginBottom: '20px', cursor: 'pointer' }}>
-                <input type="checkbox" style={{ width: '16px', height: '16px', accentColor: '#00658d' }} />
-                Ghi nhớ đăng nhập cho lần sau
-              </label>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                width: '100%', padding: '14px', borderRadius: '12px',
-                background: 'linear-gradient(135deg, #00658d, #00adef)',
-                color: '#fff', fontWeight: 700, fontSize: '14px',
-                border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                opacity: isLoading ? 0.6 : 1,
-              }}
-            >
-              {isLoading ? 'Đang xử lý...' : (isLogin ? 'Đăng Nhập' : 'Tạo Tài Khoản')}
-              {!isLoading && <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_forward</span>}
-            </button>
-          </form>
-
-          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#6e7881' }}>
-            {isLogin ? 'Chưa có tài khoản? ' : 'Đã có tài khoản? '}
-            <button onClick={() => setIsLogin(!isLogin)} style={{ fontWeight: 600, color: '#ff7d36', background: 'none', border: 'none', cursor: 'pointer' }}>
-              {isLogin ? 'Đăng ký ngay' : 'Đăng nhập'}
-            </button>
-          </p>
+          {renderFormContent()}
 
           {/* Footer */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #e8ecef' }}>

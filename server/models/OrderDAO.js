@@ -80,6 +80,10 @@ const OrderDAO = {
     delete: async (id) => {
         return await Order.findByIdAndDelete(id);
     },
+
+    deleteByCustomer: async (customerId) => {
+        return await Order.deleteMany({ customer: customerId });
+    },
 };
 
 module.exports = OrderDAO;

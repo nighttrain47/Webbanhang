@@ -122,14 +122,7 @@ function App() {
     }
   }, [token]);
 
-  // Demo auto-login: auto-set a demo user for public preview
-  useEffect(() => {
-    if (!user) {
-      const demoUser = { id: 'demo', username: 'demo_user', name: 'Khách Demo', email: 'demo@hobbyshop.vn' };
-      setUser(demoUser);
-      setToken('demo-preview-token');
-    }
-  }, []);
+  // Demo auto-login removed — users must login via email
 
   const [popupProduct, setPopupProduct] = useState<Product | null>(null);
 
@@ -202,6 +195,17 @@ function App() {
     setToken('');
     localStorage.removeItem('hobbyshop_user');
     localStorage.removeItem('hobbyshop_token');
+  };
+
+  const handleDeleteAccount = () => {
+    setUser(null);
+    setToken('');
+    setCart([]);
+    setWishlist([]);
+    localStorage.removeItem('hobbyshop_user');
+    localStorage.removeItem('hobbyshop_token');
+    localStorage.removeItem('hobbyshop_cart');
+    localStorage.removeItem('hobbyshop_wishlist');
   };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -284,6 +288,7 @@ function App() {
               user={user}
               token={token}
               onLogout={handleLogout}
+              onDeleteAccount={handleDeleteAccount}
               onUpdateUser={(updatedUser: any) => setUser(updatedUser)}
               wishlist={wishlist}
               cartCount={cartCount}

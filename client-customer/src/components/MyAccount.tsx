@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '../config';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import {
   User, Package, Heart, Award, Settings, LogOut, Star, TrendingUp,
   MapPin, Phone, Mail, Globe, Calendar, Shield, Bell, CreditCard,
-  Truck, CheckCircle, Clock, AlertCircle, Eye, Search, Filter
+  Truck, CheckCircle, Clock, AlertCircle, Eye, Search, Filter, Trash2
 } from 'lucide-react';
 import Header from './layout/Header';
 import Footer from './layout/Footer';
@@ -15,6 +15,7 @@ interface MyAccountProps {
   user: any;
   token: string;
   onLogout: () => void;
+  onDeleteAccount: () => void;
   onUpdateUser: (updatedUser: any) => void;
   wishlist: string[];
   cartCount: number;
@@ -24,12 +25,28 @@ interface MyAccountProps {
 
 type ActiveTab = 'profile' | 'orders' | 'wishlist' | 'points' | 'settings';
 
-export default function MyAccount({ user, token, onLogout, onUpdateUser, wishlist, cartCount, toggleWishlist, addToCart }: MyAccountProps) {
+export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUpdateUser, wishlist, cartCount, toggleWishlist, addToCart }: MyAccountProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>('profile');
   const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled'>('all');
   const [realOrders, setRealOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
+
+  // Fetch profile to ensure fresh data (createdAt, phone, etc.)
+  useEffect(() => {
+    if (user && token) {
+      fetch(`${API_URL}/api/customer/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.customer) {
+            onUpdateUser(data.customer);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [token]);
 
   // Fetch real orders from API
   useEffect(() => {
@@ -107,10 +124,10 @@ export default function MyAccount({ user, token, onLogout, onUpdateUser, wishlis
   const userPoints = user.points || 0;
 
   const membershipTiers = [
-    { name: 'Bronze', minPoints: 0, maxPoints: 9999, color: 'bg-amber-700', benefits: ['1% cashback', 'Standard support'] },
-    { name: 'Silver', minPoints: 10000, maxPoints: 29999, color: 'bg-gray-400', benefits: ['1.5% cashback', 'Priority support', 'Birthday bonus'] },
-    { name: 'Gold', minPoints: 30000, maxPoints: 99999, color: 'bg-yellow-500', benefits: ['2% cashback', 'VIP support', 'Early access', 'Free express shipping'] },
-    { name: 'Platinum', minPoints: 100000, maxPoints: Infinity, color: 'bg-purple-500', benefits: ['3% cashback', 'Dedicated support', 'Exclusive items', 'Free worldwide shipping'] }
+    { name: 'Cấp 3', minPoints: 0, maxPoints: 9999, color: 'bg-amber-700', benefits: ['Hoàn 1% điểm', 'Hỗ trợ tiêu chuẩn'] },
+    { name: 'Cấp 2', minPoints: 10000, maxPoints: 29999, color: 'bg-gray-400', benefits: ['Hoàn 1.5% điểm', 'Hỗ trợ ưu tiên', 'Thưởng sinh nhật'] },
+    { name: 'Cấp 1', minPoints: 30000, maxPoints: 99999, color: 'bg-yellow-500', benefits: ['Hoàn 2% điểm', 'Hỗ trợ VIP', 'Truy cập sớm', 'Giao hàng nhanh miễn phí'] },
+    { name: 'Đặc Cấp', minPoints: 100000, maxPoints: Infinity, color: 'bg-purple-500', benefits: ['Hoàn 3% điểm', 'Hỗ trợ chuyên biệt', 'Sản phẩm độc quyền', 'Giao hàng toàn cầu miễn phí'] }
   ];
 
   const currentTier = membershipTiers.reduce((acc, tier) => {
@@ -187,7 +204,7 @@ export default function MyAccount({ user, token, onLogout, onUpdateUser, wishlis
         return <PointsSection user={{ ...user, points: userPoints }} currentTier={currentTier} nextTier={nextTier} pointsToNextTier={pointsToNextTier} pointsHistory={pointsHistory} membershipTiers={membershipTiers} />;
 
       case 'settings':
-        return <SettingsSection user={user} token={token} onUpdateUser={onUpdateUser} />;
+        return <SettingsSection user={user} token={token} onUpdateUser={onUpdateUser} onDeleteAccount={onDeleteAccount} />;
 
       default:
         return null;
@@ -201,10 +218,10 @@ export default function MyAccount({ user, token, onLogout, onUpdateUser, wishlis
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Tài khoản của tôi</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
           {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
+          <div style={{ width: '280px', flexShrink: 0 }}>
+            <div className="bg-white rounded-lg shadow-sm p-6" style={{ position: 'sticky', top: '96px', zIndex: 0 }}>
               <div className="text-center mb-6">
                 <div className="w-20 h-20 bg-gradient-to-br from-[#FF6B00] to-[#E55D00] rounded-full flex items-center justify-center mx-auto mb-3">
                   <User className="w-10 h-10 text-white" />
@@ -270,7 +287,7 @@ export default function MyAccount({ user, token, onLogout, onUpdateUser, wishlis
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div style={{ flex: 1, minWidth: 0 }}>
             {renderContent()}
           </div>
         </div>
@@ -290,9 +307,9 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
       <div className="bg-gradient-to-br from-orange-500 to-yellow-500 rounded-lg shadow-lg p-6 text-white">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="text-sm opacity-90">Total Points</p>
+            <p className="text-sm opacity-90">Tổng điểm</p>
             <p className="text-4xl font-bold">{userPoints.toLocaleString()}</p>
-            <p className="text-sm opacity-90 mt-1">≈ {userPoints.toLocaleString()}đ value</p>
+            <p className="text-sm opacity-90 mt-1">≈ {userPoints.toLocaleString()}đ giá trị</p>
           </div>
           <Award className="w-12 h-12 opacity-80" />
         </div>
@@ -300,8 +317,8 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
         {nextTier && (
           <div>
             <div className="flex items-center justify-between text-sm mb-2">
-              <span>Progress to {nextTier.name}</span>
-              <span>{pointsToNextTier.toLocaleString()} pts to go</span>
+              <span>Tiến tới hạng {nextTier.name}</span>
+              <span>Còn {pointsToNextTier.toLocaleString()} điểm</span>
             </div>
             <div className="w-full bg-white bg-opacity-30 rounded-full h-2">
               <div
@@ -316,12 +333,12 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
 
         <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white border-opacity-30">
           <div>
-            <p className="text-sm opacity-90">Lifetime Earned</p>
-            <p className="text-xl font-bold">{(userPoints + 5000).toLocaleString()}</p>
+            <p className="text-sm opacity-90">Tổng tích lũy</p>
+            <p className="text-xl font-bold">{userPoints.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-sm opacity-90">This Month</p>
-            <p className="text-xl font-bold">+4,820</p>
+            <p className="text-sm opacity-90">Tháng này</p>
+            <p className="text-xl font-bold">+0</p>
           </div>
         </div>
       </div>
@@ -331,7 +348,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Total Orders</p>
+              <p className="text-sm text-gray-500">Tổng đơn hàng</p>
               <p className="text-2xl font-bold">{mockOrders.length}</p>
             </div>
             <Package className="w-8 h-8 text-blue-500" />
@@ -341,7 +358,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Wishlist Items</p>
+              <p className="text-sm text-gray-500">Sản phẩm yêu thích</p>
               <p className="text-2xl font-bold">{wishlist.length}</p>
             </div>
             <Heart className="w-8 h-8 text-red-500" />
@@ -351,8 +368,8 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Member Since</p>
-              <p className="text-2xl font-bold">2024</p>
+              <p className="text-sm text-gray-500">Thành viên từ</p>
+              <p className="text-2xl font-bold">{user.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()}</p>
             </div>
             <Star className="w-8 h-8 text-yellow-500" />
           </div>
@@ -361,7 +378,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
 
       {/* Account Information */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-bold mb-6">Account Information</h2>
+        <h2 className="text-xl font-bold mb-6">Thông tin tài khoản</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex items-start gap-3">
             <Mail className="w-5 h-5 text-gray-400 mt-1" />
@@ -373,22 +390,22 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
           <div className="flex items-start gap-3">
             <Calendar className="w-5 h-5 text-gray-400 mt-1" />
             <div>
-              <p className="text-sm text-gray-500">Member Since</p>
-              <p className="font-semibold">{user.memberSince || '2024-01-15'}</p>
+              <p className="text-sm text-gray-500">Thành viên từ</p>
+              <p className="font-semibold">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 text-gray-400 mt-1" />
             <div>
-              <p className="text-sm text-gray-500">Default Address</p>
-              <p className="font-semibold">Hà Nội, Hoàn Kiếm, Việt Nam</p>
+              <p className="text-sm text-gray-500">Địa chỉ mặc định</p>
+              <p className="font-semibold text-gray-400">{user.address || 'Chưa cập nhật'}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <Phone className="w-5 h-5 text-gray-400 mt-1" />
             <div>
-              <p className="text-sm text-gray-500">Phone</p>
-              <p className="font-semibold">+84 90-123-4567</p>
+              <p className="text-sm text-gray-500">Số điện thoại</p>
+              <p className="font-semibold">{user.phone || <span className="text-gray-400">Chưa cập nhật</span>}</p>
             </div>
           </div>
         </div>
@@ -419,10 +436,10 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
       {/* Filter Tabs */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Order History</h2>
+          <h2 className="text-xl font-bold">Lịch sử đơn hàng</h2>
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-500">Filter:</span>
+            <span className="text-sm text-gray-500">Lọc:</span>
           </div>
         </div>
 
@@ -441,8 +458,8 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
                 key={filter}
                 onClick={() => setOrderFilter(filter as any)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${orderFilter === filter
-                    ? 'bg-[#FF6B00] text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-[#FF6B00] text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
                 {labels[filter] || filter}
@@ -460,8 +477,8 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
       ) : orders.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-12 text-center">
           <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-xl text-gray-600">No orders found</p>
-          <p className="text-sm text-gray-500 mt-2">Try adjusting your filters</p>
+          <p className="text-xl text-gray-600">Không tìm thấy đơn hàng</p>
+          <p className="text-sm text-gray-500 mt-2">Hãy thử điều chỉnh bộ lọc</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -478,10 +495,10 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
                     <p className="text-sm text-gray-500">{order.date}</p>
                   </div>
                   <span className={`px-4 py-2 rounded-full text-sm font-semibold ${order.statusColor === 'green'
-                      ? 'bg-green-100 text-green-800'
-                      : order.statusColor === 'blue'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                    ? 'bg-green-100 text-green-800'
+                    : order.statusColor === 'blue'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-yellow-100 text-yellow-800'
                     }`}>
                     {order.status}
                   </span>
@@ -489,19 +506,19 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500">Items</p>
+                    <p className="text-gray-500">Sản phẩm</p>
                     <p className="font-semibold">{order.items}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Total</p>
+                    <p className="text-gray-500">Tổng cộng</p>
                     <p className="font-semibold">{order.total.toLocaleString()}đ</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Points Earned</p>
+                    <p className="text-gray-500">Điểm nhận được</p>
                     <p className="font-semibold text-[#FF6B00]">+{order.pointsEarned}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Tracking</p>
+                    <p className="text-gray-500">Theo dõi</p>
                     <p className="font-semibold text-xs">{order.trackingNumber}</p>
                   </div>
                 </div>
@@ -514,20 +531,20 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
                   className="flex items-center gap-2 text-[#FF6B00] hover:underline font-medium mb-4"
                 >
                   <Eye className="w-4 h-4" />
-                  {expandedOrder === order.id ? 'Hide Details' : 'View Details'}
+                  {expandedOrder === order.id ? 'Ẩn chi tiết' : 'Xem chi tiết'}
                 </button>
 
                 {expandedOrder === order.id && (
                   <div className="space-y-4">
                     {/* Products */}
                     <div>
-                      <h4 className="font-semibold mb-3">Products:</h4>
+                      <h4 className="font-semibold mb-3">Sản phẩm:</h4>
                       <div className="space-y-2">
                         {order.products.map((product: any, idx: number) => (
                           <div key={idx} className="flex justify-between items-center p-3 bg-white rounded-lg">
                             <div>
                               <p className="font-medium">{product.name}</p>
-                              <p className="text-sm text-gray-500">Qty: {product.quantity}</p>
+                              <p className="text-sm text-gray-500">SL: {product.quantity}</p>
                             </div>
                             <p className="font-semibold">{product.price.toLocaleString()}đ</p>
                           </div>
@@ -537,7 +554,7 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
 
                     {/* Shipping Info */}
                     <div>
-                      <h4 className="font-semibold mb-2">Shipping Address:</h4>
+                      <h4 className="font-semibold mb-2">Địa chỉ giao hàng:</h4>
                       <p className="text-gray-600">{order.shippingAddress}</p>
                     </div>
 
@@ -545,16 +562,16 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
                     <div className="flex gap-3 pt-4">
                       {order.status === 'Shipping' && (
                         <button className="px-4 py-2 bg-[#FF6B00] text-white rounded-lg hover:bg-[#E55D00] transition-colors font-medium">
-                          Track Package
+                          Theo dõi đơn hàng
                         </button>
                       )}
                       {order.status === 'Delivered' && (
                         <button className="px-4 py-2 border border-[#FF6B00] text-[#FF6B00] rounded-lg hover:bg-orange-50 transition-colors font-medium">
-                          Leave Review
+                          Đánh giá
                         </button>
                       )}
                       <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition-colors font-medium">
-                        Contact Support
+                        Liên hệ hỗ trợ
                       </button>
                     </div>
                   </div>
@@ -574,10 +591,10 @@ function WishlistSection({ wishlistProducts, toggleWishlist, addToCart, wishlist
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">My Wishlist</h2>
+          <h2 className="text-xl font-bold">Danh sách yêu thích</h2>
           <div className="flex items-center gap-2 text-gray-500">
             <Heart className="w-5 h-5" />
-            <span className="font-semibold">{wishlistProducts.length} items</span>
+            <span className="font-semibold">{wishlistProducts.length} sản phẩm</span>
           </div>
         </div>
       </div>
@@ -585,13 +602,13 @@ function WishlistSection({ wishlistProducts, toggleWishlist, addToCart, wishlist
       {wishlistProducts.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-12 text-center">
           <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-xl text-gray-600 mb-2">Your wishlist is empty</p>
-          <p className="text-sm text-gray-500 mb-6">Start adding items you love!</p>
+          <p className="text-xl text-gray-600 mb-2">Danh sách yêu thích trống</p>
+          <p className="text-sm text-gray-500 mb-6">Hãy thêm những sản phẩm bạn yêu thích!</p>
           <Link
             to="/"
             className="inline-block bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#E55D00] transition-colors font-semibold"
           >
-            Browse Products
+            Khám phá sản phẩm
           </Link>
         </div>
       ) : (
@@ -619,9 +636,9 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
       <div className="bg-gradient-to-br from-orange-500 to-yellow-500 rounded-lg shadow-lg p-8 text-white">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-sm opacity-90 mb-2">Available Points</p>
+            <p className="text-sm opacity-90 mb-2">Điểm khả dụng</p>
             <p className="text-5xl font-bold mb-2">{user.points.toLocaleString()}</p>
-            <p className="text-sm opacity-90">≈ {user.points.toLocaleString()}đ discount value</p>
+            <p className="text-sm opacity-90">≈ {user.points.toLocaleString()}đ giá trị giảm giá</p>
           </div>
           <Award className="w-16 h-16 opacity-80" />
         </div>
@@ -629,8 +646,8 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
         {nextTier && (
           <div className="bg-white bg-opacity-20 rounded-lg p-4">
             <div className="flex items-center justify-between text-sm mb-3">
-              <span>Progress to {nextTier.name} Tier</span>
-              <span className="font-bold">{pointsToNextTier.toLocaleString()} pts needed</span>
+              <span>Tiến tới hạng {nextTier.name}</span>
+              <span className="font-bold">Cần {pointsToNextTier.toLocaleString()} điểm</span>
             </div>
             <div className="w-full bg-white bg-opacity-30 rounded-full h-3">
               <div
@@ -646,14 +663,14 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
 
       {/* Membership Tiers */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-bold mb-6">Membership Tiers</h2>
+        <h2 className="text-xl font-bold mb-6">Hạng thành viên</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {membershipTiers.map((tier: any) => (
             <div
               key={tier.name}
               className={`border-2 rounded-lg p-4 transition-all ${tier.name === currentTier.name
-                  ? 'border-[#FF6B00] bg-orange-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                ? 'border-[#FF6B00] bg-orange-50'
+                : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
               <div className="flex items-center justify-between mb-3">
@@ -664,13 +681,13 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
                   <div>
                     <h3 className="font-bold">{tier.name}</h3>
                     <p className="text-xs text-gray-500">
-                      {tier.minPoints.toLocaleString()}{tier.maxPoints === Infinity ? '+' : ` - ${tier.maxPoints.toLocaleString()}`} pts
+                      {tier.minPoints.toLocaleString()}{tier.maxPoints === Infinity ? '+' : ` - ${tier.maxPoints.toLocaleString()}`} điểm
                     </p>
                   </div>
                 </div>
                 {tier.name === currentTier.name && (
                   <span className="bg-[#FF6B00] text-white text-xs px-3 py-1 rounded-full font-semibold">
-                    Current
+                    Hiện tại
                   </span>
                 )}
               </div>
@@ -690,17 +707,17 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
       {/* Points History */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b bg-white">
-          <h2 className="text-xl font-bold">Points History</h2>
+          <h2 className="text-xl font-bold">Lịch sử điểm</h2>
         </div>
         <div className="divide-y max-h-[600px] overflow-y-auto">
           {pointsHistory.map((transaction: any, index: number) => (
             <div key={index} className="p-6 flex items-center justify-between hover:bg-white transition-colors">
               <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${transaction.type === 'earned'
-                    ? 'bg-green-100'
-                    : transaction.type === 'used'
-                      ? 'bg-red-100'
-                      : 'bg-blue-100'
+                  ? 'bg-green-100'
+                  : transaction.type === 'used'
+                    ? 'bg-red-100'
+                    : 'bg-blue-100'
                   }`}>
                   {transaction.type === 'earned' ? (
                     <TrendingUp className="w-5 h-5 text-green-600" />
@@ -728,12 +745,12 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
           <Award className="w-6 h-6 text-blue-600" />
-          How Points Work
+          Cách tích điểm
         </h3>
         <ul className="space-y-2 text-sm text-gray-700">
           <li className="flex items-start gap-2">
             <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <span>Earn 1-3% points on every purchase based on your tier</span>
+            <span>Tích lũy 1-3% điểm trên mỗi đơn hàng tùy theo hạng thành viên</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -741,15 +758,15 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <span>Use up to 10% of order value with points</span>
+            <span>Sử dụng tối đa 10% giá trị đơn hàng bằng điểm</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <span>Points expire after 1 year from earning date</span>
+            <span>Điểm hết hạn sau 1 năm kể từ ngày tích lũy</span>
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <span>Bonus points on birthday month and special promotions</span>
+            <span>Điểm thưởng vào tháng sinh nhật và các chương trình khuyến mãi đặc biệt</span>
           </li>
         </ul>
       </div>
@@ -758,7 +775,11 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
 }
 
 // Settings Section Component
-function SettingsSection({ user, token, onUpdateUser }: any) {
+function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
+  const navigate = useNavigate();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const [formData, setFormData] = useState({
     name: user.name || '',
     email: user.email || '',
@@ -779,14 +800,14 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={{ position: 'relative', zIndex: 10 }}>
       {/* Personal Information */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-bold mb-6">Personal Information</h2>
+        <h2 className="text-xl font-bold mb-6">Thông tin cá nhân</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
+              Họ và tên
             </label>
             <input
               type="text"
@@ -797,7 +818,7 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
+              Địa chỉ Email
             </label>
             <input
               type="email"
@@ -808,7 +829,7 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
+              Số điện thoại
             </label>
             <input
               type="tel"
@@ -819,7 +840,7 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Postal Code
+              Mã bưu chính
             </label>
             <input
               type="text"
@@ -830,7 +851,7 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Default Address
+              Địa chỉ mặc định
             </label>
             <input
               type="text"
@@ -840,42 +861,62 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
             />
           </div>
         </div>
-        <div className="mt-6">
-          <button
-            onClick={async () => {
-              setSaveStatus('');
-              try {
-                const res = await fetch(`${API_URL}/api/customer/profile`, {
-                  method: 'PUT',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                  },
-                  body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone
-                  })
-                });
-                const data = await res.json();
-                if (data.success) {
-                  onUpdateUser(data.customer);
-                  setSaveStatus('Cập nhật thành công!');
-                } else {
-                  setSaveStatus(data.message || 'Lỗi cập nhật');
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={async () => {
+                setSaveStatus('');
+                try {
+                  const res = await fetch(`${API_URL}/api/customer/profile`, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                      name: formData.name,
+                      email: formData.email,
+                      phone: formData.phone
+                    })
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    onUpdateUser(data.customer);
+                    setSaveStatus('Cập nhật thành công!');
+                  } else {
+                    setSaveStatus(data.message || 'Lỗi cập nhật');
+                  }
+                } catch {
+                  setSaveStatus('Lỗi kết nối máy chủ');
                 }
-              } catch {
-                setSaveStatus('Lỗi kết nối máy chủ');
-              }
-            }}
-            className="bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#E55D00] transition-colors font-semibold"
-          >
-            Lưu thay đổi
-          </button>
+              }}
+              className="bg-[#FF6B00] text-white px-8 py-3 rounded-lg hover:bg-[#E55D00] transition-colors font-semibold"
+            >
+              Lưu thay đổi
+            </button>
+            <button
+              onClick={() => {
+                setFormData({
+                  name: user.name || '',
+                  email: user.email || '',
+                  phone: user.phone || '',
+                  address: '',
+                  postalCode: '',
+                  currentPassword: '',
+                  newPassword: '',
+                  confirmPassword: ''
+                });
+                setSaveStatus('');
+              }}
+              className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold"
+            >
+              Huỷ
+            </button>
+          </div>
           {saveStatus && (
-            <span className={`ml-4 text-sm font-medium ${saveStatus.includes('thành công') ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`mt-3 text-sm font-medium ${saveStatus.includes('thành công') ? 'text-green-600' : 'text-red-600'}`}>
               {saveStatus}
-            </span>
+            </p>
           )}
         </div>
       </div>
@@ -884,12 +925,12 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           <Shield className="w-6 h-6 text-gray-600" />
-          Change Password
+          Đổi mật khẩu
         </h2>
         <div className="space-y-4 max-w-md">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Current Password
+              Mật khẩu hiện tại
             </label>
             <input
               type="password"
@@ -901,7 +942,7 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              New Password
+              Mật khẩu mới
             </label>
             <input
               type="password"
@@ -913,7 +954,7 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm New Password
+              Xác nhận mật khẩu mới
             </label>
             <input
               type="password"
@@ -924,7 +965,7 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
             />
           </div>
           <button className="bg-[#FF6B00] text-white px-6 py-3 rounded-lg hover:bg-[#E55D00] transition-colors font-semibold">
-            Update Password
+            Cập nhật mật khẩu
           </button>
         </div>
       </div>
@@ -933,7 +974,7 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           <Bell className="w-6 h-6 text-gray-600" />
-          Notification Preferences
+          Tùy chọn thông báo
         </h2>
         <div className="space-y-4">
           {Object.entries(notifications).map(([key, value]) => (
@@ -943,10 +984,10 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {key === 'orderUpdates' && 'Get updates about your orders'}
-                  {key === 'promotions' && 'Receive exclusive deals and discounts'}
-                  {key === 'newsletter' && 'Weekly newsletter with new arrivals'}
-                  {key === 'newProducts' && 'Notifications for new product launches'}
+                  {key === 'orderUpdates' && 'Nhận cập nhật về đơn hàng của bạn'}
+                  {key === 'promotions' && 'Nhận ưu đãi và giảm giá độc quyền'}
+                  {key === 'newsletter' && 'Bản tin hàng tuần về sản phẩm mới'}
+                  {key === 'newProducts' && 'Thông báo khi có sản phẩm mới ra mắt'}
                 </p>
               </div>
               <input
@@ -964,34 +1005,88 @@ function SettingsSection({ user, token, onUpdateUser }: any) {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           <CreditCard className="w-6 h-6 text-gray-600" />
-          Saved Payment Methods
+          Phương thức thanh toán đã lưu
         </h2>
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-4">
-              <CreditCard className="w-8 h-8 text-gray-400" />
-              <div>
-                <p className="font-semibold">Visa •••• 4242</p>
-                <p className="text-sm text-gray-500">Expires 12/2027</p>
-              </div>
+          <div className="flex items-center justify-center p-8 border border-gray-200 rounded-lg text-gray-400">
+            <div className="text-center">
+              <CreditCard className="w-10 h-10 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Chưa có phương thức thanh toán nào</p>
             </div>
-            <button className="text-red-600 hover:underline text-sm font-medium">Remove</button>
           </div>
           <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors font-medium">
-            + Add New Payment Method
+            + Thêm phương thức thanh toán
           </button>
         </div>
       </div>
 
       {/* Danger Zone */}
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <h2 className="text-xl font-bold text-red-800 mb-4">Danger Zone</h2>
+        <h2 className="text-xl font-bold text-red-800 mb-4 flex items-center gap-2">
+          <Trash2 className="w-6 h-6" />
+          Vùng nguy hiểm
+        </h2>
         <p className="text-sm text-gray-700 mb-4">
-          Once you delete your account, there is no going back. Please be certain.
+          Khi bạn xóa tài khoản, tất cả dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục lại. Hãy cân nhắc kỹ.
         </p>
-        <button className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold">
-          Delete Account
-        </button>
+        {deleteError && (
+          <p className="text-sm text-red-600 mb-3 font-medium">{deleteError}</p>
+        )}
+        {!showDeleteConfirm ? (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold"
+          >
+            Xóa tài khoản
+          </button>
+        ) : (
+          <div className="bg-red-100 border border-red-300 rounded-lg p-4">
+            <p className="text-red-800 font-semibold mb-3">Bạn có chắc chắn muốn xóa tài khoản?</p>
+            <p className="text-sm text-red-700 mb-4">Hành động này không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  setDeleteLoading(true);
+                  setDeleteError('');
+                  try {
+                    const res = await fetch(`${API_URL}/api/customer/profile`, {
+                      method: 'DELETE',
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      onDeleteAccount();
+                      navigate('/');
+                    } else {
+                      setDeleteError(data.message || 'Không thể xóa tài khoản');
+                    }
+                  } catch {
+                    setDeleteError('Lỗi kết nối máy chủ');
+                  } finally {
+                    setDeleteLoading(false);
+                  }
+                }}
+                disabled={deleteLoading}
+                className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {deleteLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Đang xóa...
+                  </>
+                ) : (
+                  'Xác nhận xóa'
+                )}
+              </button>
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}
+                className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+              >
+                Hủy bỏ
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

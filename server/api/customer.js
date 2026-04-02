@@ -8,6 +8,7 @@ const ReviewDAO = require('../models/ReviewDAO');
 const ArticleDAO = require('../models/ArticleDAO');
 const BrandDAO = require('../models/BrandDAO');
 const { createToken, verifyToken } = require('../utils/jwtAuth');
+const { generateOTP, sendOTP } = require('../utils/EmailUtil');
 
 // ==================== ARTICLES ====================
 
@@ -153,13 +154,11 @@ router.get('/products/:id/reviews', async (req, res) => {
 });
 
 // POST /api/customer/products/:id/reviews
-// Authentication is optional or you can add a simple check.
 router.post('/products/:id/reviews', async (req, res) => {
     try {
         const { userName, rating, comment, userId } = req.body;
         const productId = req.params.id;
         
-        // Prevent duplicate rating if userId is provided
         if (userId) {
             const existingReview = await ReviewDAO.selectByUserAndProduct(userId, productId);
             if (existingReview) {
@@ -183,47 +182,183 @@ router.post('/products/:id/reviews', async (req, res) => {
 
 // ==================== AUTH ====================
 
-// POST /api/customer/signup
+// POST /api/customer/signup — Register + send OTP (account inactive until verified)
 router.post('/signup', async (req, res) => {
     try {
-        const { username, password, name, email, phone } = req.body;
+        const { username, password, email, phone } = req.body;
+        if (!email || !password || !username) {
+            return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ thông tin' });
+        }
         // Check duplicates
         const existingUser = await CustomerDAO.selectByUsername(username);
         if (existingUser) {
-            return res.status(400).json({ success: false, message: 'Username đã tồn tại' });
+            return res.status(400).json({ success: false, message: 'Tên đăng nhập đã tồn tại' });
         }
         const existingEmail = await CustomerDAO.selectByEmail(email);
-        if (existingEmail) {
-            return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
+        if (existingEmail && existingEmail.active) {
+            return res.status(400).json({ success: false, message: 'Email đã được sử dụng' });
         }
-        const token = Math.random().toString(36).substring(2);
-        const customer = await CustomerDAO.insert({ username, password, name, email, phone, token });
-        res.status(201).json({ success: true, message: 'Đăng ký thành công', id: customer._id });
+
+        // If email exists but not yet activated, delete old record so they can re-register
+        if (existingEmail && !existingEmail.active) {
+            await CustomerDAO.delete(existingEmail._id);
+        }
+
+        // Generate OTP
+        const otp = generateOTP();
+        const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+        // Create customer with active: false
+        const name = username;
+        await CustomerDAO.insert({
+            username, password, name, email,
+            phone: phone || '', token: '',
+            active: false, otp, otpExpiry,
+        });
+
+        // Send OTP email
+        const emailResult = await sendOTP(email, otp, 'verify');
+        if (!emailResult.success) {
+            return res.status(500).json({ success: false, message: 'Không thể gửi email xác thực. Vui lòng thử lại.' });
+        }
+
+        res.status(201).json({
+            success: true,
+            message: 'Đã gửi mã xác thực tới email của bạn.',
+            email,
+        });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/customer/verify-otp — Verify OTP (and activate account if purpose is 'verify')
+router.post('/verify-otp', async (req, res) => {
+    try {
+        const { email, otp, purpose } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: 'Vui lòng nhập email và mã OTP' });
+        }
+
+        const result = await CustomerDAO.verifyOTP(email, otp);
+        if (!result.valid) {
+            return res.status(400).json({ success: false, message: result.reason });
+        }
+
+        // Only activate account for signup verification
+        if (purpose !== 'reset') {
+            await CustomerDAO.activateAccount(email);
+            return res.json({ success: true, message: 'Xác thực tài khoản thành công! Bạn có thể đăng nhập.' });
+        }
+
+        res.json({ success: true, message: 'Xác thực OTP thành công.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/customer/resend-otp — Resend OTP
+router.post('/resend-otp', async (req, res) => {
+    try {
+        const { email, purpose } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Vui lòng nhập email' });
+        }
+
+        const customer = await CustomerDAO.selectByEmail(email);
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Email không tồn tại' });
+        }
+
+        const otp = generateOTP();
+        const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+        await CustomerDAO.updateOTP(email, otp, otpExpiry);
+
+        const emailResult = await sendOTP(email, otp, purpose || 'verify');
+        if (!emailResult.success) {
+            return res.status(500).json({ success: false, message: 'Không thể gửi email. Vui lòng thử lại.' });
+        }
+
+        res.json({ success: true, message: 'Đã gửi lại mã xác thực.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/customer/forgot-password — Send OTP for password reset
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Vui lòng nhập email' });
+        }
+
+        const customer = await CustomerDAO.selectByEmail(email);
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Email không tồn tại trong hệ thống' });
+        }
+
+        const otp = generateOTP();
+        const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+        await CustomerDAO.updateOTP(email, otp, otpExpiry);
+
+        const emailResult = await sendOTP(email, otp, 'reset');
+        if (!emailResult.success) {
+            return res.status(500).json({ success: false, message: 'Không thể gửi email. Vui lòng thử lại.' });
+        }
+
+        res.json({ success: true, message: 'Đã gửi mã xác thực tới email của bạn.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST /api/customer/reset-password — Verify OTP + change password
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ thông tin' });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: 'Mật khẩu phải có ít nhất 6 ký tự' });
+        }
+
+        const result = await CustomerDAO.verifyOTP(email, otp);
+        if (!result.valid) {
+            return res.status(400).json({ success: false, message: result.reason });
+        }
+
+        await CustomerDAO.updatePassword(email, newPassword);
+        res.json({ success: true, message: 'Đổi mật khẩu thành công! Bạn có thể đăng nhập.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
 // POST /api/customer/login
 router.post('/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
-        const customer = await CustomerDAO.selectByUsername(username);
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'Vui lòng nhập email và mật khẩu' });
+        }
+        const customer = await CustomerDAO.selectByEmail(email);
         if (!customer) {
-            return res.status(401).json({ success: false, message: 'Sai tài khoản hoặc mật khẩu' });
+            return res.status(401).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
         }
         if (!customer.active) {
-            return res.status(401).json({ success: false, message: 'Tài khoản chưa được kích hoạt' });
+            return res.status(401).json({ success: false, message: 'Tài khoản chưa được kích hoạt. Vui lòng xác thực OTP.', needVerify: true, email: customer.email });
         }
         const isMatch = await customer.comparePassword(password);
         if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'Sai tài khoản hoặc mật khẩu' });
+            return res.status(401).json({ success: false, message: 'Email hoặc mật khẩu không đúng' });
         }
         const jwtToken = createToken({ id: customer._id, username: customer.username, role: 'customer' });
         res.json({
             success: true,
             token: jwtToken,
-            customer: { id: customer._id, username: customer.username, name: customer.name, email: customer.email },
+            customer: { id: customer._id, username: customer.username, name: customer.name, email: customer.email, phone: customer.phone, createdAt: customer.createdAt },
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -255,7 +390,6 @@ router.post('/orders', verifyToken, async (req, res) => {
             return res.status(400).json({ success: false, message: 'Giỏ hàng trống' });
         }
 
-        // Calculate total from items
         const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
         const order = await OrderDAO.insert({
@@ -319,6 +453,22 @@ router.put('/profile', verifyToken, async (req, res) => {
         res.json({ success: true, customer });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE /api/customer/profile — Xóa tài khoản
+router.delete('/profile', verifyToken, async (req, res) => {
+    try {
+        // Delete all orders belonging to this customer
+        await OrderDAO.deleteByCustomer(req.user.id);
+        // Delete the customer account
+        const result = await CustomerDAO.delete(req.user.id);
+        if (!result) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
+        }
+        res.json({ success: true, message: 'Tài khoản đã được xóa thành công' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 

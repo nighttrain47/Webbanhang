@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router';
+import { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router';
 
 interface HeaderProps {
   cartCount: number;
@@ -14,6 +15,31 @@ const NAV_LINKS = [
 
 export default function Header({ cartCount, user }: HeaderProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
+  // Close search on route change
+  useEffect(() => {
+    setSearchOpen(false);
+    setSearchQuery('');
+  }, [location.pathname]);
+
+  const handleSearch = () => {
+    const q = searchQuery.trim();
+    if (q) {
+      navigate(`/search?q=${encodeURIComponent(q)}`);
+      setSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   return (
     <header
@@ -79,25 +105,114 @@ export default function Header({ cartCount, user }: HeaderProps) {
 
         {/* Right Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-          {/* Search */}
-          <Link
-            to="/search"
-            style={{
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '50%',
-              color: '#6e7881',
-              textDecoration: 'none',
-              transition: 'background 150ms',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f4f6')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>search</span>
-          </Link>
+          {/* Search - Expandable */}
+          <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                overflow: 'hidden',
+                borderRadius: '24px',
+                border: searchOpen ? '1.5px solid #00658d' : '1.5px solid transparent',
+                background: searchOpen ? '#f8fafb' : 'transparent',
+                transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+                width: searchOpen ? '280px' : '40px',
+                height: '40px',
+              }}
+            >
+              {/* Search Icon / Button */}
+              <button
+                onClick={() => {
+                  if (!searchOpen) {
+                    setSearchOpen(true);
+                  } else {
+                    handleSearch();
+                  }
+                }}
+                style={{
+                  width: '40px',
+                  minWidth: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  color: searchOpen ? '#00658d' : '#6e7881',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'color 150ms',
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  if (!searchOpen) e.currentTarget.style.background = '#f1f4f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+                title="Tìm kiếm"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>search</span>
+              </button>
+
+              {/* Search Input */}
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSearch();
+                  if (e.key === 'Escape') {
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  }
+                }}
+                placeholder="Tìm kiếm sản phẩm..."
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  fontSize: '13.5px',
+                  color: '#1a2530',
+                  fontFamily: "'Inter', sans-serif",
+                  padding: '0 4px',
+                  opacity: searchOpen ? 1 : 0,
+                  transition: 'opacity 200ms',
+                }}
+              />
+
+              {/* Close Button */}
+              {searchOpen && (
+                <button
+                  onClick={() => {
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  style={{
+                    width: '32px',
+                    minWidth: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '50%',
+                    color: '#6e7881',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    marginRight: '4px',
+                    transition: 'background 150ms',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#e8ecef')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+                </button>
+              )}
+            </div>
+          </div>
 
           {/* Account */}
           <Link
@@ -165,8 +280,6 @@ export default function Header({ cartCount, user }: HeaderProps) {
             )}
           </Link>
         </div>
-
-
       </div>
     </header>
   );

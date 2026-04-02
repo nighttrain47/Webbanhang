@@ -123,9 +123,9 @@ export default function SearchPage({ addToCart, wishlist, toggleWishlist, cartCo
                 <ProductCard
                   key={product._id || product.id}
                   product={product}
-                  onAddToCart={addToCart}
-                  onToggleWishlist={toggleWishlist}
-                  isInWishlist={wishlist.includes(product._id || (product.id as string))}
+                  addToCart={addToCart}
+                  wishlist={wishlist}
+                  toggleWishlist={toggleWishlist}
                 />
               ))}
             </div>

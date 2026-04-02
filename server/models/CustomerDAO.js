@@ -39,6 +39,14 @@ const customerSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        otp: {
+            type: String,
+            default: '',
+        },
+        otpExpiry: {
+            type: Date,
+            default: null,
+        },
     },
     {
         timestamps: true,
@@ -93,6 +101,41 @@ const CustomerDAO = {
             return await customer.save();
         }
         return null;
+    },
+
+    // ===== OTP Methods =====
+
+    updateOTP: async (email, otp, expiry) => {
+        return await Customer.findOneAndUpdate(
+            { email },
+            { otp, otpExpiry: expiry },
+            { new: true }
+        );
+    },
+
+    verifyOTP: async (email, otp) => {
+        const customer = await Customer.findOne({ email });
+        if (!customer) return { valid: false, reason: 'Email không tồn tại' };
+        if (!customer.otp || customer.otp !== otp) return { valid: false, reason: 'Mã OTP không đúng' };
+        if (customer.otpExpiry && new Date() > customer.otpExpiry) return { valid: false, reason: 'Mã OTP đã hết hạn' };
+        return { valid: true, customer };
+    },
+
+    activateAccount: async (email) => {
+        return await Customer.findOneAndUpdate(
+            { email },
+            { active: true, otp: '', otpExpiry: null },
+            { new: true }
+        );
+    },
+
+    updatePassword: async (email, newPassword) => {
+        const customer = await Customer.findOne({ email });
+        if (!customer) return null;
+        customer.password = newPassword; // Will be hashed by pre-save hook
+        customer.otp = '';
+        customer.otpExpiry = null;
+        return await customer.save();
     },
 
     delete: async (id) => {
