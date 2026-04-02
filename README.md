@@ -39,7 +39,7 @@
 | Dịch vụ | URL | Platform |
 | :--- | :--- | :--- |
 | 🌐 Customer Website | <https://hobbyshop-customer.vercel.app> | Vercel |
-| 🛠️ Admin Panel | <https://hobby-shop-admin.vercel.app> | Vercel |
+| 🛠️ Admin Panel | <https://hobbyshop-admin.vercel.app> | Vercel |
 | ☁️ Backend API | <https://hobbyshop-api.onrender.com> | Render |
 | 💓 Health Check | <https://hobbyshop-api.onrender.com/api/health> | Render |
 
