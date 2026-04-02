@@ -269,10 +269,15 @@ function CustomerDetailModal({ customer, onClose }: { customer: Customer; onClos
   const recentOrders: any[] = [];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold">Chi tiết khách hàng</h2>
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black bg-opacity-50" style={{ zIndex: 999 }} onClick={onClose}></div>
+      
+      {/* Modal Container */}
+      <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none" style={{ zIndex: 1000 }}>
+        <div className="bg-white rounded-lg w-full overflow-y-auto pointer-events-auto" style={{ maxWidth: '48rem', maxHeight: '90vh' }}>
+          <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between" style={{ zIndex: 10 }}>
+            <h2 className="text-xl font-bold">Chi tiết khách hàng</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
             <span className="text-2xl">&times;</span>
           </button>
@@ -368,7 +373,8 @@ function CustomerDetailModal({ customer, onClose }: { customer: Customer; onClos
             </button>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
