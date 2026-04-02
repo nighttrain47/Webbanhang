@@ -213,7 +213,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
   const renderContent = () => {
     switch (activeTab) {
       case 'profile':
-        return <ProfileSection user={{ ...user, points: userPoints }} currentTier={currentTier} nextTier={nextTier} pointsToNextTier={pointsToNextTier} mockOrders={mappedOrders} wishlist={wishlist} monthlyPoints={monthlyPoints} />;
+        return <ProfileSection user={{ ...user, points: userPoints }} currentTier={currentTier} nextTier={nextTier} pointsToNextTier={pointsToNextTier} mockOrders={mappedOrders} wishlist={wishlist} monthlyPoints={monthlyPoints} token={token} />;
 
       case 'orders':
         return <OrdersSection orders={filteredOrders} orderFilter={orderFilter} setOrderFilter={setOrderFilter} isLoading={ordersLoading} />;
@@ -376,8 +376,28 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
 }
 
 // Profile Section Component
-function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrders, wishlist, monthlyPoints }: any) {
+function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrders, wishlist, monthlyPoints, token }: any) {
   const userPoints = user.points || 0;
+  const [defaultAddress, setDefaultAddress] = useState<string>('');
+
+  useEffect(() => {
+    if (token) {
+      fetch(`${API_URL}/api/customer/addresses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.addresses) {
+          const defaultAdd = data.addresses.find((a: any) => a.isDefault);
+          if (defaultAdd) {
+            setDefaultAddress(`${defaultAdd.address}, ${defaultAdd.city}`);
+          }
+        }
+      })
+      .catch(() => {});
+    }
+  }, [token]);
+
   return (
     <div className="space-y-6">
       {/* Points Overview */}
@@ -475,7 +495,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
             <MapPin className="w-5 h-5 text-gray-400 mt-1" />
             <div>
               <p className="text-sm text-gray-500">Địa chỉ mặc định</p>
-              <p className="font-semibold text-gray-400">{user.address || 'Chưa cập nhật'}</p>
+              <p className="font-semibold text-gray-800">{defaultAddress || user.address || 'Chưa cập nhật'}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">

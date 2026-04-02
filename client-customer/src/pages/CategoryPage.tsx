@@ -60,16 +60,18 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
   const [products, setProducts] = useState<Product[]>([]);
   const [sortBy, setSortBy] = useState('newest');
   const [selectedPrices, setSelectedPrices] = useState<number[]>([]);
+  const [customPriceMin, setCustomPriceMin] = useState<string>('');
+  const [customPriceMax, setCustomPriceMax] = useState<string>('');
+  const [appliedCustomPrice, setAppliedCustomPrice] = useState<{min: number, max: number} | null>(null);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [brandList, setBrandList] = useState<{_id: string; name: string}[]>([]);
   const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
-  // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [categoryId, selectedPrices, selectedBrands, sortBy]);
+  }, [categoryId, selectedPrices, selectedBrands, sortBy, appliedCustomPrice]);
 
   // Fetch brands and categories from API
   useEffect(() => {
@@ -114,6 +116,9 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
     // Reset filters on category change
     setSelectedPrices([]);
     setSelectedBrands([]);
+    setCustomPriceMin('');
+    setCustomPriceMax('');
+    setAppliedCustomPrice(null);
 
     if (['new-arrivals', 'all'].includes(categoryId)) {
       fetch(`${API_URL}/api/customer/products/new?limit=50`).then(r => r.json()).then(setProducts).catch(console.error);
@@ -170,12 +175,20 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
     let result = [...products];
 
     // Price filter
-    if (selectedPrices.length > 0) {
+    if (selectedPrices.length > 0 || appliedCustomPrice) {
       result = result.filter(p => {
-        return selectedPrices.some(i => {
-          const range = PRICE_RANGES[i];
-          return p.price >= range.min && p.price < range.max;
-        });
+        let matchesCheckbox = false;
+        if (selectedPrices.length > 0) {
+          matchesCheckbox = selectedPrices.some(i => {
+            const range = PRICE_RANGES[i];
+            return p.price >= range.min && p.price < range.max;
+          });
+        }
+        let matchesCustom = false;
+        if (appliedCustomPrice) {
+          matchesCustom = p.price >= appliedCustomPrice.min && p.price <= appliedCustomPrice.max;
+        }
+        return matchesCheckbox || matchesCustom;
       });
     }
 
@@ -198,7 +211,7 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
     }
 
     return result;
-  }, [products, selectedPrices, selectedBrands, sortBy]);
+  }, [products, selectedPrices, selectedBrands, sortBy, appliedCustomPrice]);
 
   const isActive = (slug: string) => categoryId === slug;
 
@@ -297,6 +310,68 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
                   {range.label}
                 </label>
               ))}
+
+              {/* Custom price range */}
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px dashed #e0e3e5' }}>
+                <p style={{ fontSize: '12px', fontWeight: 600, color: '#3e4850', marginBottom: '8px' }}>Tự nhập khoảng giá</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <input
+                    type="number"
+                    placeholder="TỪ (VNĐ)"
+                    value={customPriceMin}
+                    onChange={e => setCustomPriceMin(e.target.value)}
+                    style={{
+                      width: '100%', padding: '6px 8px', borderRadius: '6px',
+                      border: '1px solid #e0e3e5', fontSize: '12px', outline: 'none'
+                    }}
+                  />
+                  <span style={{ color: '#8a949d' }}>-</span>
+                  <input
+                    type="number"
+                    placeholder="ĐẾN (VNĐ)"
+                    value={customPriceMax}
+                    onChange={e => setCustomPriceMax(e.target.value)}
+                    style={{
+                      width: '100%', padding: '6px 8px', borderRadius: '6px',
+                      border: '1px solid #e0e3e5', fontSize: '12px', outline: 'none'
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    const min = parseInt(customPriceMin) || 0;
+                    const max = parseInt(customPriceMax) || Infinity;
+                    if (min <= max || max === Infinity) {
+                      setAppliedCustomPrice({ min, max });
+                    }
+                  }}
+                  style={{
+                    width: '100%', padding: '8px', borderRadius: '6px',
+                    background: '#00658d', color: '#fff', fontSize: '12px',
+                    fontWeight: 600, border: 'none', cursor: 'pointer'
+                  }}
+                >
+                  Áp dụng
+                </button>
+                {appliedCustomPrice && (
+                  <div style={{ marginTop: '12px', padding: '8px', background: '#f0fdf4', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontSize: '11px', color: '#16a34a', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: 600 }}>Giá tuỳ chọn:</span>
+                      <button 
+                        onClick={() => {
+                          setAppliedCustomPrice(null);
+                          setCustomPriceMin('');
+                          setCustomPriceMax('');
+                        }} 
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '11px', textDecoration: 'underline', padding: 0 }}
+                      >Xoá</button>
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#16a34a' }}>
+                      {appliedCustomPrice.min.toLocaleString()}đ - {appliedCustomPrice.max === Infinity ? 'Trở lên' : appliedCustomPrice.max.toLocaleString() + 'đ'}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Brand Filter */}
@@ -389,13 +464,19 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
                 <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#8a949d', opacity: 0.3, marginBottom: '8px', display: 'block' }}>inventory_2</span>
                 <p style={{ fontSize: '15px', fontWeight: 600, color: '#3e4850', marginBottom: '4px' }}>Không tìm thấy sản phẩm</p>
                 <p style={{ fontSize: '13px', color: '#8a949d', marginBottom: '16px' }}>
-                  {selectedPrices.length > 0 || selectedBrands.length > 0
+                  {selectedPrices.length > 0 || appliedCustomPrice || selectedBrands.length > 0
                     ? 'Thử bỏ bớt bộ lọc để xem thêm sản phẩm.'
                     : 'Danh mục này đang được cập nhật.'}
                 </p>
-                {(selectedPrices.length > 0 || selectedBrands.length > 0) && (
+                {(selectedPrices.length > 0 || appliedCustomPrice || selectedBrands.length > 0) && (
                   <button
-                    onClick={() => { setSelectedPrices([]); setSelectedBrands([]); }}
+                    onClick={() => { 
+                      setSelectedPrices([]); 
+                      setSelectedBrands([]); 
+                      setAppliedCustomPrice(null);
+                      setCustomPriceMin('');
+                      setCustomPriceMax('');
+                    }}
                     style={{ fontSize: '13px', fontWeight: 600, color: '#00658d', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     Xoá tất cả bộ lọc
