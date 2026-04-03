@@ -301,8 +301,8 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
           <div className="hidden lg:block" style={{ width: '280px', flexShrink: 0 }}>
             <div className="bg-white rounded-lg shadow-sm p-6" style={{ position: 'sticky', top: '96px', zIndex: 0 }}>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-orange-600 to-orange-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <User className="w-10 h-10 text-white" />
+                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #ff7d36, #ffaa5b)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#fff', fontSize: '32px', fontWeight: 800, textTransform: 'uppercase', boxShadow: '0 8px 24px rgba(255,125,54,0.25)' }}>
+                  {user.name ? user.name.charAt(0) : 'U'}
                 </div>
                 <h2 className="font-bold text-lg">{user.name}</h2>
                 <p className="text-sm text-gray-500">{user.email}</p>
