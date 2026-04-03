@@ -1,6 +1,8 @@
 import { Link } from 'react-router';
+import { useState } from 'react';
 
 export default function Footer() {
+  const [email, setEmail] = useState('');
   return (
     <footer style={{ background: '#ffffff', borderTop: '1px solid #e8ecef', fontFamily: "'Inter', sans-serif" }}>
       <div className="max-w-7xl mx-auto" style={{ padding: '48px 24px 24px' }}>
@@ -60,6 +62,8 @@ export default function Footer() {
             <div style={{ display: 'flex', gap: '6px' }}>
               <input
                 type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="Email của bạn"
                 style={{
                   flex: 1,
@@ -72,7 +76,13 @@ export default function Footer() {
                   minWidth: 0,
                 }}
               />
-              <button style={{
+              <button
+                onClick={() => {
+                  if (!email) return;
+                  alert('Cảm ơn bạn đã đăng ký theo dõi bản tin!');
+                  setEmail('');
+                }}
+                style={{
                 width: '38px',
                 minWidth: '38px',
                 height: '38px',

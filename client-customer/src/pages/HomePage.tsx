@@ -118,6 +118,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
   const [newProducts, setNewProducts] = useState<Product[]>([]);
   const [hotProducts, setHotProducts] = useState<Product[]>([]);
   const [preorderProducts, setPreorderProducts] = useState<Product[]>([]);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
 
   useEffect(() => {
     document.title = 'FigureCurator — Bộ sưu tập Figure & Anime Goods cao cấp';
@@ -565,6 +566,8 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
         <div style={{ display: 'flex', gap: '8px', maxWidth: '400px', margin: '0 auto' }}>
           <input
             type="email"
+            value={newsletterEmail}
+            onChange={e => setNewsletterEmail(e.target.value)}
             placeholder="Nhập email của bạn"
             style={{
               flex: 1, padding: '12px 16px', borderRadius: '10px',
@@ -572,7 +575,13 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
               outline: 'none', background: '#fff', minWidth: 0,
             }}
           />
-          <button style={{
+          <button 
+            onClick={() => {
+              if (!newsletterEmail) return;
+              alert('Cảm ơn bạn đã đăng ký! Thông báo cập nhật sẽ gửi về: ' + newsletterEmail);
+              setNewsletterEmail('');
+            }}
+            style={{
             padding: '12px 20px', borderRadius: '10px',
             background: '#00658d', color: '#fff', fontWeight: 600,
             fontSize: '13px', border: 'none', cursor: 'pointer',
