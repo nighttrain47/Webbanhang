@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('');
   return (
     <footer style={{ background: '#ffffff', borderTop: '1px solid #e8ecef', fontFamily: "'Inter', sans-serif" }}>
       <div className="max-w-7xl mx-auto" style={{ padding: '48px 24px 24px' }}>
@@ -79,8 +80,9 @@ export default function Footer() {
               <button
                 onClick={() => {
                   if (!email) return;
-                  alert('Cảm ơn bạn đã đăng ký theo dõi bản tin!');
+                  setStatus('Cảm ơn bạn đã đăng ký theo dõi!');
                   setEmail('');
+                  setTimeout(() => setStatus(''), 5000);
                 }}
                 style={{
                 width: '38px',
@@ -98,6 +100,11 @@ export default function Footer() {
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>
               </button>
             </div>
+            {status && (
+              <p style={{ marginTop: '8px', fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>
+                {status}
+              </p>
+            )}
           </div>
         </div>
 

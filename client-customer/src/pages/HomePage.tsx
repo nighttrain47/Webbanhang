@@ -119,6 +119,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
   const [hotProducts, setHotProducts] = useState<Product[]>([]);
   const [preorderProducts, setPreorderProducts] = useState<Product[]>([]);
   const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState('');
 
   useEffect(() => {
     document.title = 'FigureCurator — Bộ sưu tập Figure & Anime Goods cao cấp';
@@ -578,8 +579,9 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
           <button 
             onClick={() => {
               if (!newsletterEmail) return;
-              alert('Cảm ơn bạn đã đăng ký! Thông báo cập nhật sẽ gửi về: ' + newsletterEmail);
+              setSubscribeStatus('Cảm ơn. Thông báo cập nhật sẽ gửi về email của bạn!');
               setNewsletterEmail('');
+              setTimeout(() => setSubscribeStatus(''), 5000);
             }}
             style={{
             padding: '12px 20px', borderRadius: '10px',
@@ -590,6 +592,12 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
             Đăng ký
           </button>
         </div>
+        {subscribeStatus && (
+          <p style={{ marginTop: '16px', fontSize: '13px', color: '#16a34a', fontWeight: 600 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginRight: '4px' }}>check_circle</span>
+            {subscribeStatus}
+          </p>
+        )}
       </section>
 
       <Footer />
