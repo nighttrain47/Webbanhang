@@ -507,7 +507,7 @@ router.put('/change-password', verifyToken, async (req, res) => {
             return res.status(400).json({ success: false, message: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
         }
 
-        const customer = await CustomerDAO.selectById(req.user.id);
+        const customer = await CustomerDAO.selectByIdWithPassword(req.user.id);
         if (!customer) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' });
         }

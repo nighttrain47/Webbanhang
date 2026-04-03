@@ -193,8 +193,12 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     setToken('');
+    setCart([]);
+    setWishlist([]);
     localStorage.removeItem('hobbyshop_user');
     localStorage.removeItem('hobbyshop_token');
+    localStorage.removeItem('hobbyshop_cart');
+    localStorage.removeItem('hobbyshop_wishlist');
   };
 
   const handleDeleteAccount = () => {
@@ -306,6 +310,7 @@ function App() {
           element={
             <OrderConfirmation
               cartCount={cartCount}
+              user={user}
             />
           }
         />

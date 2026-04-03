@@ -113,6 +113,11 @@ const CustomerDAO = {
         return await Customer.findById(id).select('-password');
     },
 
+    // Dùng khi cần verify mật khẩu (không loại trừ password)
+    selectByIdWithPassword: async (id) => {
+        return await Customer.findById(id);
+    },
+
     selectByUsername: async (username) => {
         return await Customer.findOne({ username });
     },

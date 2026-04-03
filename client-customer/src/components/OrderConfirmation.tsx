@@ -5,15 +5,16 @@ import Footer from './layout/Footer';
 
 interface OrderConfirmationProps {
   cartCount: number;
+  user: any;
 }
 
-export default function OrderConfirmation({ cartCount }: OrderConfirmationProps) {
+export default function OrderConfirmation({ cartCount, user }: OrderConfirmationProps) {
   const orderNumber = 'ORD-2026-' + Math.floor(Math.random() * 1000).toString().padStart(4, '0');
   const estimatedDelivery = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN');
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header cartCount={cartCount} />
+      <Header cartCount={cartCount} user={user} />
 
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">

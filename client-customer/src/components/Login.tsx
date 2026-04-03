@@ -13,7 +13,7 @@ export default function Login({ onLogin }: LoginProps) {
   const redirect = searchParams.get('redirect') || '/';
   
   const [view, setView] = useState<ViewState>('login');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordFields, setShowPasswordFields] = useState<Record<string, boolean>>({});
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -302,7 +302,7 @@ export default function Login({ onLogin }: LoginProps) {
       <div style={{ position: 'relative' }}>
         <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>{icon}</span>
         <input
-          type={type === 'password' ? (showPassword ? 'text' : 'password') : type}
+          type={type === 'password' ? (showPasswordFields[name] ? 'text' : 'password') : type}
           name={name}
           value={(formData as any)[name]}
           onChange={handleChange}
@@ -314,8 +314,8 @@ export default function Login({ onLogin }: LoginProps) {
           onBlur={onBlur}
         />
         {type === 'password' && (
-          <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPassword ? 'visibility_off' : 'visibility'}</span>
+          <button type="button" onClick={() => setShowPasswordFields(prev => ({ ...prev, [name]: !prev[name] }))} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPasswordFields[name] ? 'visibility_off' : 'visibility'}</span>
           </button>
         )}
       </div>
@@ -346,9 +346,9 @@ export default function Login({ onLogin }: LoginProps) {
                 </div>
                 <div style={{ position: 'relative' }}>
                   <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>lock</span>
-                  <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required minLength={6} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPassword ? 'visibility_off' : 'visibility'}</span>
+                  <input type={showPasswordFields['password'] ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required minLength={6} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                  <button type="button" onClick={() => setShowPasswordFields(prev => ({ ...prev, password: !prev.password }))} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPasswordFields['password'] ? 'visibility_off' : 'visibility'}</span>
                   </button>
                 </div>
               </div>

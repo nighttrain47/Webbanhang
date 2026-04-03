@@ -1619,7 +1619,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
                 <input
                   type="text"
                   value={newPayment.cardNumber}
-                  onChange={e => setNewPayment(p => ({ ...p, cardNumber: e.target.value }))}
+                  onChange={e => setNewPayment(p => ({ ...p, cardNumber: e.target.value.replace(/\D/g, '') }))}
                   placeholder="4123 4567 8901 2345"
                   className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-600"
                 />
