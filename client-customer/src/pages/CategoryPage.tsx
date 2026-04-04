@@ -239,7 +239,12 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
     return result;
   }, [products, selectedPrices, selectedBrands, sortBy, appliedCustomPrice]);
 
-  const isActive = (slug: string) => categoryId === slug;
+  const isActive = (slug: string) => {
+    if (slug === 'all') {
+      return ['all', 'new-arrivals', 'ranking', 'sale', 'pre-order'].includes(categoryId || 'all');
+    }
+    return categoryId === slug;
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: '#f7fafc', fontFamily: "'Inter', sans-serif" }}>
@@ -255,18 +260,12 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
           <span style={{ color: '#3e4850' }}>{info.title}</span>
         </div>
 
-        {/* Page Title */}
         <h1 style={{
           fontFamily: "'Plus Jakarta Sans', sans-serif",
-          fontWeight: 800, fontSize: '32px', color: '#181c1e', marginBottom: '8px',
+          fontWeight: 800, fontSize: '32px', color: '#181c1e', marginBottom: '24px',
         }}>
           {info.title}
         </h1>
-        {info.desc && (
-          <p style={{ fontSize: '13px', color: '#6e7881', maxWidth: '500px', marginBottom: '24px', lineHeight: 1.7 }}>
-            {info.desc}
-          </p>
-        )}
 
         {/* Sort bar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
@@ -274,7 +273,7 @@ export default function CategoryPage({ addToCart, wishlist, toggleWishlist, cart
             {filteredProducts.length} sản phẩm
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', color: '#8a949d', textTransform: 'uppercase', letterSpacing: '0.06em' }}>SẮP XẾP:</span>
+            <span style={{ fontSize: '12px', color: '#8a949d', textTransform: 'uppercase', letterSpacing: '0.06em' }}>SẮP XẾP THEO TÌNH TRẠNG:</span>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}

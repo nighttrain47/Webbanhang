@@ -179,14 +179,41 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
 
         {/* Price + Cart Icon Row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-          <span style={{
-            fontSize: '15px',
-            fontWeight: 700,
-            color: '#00658d',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-          }}>
-            {product.price?.toLocaleString()}đ
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span style={{
+                fontSize: '11px',
+                color: '#8a949d',
+                textDecoration: 'line-through',
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                marginBottom: '2px',
+              }}>
+                {product.originalPrice.toLocaleString()}đ
+              </span>
+            )}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+              <span style={{
+                fontSize: '15px',
+                fontWeight: 700,
+                color: product.originalPrice && product.originalPrice > product.price ? '#e74c3c' : '#00658d',
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}>
+                {product.price?.toLocaleString()}đ
+              </span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: '#e74c3c',
+                  background: 'rgba(231, 76, 60, 0.1)',
+                  padding: '2px 4px',
+                  borderRadius: '4px',
+                }}>
+                  -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+                </span>
+              )}
+            </div>
+          </div>
 
           {!showAddToCartButton && (
             <button

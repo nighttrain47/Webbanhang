@@ -1,0 +1,16 @@
+🛠️ Công nghệ
+Layer	Công nghệ
+Backend	Node.js 18, Express 5, MongoDB, Mongoose
+Frontend	React 18, Vite 5, TypeScript
+UI	Radix UI, Lucide React, Recharts, TailwindCSS
+Auth	JWT, bcryptjs, express-session
+Email	Nodemailer (SMTP)
+Deployment	Vercel, Render, MongoDB Atlas
+
+Giới thiệu
+HobbyShop là một nền tảng mua sắm trực tuyến được xây dựng trên MERN Stack kết hợp TypeScript và Vite, hướng tới cộng đồng đam mê figure và mô hình anime. Dự án bao gồm 3 phần độc lập hoạt động cùng nhau:
+
+Phần	Mô tả
+🛒 Customer Website	Trang mua sắm cho khách hàng: duyệt sản phẩm, giỏ hàng, pre-order, hạng thành viên
+🖥️ Admin Panel	Bảng quản trị: sản phẩm, đơn hàng, người dùng, bài viết, phân tích doanh thu
+🖧 Backend API	REST API trung tâm, xử lý nghiệp vụ, xác thực JWT, email OTP

@@ -297,10 +297,10 @@ export default function Login({ onLogin }: LoginProps) {
   );
 
   const renderInputField = (label: string, name: string, type: string, placeholder: string, icon: string, required = true) => (
-    <div style={{ marginBottom: '14px' }}>
-      <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850', marginBottom: '6px', display: 'block' }}>{label}</label>
+    <div style={{ marginBottom: '24px' }}>
+      <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850', marginBottom: '8px', display: 'block' }}>{label}</label>
       <div style={{ position: 'relative' }}>
-        <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>{icon}</span>
+        <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d', display: 'flex', alignItems: 'center' }}>{icon}</span>
         <input
           type={type === 'password' ? (showPasswordFields[name] ? 'text' : 'password') : type}
           name={name}
@@ -308,13 +308,14 @@ export default function Login({ onLogin }: LoginProps) {
           onChange={handleChange}
           placeholder={placeholder}
           required={required}
-          minLength={type === 'password' ? 6 : undefined}
           style={inputStyle}
           onFocus={onFocus}
           onBlur={onBlur}
+          onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Vui lòng điền vào trường này.')}
+          onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
         />
         {type === 'password' && (
-          <button type="button" onClick={() => setShowPasswordFields(prev => ({ ...prev, [name]: !prev[name] }))} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
+          <button type="button" onClick={() => setShowPasswordFields(prev => ({ ...prev, [name]: !prev[name] }))} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#8a949d' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPasswordFields[name] ? 'visibility_off' : 'visibility'}</span>
           </button>
         )}
@@ -331,31 +332,23 @@ export default function Login({ onLogin }: LoginProps) {
           <>
             <button onClick={() => navigate(redirect === '/checkout' ? '/cart' : '/')} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 500, color: '#6e7881', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '24px', padding: 0 }}>
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
-              Quay lại {redirect === '/checkout' ? 'giỏ hàng' : 'trang chủ'}
+              Quay lại
             </button>
             <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, color: '#181c1e', marginBottom: '8px' }}>Chào mừng trở lại</h1>
-            <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px' }}>Đăng nhập bằng email để tiếp tục.</p>
+            <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px' }}>Vui lòng nhập email, mật khẩu để tiếp tục.</p>
 
             <form onSubmit={handleLogin}>
               {renderAlerts()}
               {renderInputField('ĐỊA CHỈ EMAIL', 'email', 'email', 'example@curator.vn', 'mail')}
-              <div style={{ marginBottom: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#3e4850' }}>MẬT KHẨU</label>
-                  <button type="button" onClick={() => switchToView('forgot-password')} style={{ fontSize: '12px', fontWeight: 600, color: '#00658d', background: 'none', border: 'none', cursor: 'pointer' }}>Quên mật khẩu?</button>
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <span className="material-symbols-outlined" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: '#8a949d' }}>lock</span>
-                  <input type={showPasswordFields['password'] ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" required minLength={6} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-                  <button type="button" onClick={() => setShowPasswordFields(prev => ({ ...prev, password: !prev.password }))} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#8a949d' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPasswordFields['password'] ? 'visibility_off' : 'visibility'}</span>
-                  </button>
-                </div>
+              {renderInputField('MẬT KHẨU', 'password', 'password', '••••••••', 'lock')}
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#3e4850', cursor: 'pointer' }}>
+                  <input type="checkbox" style={{ width: '16px', height: '16px', accentColor: '#00658d' }} />
+                  Ghi nhớ đăng nhập
+                </label>
+                <button type="button" onClick={() => switchToView('forgot-password')} style={{ fontSize: '13px', fontWeight: 600, color: '#00658d', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Quên mật khẩu?</button>
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#3e4850', marginBottom: '20px', cursor: 'pointer' }}>
-                <input type="checkbox" style={{ width: '16px', height: '16px', accentColor: '#00658d' }} />
-                Ghi nhớ đăng nhập cho lần sau
-              </label>
               <button type="submit" disabled={isLoading} style={btnPrimary}>
                 {isLoading ? 'Đang xử lý...' : 'Đăng Nhập'}
                 {!isLoading && <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_forward</span>}
@@ -363,7 +356,7 @@ export default function Login({ onLogin }: LoginProps) {
             </form>
 
             <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#6e7881' }}>
-              Chưa có tài khoản?{' '}
+              Bạn chưa có tài khoản?{' '}
               <button onClick={() => switchToView('register')} style={{ fontWeight: 600, color: '#ff7d36', background: 'none', border: 'none', cursor: 'pointer' }}>Đăng ký ngay</button>
             </p>
           </>
@@ -372,12 +365,16 @@ export default function Login({ onLogin }: LoginProps) {
       case 'register':
         return (
           <>
+            <button type="button" onClick={() => switchToView('login')} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 500, color: '#6e7881', background: 'none', border: 'none', cursor: 'pointer', marginBottom: '24px', padding: 0 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
+              Quay lại
+            </button>
             <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '28px', fontWeight: 800, color: '#181c1e', marginBottom: '8px' }}>Tạo tài khoản</h1>
             <p style={{ fontSize: '14px', color: '#6e7881', marginBottom: '28px' }}>Đăng ký tài khoản mới bằng email.</p>
 
             <form onSubmit={handleRegister}>
               {renderAlerts()}
-              {renderInputField('TÊN ĐĂNG NHẬP', 'username', 'text', 'Tên đăng nhập', 'person')}
+              {renderInputField('TÊN NGƯỜI DÙNG', 'username', 'text', 'Tên người dùng', 'person')}
               {renderInputField('ĐỊA CHỈ EMAIL', 'email', 'email', 'example@curator.vn', 'mail')}
               {renderInputField('MẬT KHẨU', 'password', 'password', '••••••••', 'lock')}
               {renderInputField('XÁC NHẬN MẬT KHẨU', 'confirmPassword', 'password', '••••••••', 'lock')}

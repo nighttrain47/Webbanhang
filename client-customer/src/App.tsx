@@ -126,6 +126,15 @@ function App() {
 
   const [popupProduct, setPopupProduct] = useState<Product | null>(null);
 
+  useEffect(() => {
+    if (popupProduct) {
+      const timer = setTimeout(() => {
+        setPopupProduct(null);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [popupProduct]);
+
   const addToCart = (product: Product) => {
     const pid = getProductId(product);
     setCart((prevCart) => {
@@ -349,15 +358,18 @@ function App() {
       {/* ═══ GLOBAL CART POPUP ═══ */}
       {popupProduct && (
         <>
-          <div
-            onClick={() => setPopupProduct(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 100 }}
-          />
+          <style>{`
+            @keyframes slideInPop {
+              0% { transform: translateY(-20px) scale(0.95); opacity: 0; }
+              100% { transform: translateY(0) scale(1); opacity: 1; }
+            }
+          `}</style>
           <div style={{
             position: 'fixed', top: '80px', right: '24px',
             width: '380px', background: '#fff', borderRadius: '16px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.2)', zIndex: 101,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)', zIndex: 101,
             overflow: 'hidden', fontFamily: "'Inter', sans-serif",
+            animation: 'slideInPop 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
           }}>
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
