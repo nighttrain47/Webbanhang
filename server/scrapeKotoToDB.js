@@ -5,7 +5,7 @@ const cheerio = require('cheerio');
 const iconv = require('iconv-lite');
 const ProductDAO = require('./models/ProductDAO');
 
-const KOTOBUKIYA_URL = 'https://shop.kotobukiya.co.jp/shop/r/r100105/';
+const KOTOBUKIYA_URL = process.argv[2] || 'https://shop.kotobukiya.co.jp/shop/r/r1356/';
 const BRAND_ID = '69d0a0a96503feac4c28613d'; // Kotobukiya
 const CATEGORY_ID = '69d0a0336503feac4c28611d'; // Model Kits
 
@@ -15,10 +15,14 @@ async function run() {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to DB.');
 
-        console.log('Fetching Kotobukiya page...');
+        console.log(`Fetching Kotobukiya page: ${KOTOBUKIYA_URL} ...`);
         const res = await axios.get(KOTOBUKIYA_URL, { responseType: 'arraybuffer' });
         const html = iconv.decode(res.data, 'Shift_JIS');
         const $ = cheerio.load(html);
+
+        let seriesName = $('title').text().split('｜')[0].trim();
+        if (!seriesName) seriesName = 'Kotobukiya Model Kit';
+        console.log(`Detected series: ${seriesName}`);
 
         const products = [];
         $('.tile_item').each((i, el) => {
@@ -48,7 +52,7 @@ async function run() {
 
             products.push({
                 name,
-                series: 'Megami Device',
+                series: seriesName,
                 manufacturer: 'Kotobukiya',
                 brand: BRAND_ID,
                 category: CATEGORY_ID,
@@ -59,7 +63,7 @@ async function run() {
                 images: [image],
                 sku: sku,
                 isPreorder: false,
-                description: `Sản phẩm chính hãng từ Kotobukiya. Dòng Megami Device.\nThiết kế tinh xảo, chất lượng cao.`
+                description: `Sản phẩm chính hãng từ Kotobukiya. Dòng ${seriesName}.\nThiết kế tinh xảo, chất lượng cao.`
             });
         });
 
