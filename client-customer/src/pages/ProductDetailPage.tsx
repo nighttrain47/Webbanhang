@@ -7,8 +7,8 @@ import ProductCard from '../components/product/ProductCard';
 import { Product } from '../App';
 
 interface ProductDetailPageProps {
-  addToCart: (product: Product) => void;
-  addToCartSilent: (product: Product) => void;
+  addToCart: (product: Product, quantity?: number) => void;
+  addToCartSilent: (product: Product, quantity?: number) => void;
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
   cartCount: number;
@@ -22,6 +22,7 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState('detail');
   const [activeImage, setActiveImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (!productId) return;
@@ -149,9 +150,38 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
               </div>
             )}
 
+            {/* Quantity Selector */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#3e4850' }}>Số lượng</span>
+              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #e0e3e5', borderRadius: '8px', overflow: 'hidden' }}>
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  style={{ width: '36px', height: '36px', background: '#f8fafb', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6e7881', transition: 'background 150ms' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#e8ecef'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#f8fafb'}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>remove</span>
+                </button>
+                <div style={{ width: '48px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 600, color: '#181c1e', background: '#fff', borderLeft: '1px solid #e0e3e5', borderRight: '1px solid #e0e3e5' }}>
+                  {quantity}
+                </div>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  style={{ width: '36px', height: '36px', background: '#f8fafb', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6e7881', transition: 'background 150ms' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#e8ecef'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#f8fafb'}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                </button>
+              </div>
+              {product.stock !== undefined && (
+                <span style={{ fontSize: '13px', color: '#8a949d' }}>{product.stock} sản phẩm có sẵn</span>
+              )}
+            </div>
+
             {/* CTA Buttons */}
             <button
-              onClick={() => { addToCartSilent(product); navigate('/checkout'); }}
+              onClick={() => { addToCartSilent(product, quantity); navigate('/checkout'); }}
               style={{
                 width: '100%', padding: '16px', borderRadius: '12px',
                 background: 'linear-gradient(135deg, #00658d, #00adef)',
@@ -165,7 +195,7 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
             </button>
 
             <button
-              onClick={() => addToCart(product)}
+              onClick={() => addToCart(product, quantity)}
               style={{
                 width: '100%', padding: '14px', borderRadius: '12px',
                 border: '1.5px solid #e0e3e5', background: '#fff',

@@ -135,34 +135,34 @@ function App() {
     }
   }, [popupProduct]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, quantityToAdd: number = 1) => {
     const pid = getProductId(product);
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => getProductId(item) === pid);
       if (existingItem) {
         return prevCart.map((item) =>
           getProductId(item) === pid
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantityToAdd }
             : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...product, quantity: quantityToAdd }];
     });
     setPopupProduct(product);
   };
 
-  const addToCartSilent = (product: Product) => {
+  const addToCartSilent = (product: Product, quantityToAdd: number = 1) => {
     const pid = getProductId(product);
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => getProductId(item) === pid);
       if (existingItem) {
         return prevCart.map((item) =>
           getProductId(item) === pid
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantityToAdd }
             : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...product, quantity: quantityToAdd }];
     });
   };
 
