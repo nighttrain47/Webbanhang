@@ -180,7 +180,7 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
         {/* Price + Cart Icon Row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {product.originalPrice && product.originalPrice > product.price && (
+            {product.originalPrice > 0 && product.originalPrice > product.price && (
               <span style={{
                 fontSize: '11px',
                 color: '#8a949d',
@@ -200,7 +200,7 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
               }}>
                 {product.price?.toLocaleString()}đ
               </span>
-              {product.originalPrice && product.originalPrice > product.price && (
+              {product.originalPrice > 0 && product.originalPrice > product.price && (
                 <span style={{
                   fontSize: '10px',
                   fontWeight: 700,

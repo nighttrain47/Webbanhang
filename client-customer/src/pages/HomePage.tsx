@@ -391,7 +391,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
               {featuredPreorder && (
                 <p style={{ fontSize: '16px', fontWeight: 700, color: '#5bb8d4', marginBottom: '16px' }}>
                   {featuredPreorder.price?.toLocaleString('vi-VN')}đ
-                  {featuredPreorder.originalPrice && featuredPreorder.originalPrice > featuredPreorder.price && (
+                  {featuredPreorder.originalPrice > 0 && featuredPreorder.originalPrice > featuredPreorder.price && (
                     <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', textDecoration: 'line-through', marginLeft: '8px', fontWeight: 400 }}>
                       {featuredPreorder.originalPrice.toLocaleString('vi-VN')}đ
                     </span>
