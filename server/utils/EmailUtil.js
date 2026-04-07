@@ -1,13 +1,24 @@
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
+
+function writeLog(msg) {
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(path.join(__dirname, '..', 'mailer.log'), `[${timestamp}] ${msg}\n`);
+}
 
 // Create reusable transporter
 const createTransporter = () => {
     return nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
         },
+        connectionTimeout: 10000, // 10 seconds max to connect
+        socketTimeout: 10000 // 10 seconds max for operations
     });
 };
 
@@ -101,10 +112,13 @@ const sendOTP = async (toEmail, otp, purpose = 'verify') => {
     };
 
     try {
+        writeLog(`Attempting to send OTP to ${toEmail}`);
         const info = await transporter.sendMail(mailOptions);
+        writeLog(`SUCCESS: OTP sent to ${toEmail} with ID: ${info.messageId}`);
         console.log(`📧 OTP sent to ${toEmail}: ${info.messageId}`);
         return { success: true, messageId: info.messageId };
     } catch (error) {
+        writeLog(`ERROR: Failed to send OTP to ${toEmail} - ${error.message} - ${error.stack}`);
         console.error(`❌ Failed to send OTP to ${toEmail}:`, error.message);
         return { success: false, error: error.message };
     }

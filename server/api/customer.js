@@ -21,10 +21,17 @@ async function isValidEmailDomain(email) {
         if (parts.length !== 2) return false;
         const domain = parts[1];
         if (!domain) return false;
-        const records = await dns.resolveMx(domain);
+        
+        // Add 3s timeout to prevent hanging on Windows/DNS issues
+        const records = await Promise.race([
+            dns.resolveMx(domain),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('DNS Timeout')), 3000))
+        ]);
+        
         return records && records.length > 0;
     } catch (err) {
-        return false;
+        // If DNS fails or times out, we assume it's valid to not block the user
+        return true;
     }
 }
 
@@ -244,8 +251,8 @@ router.post('/signup', async (req, res) => {
             phone: phone || '', otp, otpExpiry
         });
 
-        // Send OTP email (must await so serverless environments don't kill the process before sending)
-        await sendOTP(email, otp, 'verify').catch(err => console.error("OTP Send Error:", err));
+        // Send OTP email in background
+        sendOTP(email, otp, 'verify').catch(err => console.error("OTP Send Error:", err));
 
         res.status(201).json({
             success: true,
@@ -327,8 +334,8 @@ router.post('/resend-otp', async (req, res) => {
             await CustomerDAO.updateOTP(email, otp, otpExpiry);
         }
 
-        // Send OTP email (must await)
-        await sendOTP(email, otp, purpose || 'verify').catch(err => console.error("OTP Resend Error:", err));
+        // Send OTP email in background
+        sendOTP(email, otp, purpose || 'verify').catch(err => console.error("OTP Resend Error:", err));
 
         res.json({ success: true, message: 'Đã gửi lại mã xác thực.' });
     } catch (error) {
@@ -353,8 +360,8 @@ router.post('/forgot-password', async (req, res) => {
         const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
         await CustomerDAO.updateOTP(email, otp, otpExpiry);
 
-        // Send OTP email (must await)
-        await sendOTP(email, otp, 'reset').catch(err => console.error("OTP Forgot Pwd Error:", err));
+        // Send OTP email in background
+        sendOTP(email, otp, 'reset').catch(err => console.error("OTP Forgot Pwd Error:", err));
 
         res.json({ success: true, message: 'Đã gửi mã xác thực tới email của bạn.' });
     } catch (error) {
@@ -458,9 +465,9 @@ router.post('/orders', verifyToken, async (req, res) => {
 
         // Get customer email to send confirmation email
         const customer = await CustomerDAO.selectById(req.user.id);
-        // Send email (must await)
+        // Send email in background
         if (customer && customer.email) {
-            await EmailUtil.sendOrderPlacedEmail(
+            EmailUtil.sendOrderPlacedEmail(
                 customer.email, 
                 order._id, 
                 items, 
