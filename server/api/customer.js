@@ -244,8 +244,8 @@ router.post('/signup', async (req, res) => {
             phone: phone || '', otp, otpExpiry
         });
 
-        // Send OTP email in background
-        sendOTP(email, otp, 'verify').catch(err => console.error("OTP Send Error:", err));
+        // Send OTP email (must await so serverless environments don't kill the process before sending)
+        await sendOTP(email, otp, 'verify').catch(err => console.error("OTP Send Error:", err));
 
         res.status(201).json({
             success: true,
@@ -327,8 +327,8 @@ router.post('/resend-otp', async (req, res) => {
             await CustomerDAO.updateOTP(email, otp, otpExpiry);
         }
 
-        // Send OTP email in background
-        sendOTP(email, otp, purpose || 'verify').catch(err => console.error("OTP Resend Error:", err));
+        // Send OTP email (must await)
+        await sendOTP(email, otp, purpose || 'verify').catch(err => console.error("OTP Resend Error:", err));
 
         res.json({ success: true, message: 'Đã gửi lại mã xác thực.' });
     } catch (error) {
@@ -353,8 +353,8 @@ router.post('/forgot-password', async (req, res) => {
         const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
         await CustomerDAO.updateOTP(email, otp, otpExpiry);
 
-        // Send OTP email in background
-        sendOTP(email, otp, 'reset').catch(err => console.error("OTP Forgot Pwd Error:", err));
+        // Send OTP email (must await)
+        await sendOTP(email, otp, 'reset').catch(err => console.error("OTP Forgot Pwd Error:", err));
 
         res.json({ success: true, message: 'Đã gửi mã xác thực tới email của bạn.' });
     } catch (error) {
@@ -458,9 +458,9 @@ router.post('/orders', verifyToken, async (req, res) => {
 
         // Get customer email to send confirmation email
         const customer = await CustomerDAO.selectById(req.user.id);
+        // Send email (must await)
         if (customer && customer.email) {
-            // Send email in background
-            EmailUtil.sendOrderPlacedEmail(
+            await EmailUtil.sendOrderPlacedEmail(
                 customer.email, 
                 order._id, 
                 items, 
