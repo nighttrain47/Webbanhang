@@ -1,20 +1,37 @@
 const axios = require('axios');
 
-// Webhook URL từ Google Apps Script
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzm10bMltGN_RPQ__nM-WcIWxXcZoVoBjJSYCcfpY3KNmeyRaVF9COEMtuDbbJAs_6n/exec';
+// Brevo API URL
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-const sendToWebhook = async (toEmail, subject, html) => {
+const sendEmailViaAPI = async (toEmail, subject, html) => {
     try {
+        const apiKey = process.env.BREVO_API_KEY; // API Key lấy từ Brevo
+        const senderEmail = process.env.EMAIL_USER; // Email bạn đã xác thực trên Brevo (ví dụ: email Gmail của bạn)
+        const senderName = 'FigureCurator';
+
+        if (!apiKey) {
+            console.warn('⚠️ Thiếu BREVO_API_KEY trong file .env');
+        }
+
         const response = await axios.post(
-            SCRIPT_URL,
-            { to: toEmail, subject, html },
-            // Google Apps Script requires following redirects natively, which Axios does.
-            // Using text/plain overrides CORS if called from browser, though not strictly needed here.
-            { headers: { 'Content-Type': 'text/plain;charset=utf-8' } }
+            BREVO_API_URL,
+            {
+                sender: { name: senderName, email: senderEmail },
+                to: [{ email: toEmail }],
+                subject: subject,
+                htmlContent: html
+            },
+            {
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': apiKey,
+                    'content-type': 'application/json'
+                }
+            }
         );
-        return { success: true, messageId: 'Webhook_Sent' };
+        return { success: true, messageId: response.data?.messageId || 'Brevo_Sent' };
     } catch (error) {
-        console.error(`❌ Webhook Failed for ${toEmail}:`, error.message);
+        console.error(`❌ Email API Failed for ${toEmail}:`, error.response ? JSON.stringify(error.response.data) : error.message);
         return { success: false, error: error.message };
     }
 };
@@ -26,7 +43,6 @@ const generateOTP = () => {
 
 // Send OTP email
 const sendOTP = async (toEmail, otp, purpose = 'verify') => {
-    const transporter = createTransporter();
 
     const isVerify = purpose === 'verify';
     const subject = isVerify
@@ -102,10 +118,10 @@ const sendOTP = async (toEmail, otp, purpose = 'verify') => {
     `;
 
     try {
-        const info = await sendToWebhook(toEmail, subject, html);
+        const info = await sendEmailViaAPI(toEmail, subject, html);
         if(!info.success) throw new Error(info.error);
-        console.log(`📧 OTP Webhook triggered for ${toEmail}`);
-        return { success: true, messageId: 'webhook' };
+        console.log(`📧 OTP Email triggered for ${toEmail}`);
+        return { success: true, messageId: 'api' };
     } catch (error) {
         console.error(`❌ Failed to send OTP to ${toEmail}:`, error.message);
         return { success: false, error: error.message };
@@ -114,7 +130,6 @@ const sendOTP = async (toEmail, otp, purpose = 'verify') => {
 
 // Send Order Status email
 const sendOrderStatusEmail = async (toEmail, status, orderId) => {
-    const transporter = createTransporter();
 
     let statusText = '';
     let heading = '';
@@ -196,10 +211,10 @@ const sendOrderStatusEmail = async (toEmail, status, orderId) => {
     `;
 
     try {
-        const info = await sendToWebhook(toEmail, `Cập nhật đơn hàng ${orderId} - FigureCurator`, html);
+        const info = await sendEmailViaAPI(toEmail, `Cập nhật đơn hàng ${orderId} - FigureCurator`, html);
         if(!info.success) throw new Error(info.error);
-        console.log(`📧 Order Status Webhook triggered for ${toEmail}`);
-        return { success: true, messageId: 'webhook' };
+        console.log(`📧 Order Status Email triggered for ${toEmail}`);
+        return { success: true, messageId: 'api' };
     } catch (error) {
         console.error(`❌ Failed to send Order Status to ${toEmail}:`, error.message);
         return { success: false, error: error.message };
@@ -208,7 +223,6 @@ const sendOrderStatusEmail = async (toEmail, status, orderId) => {
 
 // Send Order Placed Email
 const sendOrderPlacedEmail = async (toEmail, orderId, items, total, shippingAddress) => {
-    const transporter = createTransporter();
 
     const itemsHtml = items.map(item => `
         <tr>
@@ -297,10 +311,10 @@ const sendOrderPlacedEmail = async (toEmail, orderId, items, total, shippingAddr
     `;
 
     try {
-        const info = await sendToWebhook(toEmail, `Xác nhận đơn hàng ${orderId} - FigureCurator`, html);
+        const info = await sendEmailViaAPI(toEmail, `Xác nhận đơn hàng ${orderId} - FigureCurator`, html);
         if(!info.success) throw new Error(info.error);
-        console.log(`📧 Order Placed Email Webhook triggered for ${toEmail}`);
-        return { success: true, messageId: 'webhook' };
+        console.log(`📧 Order Placed Email triggered for ${toEmail}`);
+        return { success: true, messageId: 'api' };
     } catch (error) {
         console.error(`❌ Failed to send Order Placed Email to ${toEmail}:`, error.message);
         return { success: false, error: error.message };
