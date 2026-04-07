@@ -11,6 +11,22 @@ const BrandDAO = require('../models/BrandDAO');
 const EmailUtil = require('../utils/EmailUtil');
 const { createToken, verifyToken } = require('../utils/jwtAuth');
 const { generateOTP, sendOTP } = require('../utils/EmailUtil');
+const dns = require('dns').promises;
+
+// ==================== UTILS ====================
+
+async function isValidEmailDomain(email) {
+    try {
+        const parts = email.split('@');
+        if (parts.length !== 2) return false;
+        const domain = parts[1];
+        if (!domain) return false;
+        const records = await dns.resolveMx(domain);
+        return records && records.length > 0;
+    } catch (err) {
+        return false;
+    }
+}
 
 // ==================== ARTICLES ====================
 
@@ -201,6 +217,13 @@ router.post('/signup', async (req, res) => {
         if (!email || !password || !username) {
             return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ thông tin' });
         }
+        
+        // Fast email domain validation (MX record check)
+        const validDomain = await isValidEmailDomain(email);
+        if (!validDomain) {
+            return res.status(400).json({ success: false, message: 'Địa chỉ email không tồn tại hoặc đuôi email không hợp lệ (ví dụ: gmai.com).' });
+        }
+
         // Check duplicates in MAIN DB only (active customers)
         const existingUser = await CustomerDAO.selectByUsername(username);
         if (existingUser) {
@@ -221,11 +244,8 @@ router.post('/signup', async (req, res) => {
             phone: phone || '', otp, otpExpiry
         });
 
-        // Send OTP email
-        const emailResult = await sendOTP(email, otp, 'verify');
-        if (!emailResult.success) {
-            return res.status(500).json({ success: false, message: 'Không thể gửi email xác thực. Vui lòng thử lại.' });
-        }
+        // Send OTP email in background
+        sendOTP(email, otp, 'verify').catch(err => console.error("OTP Send Error:", err));
 
         res.status(201).json({
             success: true,
@@ -307,10 +327,8 @@ router.post('/resend-otp', async (req, res) => {
             await CustomerDAO.updateOTP(email, otp, otpExpiry);
         }
 
-        const emailResult = await sendOTP(email, otp, purpose || 'verify');
-        if (!emailResult.success) {
-            return res.status(500).json({ success: false, message: 'Không thể gửi email. Vui lòng thử lại.' });
-        }
+        // Send OTP email in background
+        sendOTP(email, otp, purpose || 'verify').catch(err => console.error("OTP Resend Error:", err));
 
         res.json({ success: true, message: 'Đã gửi lại mã xác thực.' });
     } catch (error) {
@@ -335,10 +353,8 @@ router.post('/forgot-password', async (req, res) => {
         const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
         await CustomerDAO.updateOTP(email, otp, otpExpiry);
 
-        const emailResult = await sendOTP(email, otp, 'reset');
-        if (!emailResult.success) {
-            return res.status(500).json({ success: false, message: 'Không thể gửi email. Vui lòng thử lại.' });
-        }
+        // Send OTP email in background
+        sendOTP(email, otp, 'reset').catch(err => console.error("OTP Forgot Pwd Error:", err));
 
         res.json({ success: true, message: 'Đã gửi mã xác thực tới email của bạn.' });
     } catch (error) {
@@ -443,13 +459,14 @@ router.post('/orders', verifyToken, async (req, res) => {
         // Get customer email to send confirmation email
         const customer = await CustomerDAO.selectById(req.user.id);
         if (customer && customer.email) {
-            await EmailUtil.sendOrderPlacedEmail(
+            // Send email in background
+            EmailUtil.sendOrderPlacedEmail(
                 customer.email, 
                 order._id, 
                 items, 
                 total, 
                 shippingAddress || ''
-            );
+            ).catch(err => console.error("Order Email Error:", err));
         }
 
         res.status(201).json({ success: true, order });

@@ -74,6 +74,14 @@ export default function Login({ onLogin }: LoginProps) {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setIsLoading(true);
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Định dạng email không hợp lệ');
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       if (formData.password !== formData.confirmPassword) { setError('Mật khẩu xác nhận không khớp'); setIsLoading(false); return; }
       if (formData.password.length < 6) { setError('Mật khẩu phải có ít nhất 6 ký tự'); setIsLoading(false); return; }
@@ -308,14 +316,15 @@ export default function Login({ onLogin }: LoginProps) {
           onChange={handleChange}
           placeholder={placeholder}
           required={required}
-          style={inputStyle}
+          disabled={isLoading}
+          style={{ ...inputStyle, opacity: isLoading ? 0.6 : 1, cursor: isLoading ? 'not-allowed' : 'text' }}
           onFocus={onFocus}
           onBlur={onBlur}
-          onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Vui lòng điền vào trường này.')}
+          onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Vui lòng điền thông tin hợp lệ.')}
           onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
         />
         {type === 'password' && (
-          <button type="button" onClick={() => setShowPasswordFields(prev => ({ ...prev, [name]: !prev[name] }))} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#8a949d' }}>
+          <button disabled={isLoading} type="button" onClick={() => setShowPasswordFields(prev => ({ ...prev, [name]: !prev[name] }))} style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isLoading ? 'not-allowed' : 'pointer', color: '#8a949d' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{showPasswordFields[name] ? 'visibility_off' : 'visibility'}</span>
           </button>
         )}
