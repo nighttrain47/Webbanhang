@@ -1176,9 +1176,16 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
           </h2>
           <button
             onClick={() => setShowAddressModal(true)}
-            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: '8px',
+              background: '#00658d', color: '#fff', fontSize: '13px', fontWeight: 600,
+              border: 'none', cursor: 'pointer', transition: 'background 150ms ease'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#005475'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#00658d'; }}
           >
-            + Thêm địa chỉ mới
+            <span style={{ fontSize: '16px' }}>+</span> Thêm địa chỉ mới
           </button>
         </div>
         
@@ -1187,39 +1194,74 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
             <p className="text-gray-500 text-sm">Bạn chưa có địa chỉ nào lưu trong sổ.</p>
           ) : (
             addresses.map((addr) => (
-              <div key={addr._id || addr.id} className="border border-gray-200 rounded-lg p-5">
-                <div className="flex items-start justify-between gap-4">
+              <div
+                key={addr._id || addr.id}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '16px', borderRadius: '12px',
+                  background: '#fff', border: '1px solid #e8ecef', transition: 'all 200ms ease', gap: '16px',
+                  flexWrap: 'wrap'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#00658d'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,101,141,0.08)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ecef'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                <div style={{ display: 'flex', gap: '16px', flex: 1, minWidth: 'min-content', alignItems: 'center' }}>
+                  <div style={{
+                    width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(0,101,141,0.06)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                  }}>
+                    <MapPin style={{ color: '#00658d', width: '24px', height: '24px' }} />
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="flex items-center gap-2 flex-wrap mb-2">
-                      <span className="font-semibold text-gray-900">{addr.fullName}</span>
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-600">{addr.phone}</span>
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span style={{ fontWeight: 700, color: '#181c1e', fontSize: '15px' }}>{addr.fullName}</span>
+                      <span style={{ color: '#8a949d', fontSize: '12px' }}>•</span>
+                      <span style={{ color: '#3e4850', fontSize: '14px', fontWeight: 500 }}>{addr.phone}</span>
                       {addr.isDefault && (
-                        <span className="text-white text-xs px-2 py-0.5 rounded font-semibold" style={{ backgroundColor: '#FF6B00' }}>
+                        <span style={{
+                          padding: '3px 8px', borderRadius: '6px',
+                          background: '#e0f2fe', color: '#0284c7', fontSize: '10px',
+                          fontWeight: 700, textTransform: 'uppercase', marginLeft: '4px'
+                        }}>
                           Mặc định
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                      {addr.address}, {addr.city} {addr.postalCode && `- ${addr.postalCode}`}
+                    <p style={{ color: '#8a949d', fontSize: '13px', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {addr.address}, {addr.city} {addr.postalCode && `- Mã bưu điện: ${addr.postalCode}`}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 flex-shrink-0 pt-1">
-                    {!addr.isDefault && (
-                      <button
-                        onClick={() => handleSetDefaultAddress(addr._id || addr.id)}
-                        className="text-orange-600 font-medium hover:underline text-sm whitespace-nowrap"
-                      >
-                        Đặt mặc định
-                      </button>
-                    )}
+                </div>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  {!addr.isDefault && (
                     <button
-                      onClick={() => handleDeleteAddress(addr._id || addr.id)}
-                      className="text-gray-400 font-medium hover:text-red-600 text-sm whitespace-nowrap"
+                      onClick={() => handleSetDefaultAddress(addr._id || addr.id)}
+                      style={{
+                        padding: '8px 16px', borderRadius: '8px', 
+                        border: '1.5px solid #e8ecef', background: 'transparent',
+                        color: '#00658d', fontSize: '13px', fontWeight: 600,
+                        transition: 'all 150ms ease', whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#00658d'; e.currentTarget.style.background = 'rgba(0,101,141,0.04)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ecef'; e.currentTarget.style.background = 'transparent'; }}
                     >
-                      Xóa
+                      Đặt mặc định
                     </button>
-                  </div>
+                  )}
+                  <button
+                    onClick={() => handleDeleteAddress(addr._id || addr.id)}
+                    style={{
+                      width: '36px', height: '36px', borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'transparent', color: '#e74c3c', border: 'none',
+                      transition: 'background 150ms ease'
+                    }}
+                    title="Xóa"
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(231,76,60,0.1)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <Trash2 style={{ width: '18px', height: '18px' }} />
+                  </button>
                 </div>
               </div>
             ))
@@ -1236,9 +1278,16 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
           </h2>
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-semibold text-sm"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: '8px',
+              background: '#00658d', color: '#fff', fontSize: '13px', fontWeight: 600,
+              border: 'none', cursor: 'pointer', transition: 'background 150ms ease'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#005475'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#00658d'; }}
           >
-            + Thêm thẻ mới
+            <span style={{ fontSize: '16px' }}>+</span> Thêm thẻ mới
           </button>
         </div>
         
@@ -1247,36 +1296,75 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
             <p className="text-gray-500 text-sm">Bạn chưa có phương thức thanh toán nào.</p>
           ) : (
             payments.map((pay) => (
-              <div key={pay._id || pay.id} className="border border-gray-200 rounded-lg p-5 flex flex-col md:flex-row md:items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="font-semibold text-gray-900">{pay.provider}</span>
-                    <span className="text-gray-400">|</span>
-                    <span className="text-gray-600 font-mono">{pay.cardNumber}</span>
-                    {pay.isDefault && (
-                      <span className="text-white text-xs px-2 py-1 rounded font-semibold ml-2" style={{ backgroundColor: '#FF6B00' }}>
-                        Mặc định
-                      </span>
-                    )}
+              <div
+                key={pay._id || pay.id}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyItems: 'flex-start',
+                  padding: '16px', borderRadius: '12px',
+                  background: '#fff', border: '1px solid #e8ecef', transition: 'all 200ms ease', gap: '16px',
+                  flexWrap: 'wrap'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#00658d'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,101,141,0.08)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ecef'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                <div style={{ display: 'flex', gap: '16px', flex: 1, minWidth: 'min-content', alignItems: 'center' }}>
+                  <div style={{
+                    width: '64px', height: '42px', borderRadius: '6px', background: 'linear-gradient(135deg, #1e3044, #243b50)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}>
+                    <span style={{ color: '#fff', fontSize: '13px', fontWeight: 800, fontStyle: 'italic', letterSpacing: '0.05em' }}>
+                      {pay.provider?.toUpperCase()}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed max-w-lg">
-                    Chủ thẻ: {pay.nameOnCard} {pay.expiryDate && `| Hết hạn: ${pay.expiryDate}`}
-                  </p>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span style={{ fontWeight: 600, color: '#181c1e', fontSize: '15px', fontFamily: 'monospace' }}>{pay.cardNumber}</span>
+                      {pay.isDefault && (
+                        <span style={{
+                          padding: '3px 8px', borderRadius: '6px',
+                          background: '#e0f2fe', color: '#0284c7', fontSize: '10px',
+                          fontWeight: 700, textTransform: 'uppercase', marginLeft: '4px'
+                        }}>
+                          Mặc định
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ color: '#8a949d', fontSize: '13px', lineHeight: 1.5 }}>
+                      Chủ thẻ: <strong style={{ color: '#3e4850', fontWeight: 600 }}>{pay.nameOnCard}</strong> 
+                      {pay.expiryDate && <span style={{ marginLeft: '8px' }}>• Hết hạn: {pay.expiryDate}</span>}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 md:justify-end text-sm">
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginLeft: 'auto' }}>
                   {!pay.isDefault && (
                     <button
                       onClick={() => handleSetDefaultPayment(pay._id || pay.id)}
-                      className="text-orange-600 font-medium hover:underline"
+                      style={{
+                        padding: '8px 16px', borderRadius: '8px', 
+                        border: '1.5px solid #e8ecef', background: 'transparent',
+                        color: '#00658d', fontSize: '13px', fontWeight: 600,
+                        transition: 'all 150ms ease', whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#00658d'; e.currentTarget.style.background = 'rgba(0,101,141,0.04)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ecef'; e.currentTarget.style.background = 'transparent'; }}
                     >
                       Đặt mặc định
                     </button>
                   )}
                   <button
                     onClick={() => handleDeletePayment(pay._id || pay.id)}
-                    className="text-gray-500 font-medium hover:text-red-600"
+                    style={{
+                      width: '36px', height: '36px', borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'transparent', color: '#e74c3c', border: 'none',
+                      transition: 'background 150ms ease'
+                    }}
+                    title="Xóa"
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(231,76,60,0.1)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                   >
-                    Xóa
+                    <Trash2 style={{ width: '18px', height: '18px' }} />
                   </button>
                 </div>
               </div>
