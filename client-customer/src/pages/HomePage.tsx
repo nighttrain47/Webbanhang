@@ -371,11 +371,11 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
               <span style={{
                 display: 'inline-block', width: 'fit-content',
                 padding: '4px 10px', borderRadius: '6px',
-                background: featuredPreorder?.stock && featuredPreorder.stock <= 5 ? '#e74c3c' : '#ff7d36',
+                background: !featuredPreorder ? '#ff7d36' : countdown.expired ? '#8a949d' : (featuredPreorder.stock && featuredPreorder.stock <= 5 ? '#e74c3c' : '#ff7d36'),
                 color: '#fff', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
                 marginBottom: '12px',
               }}>
-                {!featuredPreorder ? 'PRE-ORDER' : featuredPreorder.stock && featuredPreorder.stock <= 5 ? 'SẮP HẾT HÀNG' : 'ĐANG MỞ ĐẶT TRƯỚC'}
+                {!featuredPreorder ? 'PRE-ORDER' : countdown.expired ? 'ĐÃ KẾT THÚC' : (featuredPreorder.stock && featuredPreorder.stock <= 5 ? 'SẮP HẾT HÀNG' : 'ĐANG MỞ ĐẶT TRƯỚC')}
               </span>
 
               <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '20px', fontWeight: 700, color: '#fff', marginBottom: '8px', lineHeight: 1.3 }}>
@@ -404,9 +404,11 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
                 width: 'fit-content', padding: '10px 20px', borderRadius: '8px',
                 border: '1.5px solid rgba(255,255,255,0.3)', color: '#fff',
                 fontWeight: 600, fontSize: '12px',
+                opacity: countdown.expired ? 0.5 : 1,
+                cursor: countdown.expired ? 'not-allowed' : 'pointer',
               }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>shopping_cart</span>
-                Đặt ngay
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>{countdown.expired ? 'block' : 'shopping_cart'}</span>
+                {countdown.expired ? 'Đã đóng đặt trước' : 'Đặt ngay'}
               </span>
             </div>
           </Link>
@@ -489,6 +491,14 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
           <div className="preorder-thumbs">
             {preorderProducts.slice(1, 4).map(product => {
               const pid = product._id || product.id || '';
+              let isThumbExpired = false;
+              if (product.preorderDeadline) {
+                const parsed = parseFlexibleDate(product.preorderDeadline);
+                if (parsed) {
+                  parsed.setHours(23, 59, 59, 999);
+                  if (Date.now() > parsed.getTime()) isThumbExpired = true;
+                }
+              }
               return (
                 <Link
                   key={pid}
@@ -498,6 +508,7 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
                     padding: '16px', borderRadius: '12px',
                     background: '#fff', border: '1px solid #e8ecef',
                     textDecoration: 'none', transition: 'border-color 200ms, box-shadow 200ms',
+                    opacity: isThumbExpired ? 0.7 : 1,
                   }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#00658d'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,101,141,0.1)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8ecef'; e.currentTarget.style.boxShadow = 'none'; }}
@@ -506,14 +517,14 @@ export default function HomePage({ addToCart, wishlist, toggleWishlist, cartCoun
                     width: '64px', height: '64px', borderRadius: '10px',
                     overflow: 'hidden', background: '#f1f4f6', flexShrink: 0,
                   }}>
-                    <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: isThumbExpired ? 'grayscale(50%)' : 'none' }} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span style={{
                       display: 'inline-block', padding: '2px 6px', borderRadius: '4px',
-                      background: '#fff3e8', color: '#ff7d36', fontSize: '9px', fontWeight: 700,
+                      background: isThumbExpired ? '#e0e3e5' : '#fff3e8', color: isThumbExpired ? '#6e7881' : '#ff7d36', fontSize: '9px', fontWeight: 700,
                       textTransform: 'uppercase', marginBottom: '4px',
-                    }}>PRE-ORDER</span>
+                    }}>{isThumbExpired ? 'ĐÃ KẾT THÚC' : 'PRE-ORDER'}</span>
                     <p style={{
                       fontSize: '13px', fontWeight: 600, color: '#181c1e', lineHeight: 1.3,
                       display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden',

@@ -12,7 +12,44 @@ interface ProductCardProps {
 
 const pid = (p: Product) => p._id || p.id || '';
 
+function parseFlexibleDate(dateStr: string): Date | null {
+  if (!dateStr) return null;
+  const candidates: Date[] = [];
+  const allDmyMatches = [...dateStr.matchAll(/(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})/g)];
+  for (const m of allDmyMatches) {
+    const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    if (!isNaN(d.getTime())) candidates.push(d);
+  }
+  const vnLongMatches = [...dateStr.matchAll(/ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi)];
+  for (const m of vnLongMatches) {
+    const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    if (!isNaN(d.getTime())) candidates.push(d);
+  }
+  if (candidates.length > 0) return candidates.reduce((latest, d) => d > latest ? d : latest);
+  const isoDate = new Date(dateStr);
+  if (!isNaN(isoDate.getTime())) return isoDate;
+  const monthYearMatch = dateStr.match(/(?:tháng\s*)?(\d{1,2})[/\-.](\d{4})/i);
+  if (monthYearMatch) {
+    const d = new Date(Number(monthYearMatch[2]), Number(monthYearMatch[1]) - 1, 1);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+
 function getBadge(product: Product): { text: string; bg: string } | null {
+  let isExpired = false;
+  if (product.preorderDeadline) {
+    const parsedDeadline = parseFlexibleDate(product.preorderDeadline);
+    if (parsedDeadline) {
+      parsedDeadline.setHours(23, 59, 59, 999);
+      if (Date.now() > parsedDeadline.getTime()) {
+        isExpired = true;
+      }
+    }
+  }
+
+  if (isExpired) return { text: 'HẾT HẠN', bg: '#94a3b8' };
+  if (product.stock === 0) return { text: 'HẾT HÀNG', bg: '#94a3b8' };
   if (product.preorderDeadline) return { text: 'PRE-ORDER', bg: '#e74c3c' };
   if (product.status === 'out-of-stock') return { text: 'SẮP HẾT HÀNG', bg: '#e74c3c' };
   if (product.isNew) return { text: 'NEW', bg: '#16a34a' };
@@ -40,9 +77,24 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
   const isInWishlist = wishlist.includes(productId);
   const badge = getBadge(product);
   const scaleBadge = getScaleBadge(product);
+  const isUnavailable = badge?.text === 'HẾT HÀNG' || badge?.text === 'HẾT HẠN';
+
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div 
+      style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        border: '1px solid #e8ecef', 
+        borderRadius: '16px', 
+        padding: '12px', 
+        background: '#fff',
+        transition: 'all 200ms ease',
+        height: '100%'
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = '#d1d8df'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = '#e8ecef'; }}
+    >
       {/* Image Container */}
       <div style={{ position: 'relative', marginBottom: '12px' }}>
         <Link to={`/product/${productId}`} style={{ display: 'block', textDecoration: 'none' }}>
@@ -217,23 +269,24 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
 
           {!showAddToCartButton && (
             <button
-              onClick={(e) => { e.preventDefault(); addToCart(product); }}
+              onClick={(e) => { e.preventDefault(); if (!isUnavailable) addToCart(product); }}
+              disabled={isUnavailable}
               style={{
                 width: '36px',
                 height: '36px',
                 borderRadius: '10px',
-                background: '#181c1e',
+                background: isUnavailable ? '#f1f4f6' : '#181c1e',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: isUnavailable ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'background 150ms',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#00658d')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = '#181c1e')}
+              onMouseEnter={(e) => !isUnavailable && (e.currentTarget.style.background = '#00658d')}
+              onMouseLeave={(e) => !isUnavailable && (e.currentTarget.style.background = '#181c1e')}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#fff' }}>shopping_cart</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: isUnavailable ? '#8a949d' : '#fff' }}>shopping_cart</span>
             </button>
           )}
         </div>
@@ -241,7 +294,8 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
         {/* Full-width Add to Cart button (for category pages) */}
         {showAddToCartButton && (
           <button
-            onClick={(e) => { e.preventDefault(); addToCart(product); }}
+            onClick={(e) => { e.preventDefault(); if (!isUnavailable) addToCart(product); }}
+            disabled={isUnavailable}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -251,21 +305,21 @@ export default function ProductCard({ product, addToCart, wishlist, toggleWishli
               padding: '10px',
               marginTop: '10px',
               borderRadius: '10px',
-              border: '1px solid #e0e3e5',
-              background: '#fff',
-              cursor: 'pointer',
+              border: isUnavailable ? '1px solid #f1f4f6' : '1px solid #e0e3e5',
+              background: isUnavailable ? '#f1f4f6' : '#fff',
+              cursor: isUnavailable ? 'not-allowed' : 'pointer',
               fontSize: '12px',
               fontWeight: 600,
-              color: '#3e4850',
+              color: isUnavailable ? '#8a949d' : '#3e4850',
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
               transition: 'all 150ms',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#00658d'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#00658d'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#3e4850'; e.currentTarget.style.borderColor = '#e0e3e5'; }}
+            onMouseEnter={(e) => { if (!isUnavailable) { e.currentTarget.style.background = '#00658d'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#00658d'; } }}
+            onMouseLeave={(e) => { if (!isUnavailable) { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#3e4850'; e.currentTarget.style.borderColor = '#e0e3e5'; } }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>shopping_cart</span>
-            THÊM VÀO GIỎ
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>{isUnavailable ? 'block' : 'shopping_cart'}</span>
+            {isUnavailable ? badge?.text : 'THÊM VÀO GIỎ'}
           </button>
         )}
       </div>

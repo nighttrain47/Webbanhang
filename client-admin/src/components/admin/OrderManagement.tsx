@@ -23,6 +23,7 @@ interface Order {
   total: number;
   status: 'pending' | 'processing' | 'shipping' | 'delivered' | 'cancelled';
   paymentMethod: string;
+  shippingMethod?: string;
   orderDate: string;
   trackingNumber?: string;
 }
@@ -56,11 +57,12 @@ export default function OrderManagement() {
               quantity: i.quantity || 1,
               price: i.price || 0,
             })),
-            subtotal: o.total,
-            shipping: 0,
+            subtotal: o.total - (o.shippingFee || 0),
+            shipping: o.shippingFee || 0,
             total: o.total,
             status: o.status === 'confirmed' ? 'processing' : o.status,
             paymentMethod: o.paymentMethod || o.note || 'Thanh toán khi nhận hàng',
+            shippingMethod: o.shippingMethod || 'Giao tiêu chuẩn',
             orderDate: new Date(o.createdAt).toLocaleDateString('vi-VN'),
           }));
           setOrders(fetchedOrders);
@@ -259,6 +261,7 @@ export default function OrderManagement() {
                   <div>
                     <p className="text-gray-500 mb-1">Thanh toán</p>
                     <p className="font-semibold text-gray-800">{order.paymentMethod}</p>
+                    {order.shippingMethod && <p className="text-xs text-gray-500 mt-1">Giao: {order.shippingMethod}</p>}
                   </div>
                 </div>
               </div>

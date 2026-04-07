@@ -441,13 +441,36 @@ router.get('/active', async (req, res) => {
 // POST /api/customer/orders
 router.post('/orders', verifyToken, async (req, res) => {
     try {
-        const { items, shippingAddress, note, paymentMethod } = req.body;
+        const { items, shippingAddress, note, paymentMethod, shippingFee = 0, shippingMethod = 'Giao tận nơi' } = req.body;
         if (!items || items.length === 0) {
             return res.status(400).json({ success: false, message: 'Giỏ hàng trống' });
         }
 
-        const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        // Validate pre-order products
+        for (const item of items) {
+            const product = await ProductDAO.selectById(item.productId || item.product);
+            if (!product) {
+                return res.status(400).json({ success: false, message: `Sản phẩm "${item.name}" không tồn tại` });
+            }
+            
+            if (product.status === 'pre-order' || product.isPreorder) {
+                if (product.preorderDeadline) {
+                    const deadline = new Date(product.preorderDeadline);
+                    if (!isNaN(deadline.getTime())) {
+                        // Set to end of the deadline day
+                        deadline.setHours(23, 59, 59, 999);
+                        if (new Date() > deadline) {
+                            return res.status(400).json({ success: false, message: `Sản phẩm "${product.name}" đã hết hạn đặt trước` });
+                        }
+                    }
+                }
+            }
+        }
 
+        const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        // Include shipping fee in calculating the final total
+        const total = subtotal + Number(shippingFee);
+        
         const order = await OrderDAO.insert({
             customer: req.user.id,
             items: items.map(item => ({
@@ -459,7 +482,9 @@ router.post('/orders', verifyToken, async (req, res) => {
             total,
             shippingAddress: shippingAddress || '',
             note: note || '',
-            paymentMethod: paymentMethod || 'Thanh toán trực tiếp',
+            paymentMethod: paymentMethod || 'Thanh toán khi nhận hàng',
+            shippingFee: Number(shippingFee),
+            shippingMethod: shippingMethod,
             status: 'pending'
         });
 

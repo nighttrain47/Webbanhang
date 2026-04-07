@@ -46,6 +46,18 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
 
   const images = product.images?.length ? product.images : [product.image];
   const isPreorder = !!product.preorderDeadline;
+  let isPreorderExpired = false;
+  if (product.preorderDeadline) {
+    const matches = product.preorderDeadline.match(/\d{2}\/\d{2}\/\d{4}/g);
+    if (matches && matches.length > 0) {
+      const lastDate = matches[matches.length - 1];
+      const [day, month, year] = lastDate.split('/');
+      const deadline = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59);
+      if (new Date() > deadline) {
+        isPreorderExpired = true;
+      }
+    }
+  }
   const isInWishlist = wishlist.includes(product._id || product.id || '');
 
   const scaleBadge = (() => {
@@ -180,33 +192,67 @@ export default function ProductDetailPage({ addToCart, addToCartSilent, wishlist
             </div>
 
             {/* CTA Buttons */}
-            <button
-              onClick={() => { addToCartSilent(product, quantity); navigate('/checkout'); }}
-              style={{
-                width: '100%', padding: '16px', borderRadius: '12px',
-                background: 'linear-gradient(135deg, #00658d, #00adef)',
-                color: '#fff', fontWeight: 700, fontSize: '15px',
-                border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: '10px',
-              }}
-            >
-              Đặt hàng ngay
-            </button>
+            {isPreorderExpired ? (
+              <button
+                disabled
+                style={{
+                  width: '100%', padding: '16px', borderRadius: '12px',
+                  background: '#f1f4f6', color: '#8a949d', fontWeight: 700, fontSize: '15px',
+                  border: 'none', cursor: 'not-allowed',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: '20px',
+                }}
+              >
+                Đã hết hạn đặt trước
+              </button>
+            ) : product.stock === 0 ? (
+              <button
+                disabled
+                style={{
+                  width: '100%', padding: '16px', borderRadius: '12px',
+                  background: '#f1f4f6', color: '#8a949d', fontWeight: 700, fontSize: '15px',
+                  border: 'none', cursor: 'not-allowed',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: '20px',
+                }}
+              >
+                Tạm hết hàng
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => { addToCartSilent(product, quantity); navigate('/checkout'); }}
+                  style={{
+                    width: '100%', padding: '16px', borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #00658d, #00adef)',
+                    color: '#fff', fontWeight: 700, fontSize: '15px',
+                    border: 'none', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginBottom: '10px', transition: 'filter 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.1)'}
+                  onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}
+                >
+                  Đặt hàng ngay
+                </button>
 
-            <button
-              onClick={() => addToCart(product, quantity)}
-              style={{
-                width: '100%', padding: '14px', borderRadius: '12px',
-                border: '1.5px solid #e0e3e5', background: '#fff',
-                color: '#3e4850', fontWeight: 600, fontSize: '14px',
-                cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: '20px',
-              }}
-            >
-              Thêm vào giỏ hàng
-            </button>
+                <button
+                  onClick={() => addToCart(product, quantity)}
+                  style={{
+                    width: '100%', padding: '14px', borderRadius: '12px',
+                    border: '1.5px solid #e0e3e5', background: '#fff',
+                    color: '#3e4850', fontWeight: 600, fontSize: '14px',
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginBottom: '20px', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#00658d'; e.currentTarget.style.color = '#00658d'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#e0e3e5'; e.currentTarget.style.color = '#3e4850'; }}
+                >
+                  Thêm vào giỏ hàng
+                </button>
+              </>
+            )}
 
             {/* Trust badges */}
             <div className="flex flex-col sm:flex-row gap-3">

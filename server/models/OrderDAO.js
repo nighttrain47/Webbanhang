@@ -41,6 +41,14 @@ const orderSchema = new mongoose.Schema(
             type: String,
             default: 'Thanh toán trực tiếp',
         },
+        shippingFee: {
+            type: Number,
+            default: 0,
+        },
+        shippingMethod: {
+            type: String,
+            default: '',
+        },
     },
     {
         timestamps: true,

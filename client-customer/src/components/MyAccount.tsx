@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router';
 import {
   User, Package, Heart, Award, Settings, LogOut, Star, TrendingUp,
   MapPin, Phone, Mail, Globe, Calendar, Shield, Bell, CreditCard,
-  Truck, CheckCircle, Clock, AlertCircle, Eye, Search, Filter, Trash2
+  Truck, CheckCircle, Clock, AlertCircle, Eye, EyeOff, Search, Filter, Trash2
 } from 'lucide-react';
 import Header from './layout/Header';
 import Footer from './layout/Footer';
@@ -901,6 +901,7 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
   const [saveStatus, setSaveStatus] = useState('');
   const [passwordStatus, setPasswordStatus] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
 
   // Address Management
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -1384,37 +1385,64 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Mật khẩu hiện tại
             </label>
-            <input
-              type="password"
-              value={formData.currentPassword}
-              onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
-            />
+            <div className="relative">
+              <input
+                type={showPasswords.current ? "text" : "password"}
+                value={formData.currentPassword}
+                onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+              >
+                {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Mật khẩu mới
             </label>
-            <input
-              type="password"
-              value={formData.newPassword}
-              onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
-            />
+            <div className="relative">
+              <input
+                type={showPasswords.new ? "text" : "password"}
+                value={formData.newPassword}
+                onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+              >
+                {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Xác nhận mật khẩu mới
             </label>
-            <input
-              type="password"
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
-            />
+            <div className="relative">
+              <input
+                type={showPasswords.confirm ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+              >
+                {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
           {passwordStatus && (
             <p className={`text-sm font-medium mb-3 ${passwordStatus.includes('thành công') ? 'text-green-600' : 'text-red-600'}`}>
@@ -1648,19 +1676,20 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <div className="flex justify-end gap-3 pt-5 border-t border-gray-100 mt-2">
               <button
                 onClick={() => setShowAddressModal(false)}
-                className="px-5 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold text-sm hover:bg-gray-50"
+                className="flex items-center justify-center px-6 h-11 rounded-lg border border-gray-200 bg-white text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors"
+                style={{ minWidth: '100px' }}
               >
                 Hủy
               </button>
               <button
                 onClick={handleAddAddress}
-                className="px-5 py-2.5 rounded-lg text-white font-semibold text-sm"
-                style={{ backgroundColor: '#FF6B00', transition: 'background-color 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#E55D00')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF6B00')}
+                className="flex items-center justify-center px-6 h-11 rounded-lg text-white font-bold text-sm shadow-sm"
+                style={{ backgroundColor: '#FF6B00', minWidth: '130px', transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#E55D00'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#FF6B00'; e.currentTarget.style.transform = 'translateY(0)'; }}
               >
                 Lưu địa chỉ
               </button>
@@ -1736,19 +1765,20 @@ function SettingsSection({ user, token, onUpdateUser, onDeleteAccount }: any) {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <div className="flex justify-end gap-3 pt-5 border-t border-gray-100 mt-2">
               <button
                 onClick={() => setShowPaymentModal(false)}
-                className="px-5 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 font-semibold text-sm hover:bg-gray-50"
+                className="flex items-center justify-center px-6 h-11 rounded-lg border border-gray-200 bg-white text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors"
+                style={{ minWidth: '100px' }}
               >
                 Hủy
               </button>
               <button
                 onClick={handleAddPayment}
-                className="px-5 py-2.5 rounded-lg text-white font-semibold text-sm"
-                style={{ backgroundColor: '#FF6B00', transition: 'background-color 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#E55D00')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF6B00')}
+                className="flex items-center justify-center px-6 h-11 rounded-lg text-white font-bold text-sm shadow-sm"
+                style={{ backgroundColor: '#FF6B00', minWidth: '130px', transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#E55D00'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#FF6B00'; e.currentTarget.style.transform = 'translateY(0)'; }}
               >
                 Lưu thẻ
               </button>

@@ -143,6 +143,30 @@ const populateFields = [
     { path: 'brand' },
 ];
 
+function parseFlexibleDate(dateStr) {
+    if (!dateStr) return null;
+    const candidates = [];
+    const allDmyMatches = [...dateStr.matchAll(/(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})/g)];
+    for (const m of allDmyMatches) {
+        const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+        if (!isNaN(d.getTime())) candidates.push(d);
+    }
+    const vnLongMatches = [...dateStr.matchAll(/ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi)];
+    for (const m of vnLongMatches) {
+        const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+        if (!isNaN(d.getTime())) candidates.push(d);
+    }
+    if (candidates.length > 0) return candidates.reduce((latest, d) => d > latest ? d : latest);
+    const isoDate = new Date(dateStr);
+    if (!isNaN(isoDate.getTime())) return isoDate;
+    const monthYearMatch = dateStr.match(/(?:tháng\s*)?(\d{1,2})[/\-.](\d{4})/i);
+    if (monthYearMatch) {
+        const d = new Date(Number(monthYearMatch[2]), Number(monthYearMatch[1]) - 1, 1);
+        if (!isNaN(d.getTime())) return d;
+    }
+    return null;
+}
+
 // DAO methods
 const ProductDAO = {
     // Lấy tất cả sản phẩm (phân trang)
@@ -178,12 +202,10 @@ const ProductDAO = {
 
     // Lấy sản phẩm hot (isHot flag, fallback to best-selling)
     selectHotProducts: async (limit = 8) => {
-        // First try products marked as hot
         let products = await Product.find({ status: { $in: ['active', 'pre-order'] }, isHot: true })
             .populate(populateFields)
             .sort({ sold: -1 })
             .limit(limit);
-        // Fallback: if not enough hot products, fill with best sellers
         if (products.length < limit) {
             const hotIds = products.map(p => p._id);
             const fillProducts = await Product.find({
@@ -198,14 +220,24 @@ const ProductDAO = {
         return products;
     },
 
-    // Lấy sản phẩm pre-order
+    // Lấy sản phẩm pre-order đang hoạt động
     selectPreorderProducts: async (limit = 8) => {
-        return await Product.find({
+        const allPreorders = await Product.find({
             $or: [{ isPreorder: true }, { status: 'pre-order' }],
         })
             .populate(populateFields)
-            .sort({ createdAt: -1 })
-            .limit(limit);
+            .sort({ createdAt: -1 });
+
+        // Lọc bỏ sản phẩm đã hết hạn
+        const activePreorders = allPreorders.filter(product => {
+            if (!product.preorderDeadline) return true;
+            const parsedDate = parseFlexibleDate(product.preorderDeadline);
+            if (!parsedDate) return true;
+            parsedDate.setHours(23, 59, 59, 999);
+            return Date.now() <= parsedDate.getTime();
+        });
+
+        return activePreorders.slice(0, limit);
     },
 
     // Lấy sản phẩm khuyến mãi
