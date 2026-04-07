@@ -251,8 +251,8 @@ router.post('/signup', async (req, res) => {
             phone: phone || '', otp, otpExpiry
         });
 
-        // Send OTP email in background
-        sendOTP(email, otp, 'verify').catch(err => console.error("OTP Send Error:", err));
+        // Send OTP email via Webhook
+        await sendOTP(email, otp, 'verify').catch(err => console.error("OTP Send Error:", err));
 
         res.status(201).json({
             success: true,
@@ -334,8 +334,8 @@ router.post('/resend-otp', async (req, res) => {
             await CustomerDAO.updateOTP(email, otp, otpExpiry);
         }
 
-        // Send OTP email in background
-        sendOTP(email, otp, purpose || 'verify').catch(err => console.error("OTP Resend Error:", err));
+        // Send OTP email via Webhook
+        await sendOTP(email, otp, purpose || 'verify').catch(err => console.error("OTP Resend Error:", err));
 
         res.json({ success: true, message: 'Đã gửi lại mã xác thực.' });
     } catch (error) {
@@ -360,8 +360,8 @@ router.post('/forgot-password', async (req, res) => {
         const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
         await CustomerDAO.updateOTP(email, otp, otpExpiry);
 
-        // Send OTP email in background
-        sendOTP(email, otp, 'reset').catch(err => console.error("OTP Forgot Pwd Error:", err));
+        // Send OTP email via Webhook
+        await sendOTP(email, otp, 'reset').catch(err => console.error("OTP Forgot Pwd Error:", err));
 
         res.json({ success: true, message: 'Đã gửi mã xác thực tới email của bạn.' });
     } catch (error) {
