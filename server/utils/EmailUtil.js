@@ -1,25 +1,22 @@
-const nodemailer = require('nodemailer');
-const fs = require('fs');
-const path = require('path');
+const axios = require('axios');
 
-function writeLog(msg) {
-    const timestamp = new Date().toISOString();
-    fs.appendFileSync(path.join(__dirname, '..', 'mailer.log'), `[${timestamp}] ${msg}\n`);
-}
+// Webhook URL từ Google Apps Script
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzm10bMltGN_RPQ__nM-WcIWxXcZoVoBjJSYCcfpY3KNmeyRaVF9COEMtuDbbJAs_6n/exec';
 
-// Create reusable transporter
-const createTransporter = () => {
-    return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-        connectionTimeout: 10000, // 10 seconds max to connect
-        socketTimeout: 10000 // 10 seconds max for operations
-    });
+const sendToWebhook = async (toEmail, subject, html) => {
+    try {
+        const response = await axios.post(
+            SCRIPT_URL,
+            { to: toEmail, subject, html },
+            // Google Apps Script requires following redirects natively, which Axios does.
+            // Using text/plain overrides CORS if called from browser, though not strictly needed here.
+            { headers: { 'Content-Type': 'text/plain;charset=utf-8' } }
+        );
+        return { success: true, messageId: 'Webhook_Sent' };
+    } catch (error) {
+        console.error(`❌ Webhook Failed for ${toEmail}:`, error.message);
+        return { success: false, error: error.message };
+    }
 };
 
 // Generate 6-digit OTP
@@ -104,21 +101,12 @@ const sendOTP = async (toEmail, otp, purpose = 'verify') => {
     </html>
     `;
 
-    const mailOptions = {
-        from: `"FigureCurator" <${process.env.EMAIL_USER}>`,
-        to: toEmail,
-        subject,
-        html,
-    };
-
     try {
-        writeLog(`Attempting to send OTP to ${toEmail}`);
-        const info = await transporter.sendMail(mailOptions);
-        writeLog(`SUCCESS: OTP sent to ${toEmail} with ID: ${info.messageId}`);
-        console.log(`📧 OTP sent to ${toEmail}: ${info.messageId}`);
-        return { success: true, messageId: info.messageId };
+        const info = await sendToWebhook(toEmail, subject, html);
+        if(!info.success) throw new Error(info.error);
+        console.log(`📧 OTP Webhook triggered for ${toEmail}`);
+        return { success: true, messageId: 'webhook' };
     } catch (error) {
-        writeLog(`ERROR: Failed to send OTP to ${toEmail} - ${error.message} - ${error.stack}`);
         console.error(`❌ Failed to send OTP to ${toEmail}:`, error.message);
         return { success: false, error: error.message };
     }
@@ -207,17 +195,11 @@ const sendOrderStatusEmail = async (toEmail, status, orderId) => {
     </html>
     `;
 
-    const mailOptions = {
-        from: `"FigureCurator" <${process.env.EMAIL_USER}>`,
-        to: toEmail,
-        subject: `Cập nhật đơn hàng ${orderId} - FigureCurator`,
-        html,
-    };
-
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`📧 Order Status sent to ${toEmail}: ${info.messageId}`);
-        return { success: true, messageId: info.messageId };
+        const info = await sendToWebhook(toEmail, `Cập nhật đơn hàng ${orderId} - FigureCurator`, html);
+        if(!info.success) throw new Error(info.error);
+        console.log(`📧 Order Status Webhook triggered for ${toEmail}`);
+        return { success: true, messageId: 'webhook' };
     } catch (error) {
         console.error(`❌ Failed to send Order Status to ${toEmail}:`, error.message);
         return { success: false, error: error.message };
@@ -314,17 +296,11 @@ const sendOrderPlacedEmail = async (toEmail, orderId, items, total, shippingAddr
     </html>
     `;
 
-    const mailOptions = {
-        from: `"FigureCurator" <${process.env.EMAIL_USER}>`,
-        to: toEmail,
-        subject: `Xác nhận đơn hàng ${orderId} - FigureCurator`,
-        html,
-    };
-
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`📧 Order Placed Email sent to ${toEmail}: ${info.messageId}`);
-        return { success: true, messageId: info.messageId };
+        const info = await sendToWebhook(toEmail, `Xác nhận đơn hàng ${orderId} - FigureCurator`, html);
+        if(!info.success) throw new Error(info.error);
+        console.log(`📧 Order Placed Email Webhook triggered for ${toEmail}`);
+        return { success: true, messageId: 'webhook' };
     } catch (error) {
         console.error(`❌ Failed to send Order Placed Email to ${toEmail}:`, error.message);
         return { success: false, error: error.message };
