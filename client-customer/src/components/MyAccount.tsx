@@ -299,7 +299,7 @@ export default function MyAccount({ user, token, onLogout, onDeleteAccount, onUp
         <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
           {/* Sidebar - Desktop Only */}
           <div className="hidden lg:block" style={{ width: '280px', flexShrink: 0 }}>
-            <div className="bg-white rounded-lg shadow-sm p-6" style={{ position: 'sticky', top: '96px', zIndex: 0 }}>
+            <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-50 p-6" style={{ position: 'sticky', top: '96px', zIndex: 0 }}>
               <div className="text-center mb-6">
                 <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #ff7d36, #ffaa5b)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', color: '#fff', fontSize: '32px', fontWeight: 800, textTransform: 'uppercase', boxShadow: '0 8px 24px rgba(255,125,54,0.25)' }}>
                   {user.name ? user.name.charAt(0) : 'U'}
@@ -443,7 +443,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-50 p-6 transition-transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Tổng đơn hàng</p>
@@ -453,7 +453,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-50 p-6 transition-transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Sản phẩm yêu thích</p>
@@ -463,7 +463,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-50 p-6 transition-transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500">Thành viên từ</p>
@@ -475,7 +475,7 @@ function ProfileSection({ user, currentTier, nextTier, pointsToNextTier, mockOrd
       </div>
 
       {/* Account Information */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-50 p-6">
         <h2 className="text-xl font-bold mb-6">Thông tin tài khoản</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex items-start gap-3">
@@ -534,7 +534,7 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
   return (
     <div className="space-y-6">
       {/* Filter Tabs */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-50 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Lịch sử đơn hàng</h2>
           <div className="flex items-center gap-2">
@@ -577,7 +577,7 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600"></div>
         </div>
       ) : orders.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-50 p-12 text-center">
           <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-xl text-gray-600">Không tìm thấy đơn hàng</p>
           <p className="text-sm text-gray-500 mt-2">Hãy thử điều chỉnh bộ lọc</p>
@@ -585,7 +585,7 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
       ) : (
         <div className="space-y-4">
           {orders.map((order: any) => (
-            <div key={order.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div key={order.id} className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-50 overflow-hidden">
               {/* Order Header */}
               <div className="p-6 border-b bg-white">
                 <div className="flex items-start justify-between mb-3">
@@ -698,7 +698,7 @@ function OrdersSection({ orders, orderFilter, setOrderFilter, isLoading }: any) 
 function WishlistSection({ wishlistProducts, toggleWishlist, addToCart, wishlist }: any) {
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-50 p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">Danh sách yêu thích</h2>
           <div className="flex items-center gap-2 text-gray-500">
@@ -709,7 +709,7 @@ function WishlistSection({ wishlistProducts, toggleWishlist, addToCart, wishlist
       </div>
 
       {wishlistProducts.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-50 p-12 text-center">
           <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-xl text-gray-600 mb-2">Danh sách yêu thích trống</p>
           <p className="text-sm text-gray-500 mb-6">Hãy thêm những sản phẩm bạn yêu thích!</p>
@@ -772,7 +772,7 @@ function PointsSection({ user, currentTier, nextTier, pointsToNextTier, pointsHi
       </div>
 
       {/* Membership Tiers */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-50 p-6">
         <h2 className="text-xl font-bold mb-6">Hạng thành viên</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {membershipTiers.map((tier: any) => (

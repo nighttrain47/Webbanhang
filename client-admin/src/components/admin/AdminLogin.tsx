@@ -43,15 +43,15 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo & Title */}
         <div className="text-center mb-8">
-          <div className="inline-block bg-gradient-to-br from-[#FF9900] to-[#E68A00] p-4 rounded-2xl mb-4">
-            <Lock className="w-12 h-12 text-white" />
+          <div className="inline-block bg-blue-600 p-4 rounded-2xl mb-4 shadow-sm">
+            <Lock className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            <span className="text-[#FF9900]">Anime Store</span> Admin
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            HobbyShop Admin
           </h1>
           <p className="text-gray-500">Đăng nhập vào bảng điều khiển quản trị</p>
         </div>
@@ -77,7 +77,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
                   required
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="admin"
                 />
               </div>
@@ -94,7 +94,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   placeholder="••••••••"
                 />
               </div>
@@ -104,11 +104,11 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-[#FF9900] border-gray-300 rounded focus:ring-[#FF9900]"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-600">Ghi nhớ đăng nhập</span>
               </label>
-              <a href="#" className="text-sm text-[#FF9900] hover:underline">
+              <a href="#" className="text-sm text-blue-600 hover:text-blue-700 hover:underline transition-colors">
                 Quên mật khẩu?
               </a>
             </div>
@@ -116,22 +116,22 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#FF9900] text-white py-3 rounded-lg hover:bg-[#E68A00] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </button>
           </form>
 
           {/* Security Notice */}
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-xs text-amber-700 text-center">🔒 Chỉ quản trị viên được ủy quyền mới có thể đăng nhập</p>
+          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-xs text-gray-500 text-center">Chỉ quản trị viên được ủy quyền mới có thể đăng nhập</p>
           </div>
         </div>
 
         {/* Back to Store */}
         <div className="text-center mt-6">
-          <a href="/" className="text-sm text-gray-600 hover:text-[#FF9900]">
-            ← Quay lại cửa hàng
+          <a href="/" className="text-sm text-gray-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-1">
+            &larr; Quay lại cửa hàng
           </a>
         </div>
       </div>

@@ -112,16 +112,15 @@ export default function ArticleManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Quản lý Tin tức / Blog</h1>
-          <p className="text-gray-500 mt-1">Đăng tải, cập nhật bài viết và lịch pre-order</p>
-        </div>
+          <h1 className="text-2xl font-bold text-gray-900">Quản lý Tin tức / Blog</h1>
+                  </div>
         <button 
           onClick={() => { setSelectedArticle(null); setShowModal(true); }}
-          className="flex items-center gap-2 bg-[#FF9900] text-white px-4 py-3 rounded-lg hover:bg-[#E68A00] font-semibold"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4" />
           Viết bài mới
         </button>
       </div>
@@ -134,7 +133,7 @@ export default function ArticleManagement() {
             placeholder="Tìm theo tiêu đề hoặc slug..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </div>
       </div>
@@ -197,20 +196,20 @@ export default function ArticleManagement() {
                       {new Date(article.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <button 
                           onClick={() => handleEdit(article)}
-                          className="p-2 hover:bg-blue-50 rounded-lg text-blue-600"
+                          className="p-2.5 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors shadow-sm relative group"
                           title="Chỉnh sửa"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-5 h-5" />
                         </button>
                         <button 
                           onClick={() => handleDelete(article._id)}
-                          className="p-2 hover:bg-red-50 rounded-lg text-red-600"
+                          className="p-2.5 bg-red-50 hover:bg-red-100 rounded-lg text-red-600 transition-colors shadow-sm relative group"
                           title="Xóa"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     </td>
@@ -281,7 +280,7 @@ function ArticleModal({
                   required
                   value={formData.title}
                   onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF9900] focus:outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
                   placeholder="Nhập tiêu đề..."
                 />
               </div>
@@ -292,7 +291,7 @@ function ArticleModal({
                   type="text"
                   value={formData.author}
                   onChange={e => setFormData({ ...formData, author: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF9900] focus:outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
             </div>
@@ -303,7 +302,7 @@ function ArticleModal({
                 type="url"
                 value={formData.image}
                 onChange={e => setFormData({ ...formData, image: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF9900] focus:outline-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
                 placeholder="https://..."
               />
             </div>
@@ -315,7 +314,7 @@ function ArticleModal({
                   type="checkbox" 
                   checked={formData.published} 
                   onChange={e => setFormData({ ...formData, published: e.target.checked })} 
-                  className="w-5 h-5 accent-[#FF9900]"
+                  className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
                 />
                 <span className="font-medium">Xuất bản bài viết</span>
               </label>
@@ -328,7 +327,7 @@ function ArticleModal({
                 rows={12}
                 value={formData.content}
                 onChange={e => setFormData({ ...formData, content: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF9900] focus:outline-none resize-y font-mono text-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none shrink-0 font-mono text-sm transition-colors"
                 placeholder="<h1>Tiêu đề</h1><p>Đoạn văn...</p>"
               />
             </div>
@@ -339,14 +338,14 @@ function ArticleModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-3 border rounded-lg text-gray-700 hover:bg-gray-50 font-semibold"
+            className="flex-1 px-4 py-3 border rounded-lg text-gray-700 hover:bg-gray-50 font-semibold transition-colors"
           >
             Hủy bỏ
           </button>
           <button
             type="submit"
             form="article-form"
-            className="flex-1 px-4 py-3 bg-[#FF9900] text-white rounded-lg hover:bg-[#E68A00] font-semibold"
+            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors"
           >
             {article ? 'Lưu cập nhật' : 'Đăng bài'}
           </button>

@@ -46,6 +46,7 @@ export default function ProductManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [brandFilter, setBrandFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -57,6 +58,14 @@ export default function ProductManagement() {
   const [categories, setCategories] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, categoryFilter, statusFilter, brandFilter]);
+
 
   useEffect(() => {
     fetchProducts();
@@ -96,7 +105,7 @@ export default function ProductManagement() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('adminToken');
-      const res = await fetch(`${API_URL}/api/admin/products?limit=100`, {
+      const res = await fetch(`${API_URL}/api/admin/products?limit=1000`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -123,9 +132,24 @@ export default function ProductManagement() {
     const productCategoryId = product.category?._id || product.category;
     const matchesCategory = categoryFilter === 'all' || productCategoryId === categoryFilter;
     const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+    const productBrandId = product.brand?._id || product.brand;
+    let matchesBrand = brandFilter === 'all' || productBrandId === brandFilter;
+    if (!matchesBrand && brandFilter !== 'all') {
+      const matchedBrand = brands.find(b => b._id === brandFilter);
+      if (matchedBrand) {
+         const bName = matchedBrand.name.toLowerCase();
+         if (product.manufacturer?.toLowerCase().includes(bName) || product.brand?.name?.toLowerCase().includes(bName)) {
+            matchesBrand = true;
+         }
+      }
+    }
     
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesCategory && matchesStatus && matchesBrand;
   });
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const currentProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
 
   const handleDelete = (id: string) => {
     setDeleteConfirmId(id);
@@ -264,55 +288,24 @@ export default function ProductManagement() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Quản lý sản phẩm</h1>
-          <p className="text-gray-500 mt-1">Quản lý toàn bộ sản phẩm trong cửa hàng</p>
+          <h1 className="text-2xl font-bold text-gray-900">Quản lý sản phẩm</h1>
         </div>
         <button 
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 bg-[#FF9900] text-white px-4 py-3 rounded-lg hover:bg-[#E68A00] font-semibold"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
         >
-          <Plus className="w-5 h-5" />
-          Thêm sản phẩm
+          <Plus className="w-4 h-4" />
+          Thêm mới
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <p className="text-sm text-gray-500 mb-1">Tổng sản phẩm</p>
-          <p className="text-2xl font-bold text-gray-800">{products.length}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <p className="text-sm text-gray-500 mb-1">Đang bán</p>
-          <p className="text-2xl font-bold text-green-600">
-            {products.filter(p => p.status === 'active').length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <p className="text-sm text-gray-500 mb-1">Pre-order</p>
-          <p className="text-2xl font-bold text-purple-600">
-            {products.filter(p => p.status === 'pre-order' || p.isPreorder).length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <p className="text-sm text-gray-500 mb-1">Hết hàng</p>
-          <p className="text-2xl font-bold text-red-600">
-            {products.filter(p => p.status === 'out-of-stock').length}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <p className="text-sm text-gray-500 mb-1">Tổng tồn kho</p>
-          <p className="text-2xl font-bold text-blue-600">
-            {products.reduce((sum, p) => sum + p.stock, 0)}
-          </p>
-        </div>
-      </div>
+
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -320,14 +313,14 @@ export default function ProductManagement() {
               placeholder="Tìm kiếm sản phẩm, Series..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">Tất cả danh mục</option>
             {categories.map(c => (
@@ -336,9 +329,20 @@ export default function ProductManagement() {
           </select>
 
           <select
+            value={brandFilter}
+            onChange={(e) => setBrandFilter(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="all">Tất cả thương hiệu</option>
+            {brands.map(b => (
+              <option key={b._id} value={b._id}>{b.name}</option>
+            ))}
+          </select>
+
+          <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang bán</option>
@@ -419,7 +423,7 @@ export default function ProductManagement() {
                     type="checkbox"
                     checked={filteredProducts.length > 0 && selectedIds.size === filteredProducts.length}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300 text-[#FF9900] focus:ring-[#FF9900] cursor-pointer"
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Sản phẩm</th>
@@ -438,7 +442,7 @@ export default function ProductManagement() {
                     Đang tải dữ liệu...
                   </td>
                 </tr>
-              ) : filteredProducts.length === 0 ? (
+              ) : currentProducts.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-12 text-center">
                     <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -446,7 +450,7 @@ export default function ProductManagement() {
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((product) => {
+                currentProducts.map((product) => {
                   const pid = (product._id || product.id) as string;
                   return (
                   <tr key={pid} className={`hover:bg-gray-50 ${selectedIds.has(pid) ? 'bg-blue-50' : ''}`}>
@@ -455,7 +459,7 @@ export default function ProductManagement() {
                         type="checkbox"
                         checked={selectedIds.has(pid)}
                         onChange={() => toggleSelect(pid)}
-                        className="w-4 h-4 rounded border-gray-300 text-[#FF9900] focus:ring-[#FF9900] cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                       />
                     </td>
                     <td className="px-6 py-4">
@@ -510,20 +514,18 @@ export default function ProductManagement() {
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(product.status)}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-3">
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleEdit(product); }}
-                          className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 cursor-pointer"
+                          className="p-2.5 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors shadow-sm relative group"
                           title="Chỉnh sửa"
-                          style={{ position: 'relative', zIndex: 10, minWidth: '36px', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         >
                           <Edit className="w-5 h-5" />
                         </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleDelete(product._id || (product.id as string)); }}
-                          className="p-2 hover:bg-red-50 rounded-lg text-red-600 cursor-pointer"
+                          className="p-2.5 bg-red-50 hover:bg-red-100 rounded-lg text-red-600 transition-colors shadow-sm relative group"
                           title="Xóa"
-                          style={{ position: 'relative', zIndex: 10, minWidth: '36px', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -536,6 +538,63 @@ export default function ProductManagement() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-lg">
+            <p className="text-sm text-gray-500">
+              Hiển thị <span className="font-semibold text-gray-700">{(currentPage - 1) * itemsPerPage + 1}</span> đến <span className="font-semibold text-gray-700">{Math.min(currentPage * itemsPerPage, filteredProducts.length)}</span> trong tổng số <span className="font-semibold text-gray-700">{filteredProducts.length}</span> sản phẩm
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 border border-gray-200 rounded-md text-sm font-medium hover:bg-white hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                Trước
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {[...Array(totalPages)].map((_, i) => {
+                  const page = i + 1;
+                  if (
+                    page === 1 || 
+                    page === totalPages || 
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer ${
+                          currentPage === page 
+                            ? 'bg-blue-600 text-white border border-blue-600' 
+                            : 'border border-transparent text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 2 || 
+                    page === currentPage + 2
+                  ) {
+                    return <span key={page} className="text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 border border-gray-200 rounded-md text-sm font-medium hover:bg-white hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                Sau
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -632,50 +691,7 @@ function ProductModal({
   });
 
   const [imageInputMode, setImageInputMode] = useState<'url' | 'file'>('url');
-  const [fetchUrl, setFetchUrl] = useState('');
-  const [isFetching, setIsFetching] = useState(false);
 
-  const handleFetchShopify = async () => {
-    if (!fetchUrl) return;
-    setIsFetching(true);
-    try {
-      let urlStr = fetchUrl.trim();
-      const urlObj = new URL(urlStr);
-      if (!urlObj.pathname.endsWith('.js')) {
-        urlStr = urlObj.origin + urlObj.pathname + '.js';
-      }
-      const res = await fetch(urlStr);
-      if (!res.ok) throw new Error('Fetch failed');
-      const data = await res.json();
-      
-      const jpyPrice = data.price / 100;
-      const originalPrice = Math.round(jpyPrice * 170);
-      const price = originalPrice + 300000;
-      
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = data.description || '';
-      const cleanDesc = tempDiv.textContent || tempDiv.innerText || '';
-
-      const fixImg = (i: string) => i?.startsWith('//') ? 'https:' + i : i;
-
-      setFormData(prev => ({
-        ...prev,
-        name: data.title || prev.name,
-        description: cleanDesc || prev.description,
-        price: price,
-        originalPrice: originalPrice,
-        imageUrl: data.featured_image ? fixImg(data.featured_image) : prev.imageUrl,
-        images: (data.images || []).map((img: string) => fixImg(img)).join('\n'),
-        manufacturer: data.vendor || prev.manufacturer
-      }));
-      setFetchUrl('');
-    } catch (err) {
-      console.error(err);
-      alert('Lỗi: Không thể lấy dữ liệu (Kiểm tra lại link hoặc có thể do CORS).');
-    } finally {
-      setIsFetching(false);
-    }
-  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -755,29 +771,6 @@ function ProductModal({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-8">
 
-            {/* ========== KHU VỰC AUTO FETCH ========== */}
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl">
-              <h3 className="text-sm font-bold text-blue-800 mb-2">⚡ Tự động lấy dữ liệu từ FINDME STORE (Shopify)</h3>
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  placeholder="Nhập link sản phẩm (VD: https://findmestore.thinkr.jp/collections/.../products/...)"
-                  value={fetchUrl}
-                  onChange={e => setFetchUrl(e.target.value)}
-                  className="flex-1 px-4 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={handleFetchShopify}
-                  disabled={isFetching || !fetchUrl}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors shrink-0"
-                >
-                  {isFetching ? 'Đang lấy...' : 'Fetch Dữ Liệu'}
-                </button>
-              </div>
-              <p className="text-xs text-blue-600 mt-2 mt-1">Giá nhập = Giá JPY × 170. Giá bán = Giá nhập + 300,000 VND.</p>
-            </div>
-
             {/* ========== PHẦN 1: Thông tin sản phẩm ========== */}
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-5 pb-2 border-b flex items-center gap-2">
@@ -820,7 +813,7 @@ function ProductModal({
                           onClick={() => setImageInputMode('url')}
                           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                             imageInputMode === 'url'
-                              ? 'bg-[#FF9900] text-white'
+                              ? 'bg-blue-600 text-white'
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
@@ -831,7 +824,7 @@ function ProductModal({
                           onClick={() => setImageInputMode('file')}
                           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
                             imageInputMode === 'file'
-                              ? 'bg-[#FF9900] text-white'
+                              ? 'bg-blue-600 text-white'
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >

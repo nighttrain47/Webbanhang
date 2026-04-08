@@ -80,11 +80,10 @@ export default function ReviewManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Quản lý Đánh giá</h1>
-          <p className="text-gray-500 mt-1">Quản lý các nhận xét và đánh giá của khách hàng</p>
-        </div>
+          <h1 className="text-2xl font-bold text-gray-900">Quản lý Đánh giá</h1>
+                  </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -95,7 +94,7 @@ export default function ReviewManagement() {
             placeholder="Tìm kiếm người đánh giá, tên sp hoặc nội dung..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </div>
       </div>
@@ -161,10 +160,10 @@ export default function ReviewManagement() {
                     <td className="px-6 py-4">
                       <button 
                         onClick={() => handleDelete(review._id)}
-                        className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                        className="p-2.5 bg-red-50 hover:bg-red-100 rounded-lg text-red-600 transition-colors shadow-sm relative group"
                         title="Xóa đánh giá"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </td>
                   </tr>

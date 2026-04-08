@@ -339,6 +339,22 @@ router.get('/dashboard', verifyToken, async (req, res) => {
 
         const newUsers = await Customer.countDocuments({ createdAt: { $gte: startOfMonth } });
         const totalProducts = await Product.countDocuments();
+        
+        const activeProducts = await Product.countDocuments({ 
+            $or: [{ status: 'active' }, { status: { $exists: false } }, { status: null }],
+            stock: { $gt: 0 },
+            isPreorder: { $ne: true }
+        });
+        const preorderProducts = await Product.countDocuments({ 
+            $or: [{ status: 'pre-order' }, { isPreorder: true }] 
+        });
+        const outOfStockProducts = await Product.countDocuments({ 
+            $or: [{ status: 'out-of-stock' }, { stock: { $lte: 0 } }] 
+        });
+        const totalStockAgg = await Product.aggregate([
+            { $group: { _id: null, totalStock: { $sum: '$stock' } } }
+        ]);
+        const totalStock = totalStockAgg[0]?.totalStock || 0;
 
         // Recent Orders
         const recentOrdersRaw = await Order.find().sort({ createdAt: -1 }).limit(5).populate('customer', 'name');
@@ -385,7 +401,16 @@ router.get('/dashboard', verifyToken, async (req, res) => {
         }
 
         res.json({
-            stats: { monthlyRevenue, monthlyOrders, newUsers, totalProducts },
+            stats: { 
+                monthlyRevenue, 
+                monthlyOrders, 
+                newUsers, 
+                totalProducts,
+                activeProducts,
+                preorderProducts,
+                outOfStockProducts,
+                totalStock
+            },
             recentOrders,
             topProducts,
             revenue7days

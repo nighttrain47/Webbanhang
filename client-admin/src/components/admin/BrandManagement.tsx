@@ -118,17 +118,16 @@ export default function BrandManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Quản lý thương hiệu</h1>
-          <p className="text-gray-500 mt-1">Quản lý các thương hiệu sản phẩm</p>
-        </div>
+          <h1 className="text-2xl font-bold text-gray-900">Quản lý thương hiệu</h1>
+                  </div>
         <button
           onClick={() => { setSelectedBrand(null); setShowModal(true); }}
-          className="flex items-center gap-2 bg-[#FF9900] text-white px-4 py-3 rounded-lg hover:bg-[#E68A00] font-semibold"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
         >
-          <Plus className="w-5 h-5" />
-          Thêm thương hiệu
+          <Plus className="w-4 h-4" />
+          Thêm mới
         </button>
       </div>
 
@@ -147,7 +146,7 @@ export default function BrandManagement() {
             placeholder="Tìm kiếm thương hiệu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </div>
       </div>
@@ -159,7 +158,6 @@ export default function BrandManagement() {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Thương hiệu</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Slug</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Mô tả</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Hành động</th>
               </tr>
@@ -167,13 +165,13 @@ export default function BrandManagement() {
             <tbody className="divide-y">
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : filteredBrands.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center">
+                  <td colSpan={3} className="px-6 py-12 text-center">
                     <Award className="w-12 h-12 text-gray-300 mx-auto mb-2" />
                     <p className="text-gray-500">Chưa có thương hiệu nào</p>
                   </td>
@@ -193,23 +191,22 @@ export default function BrandManagement() {
                         <span className="font-medium text-gray-800">{brand.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{brand.slug}</td>
                     <td className="px-6 py-4 text-sm text-gray-600 truncate max-w-xs">{brand.description}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <button
                           onClick={() => handleEdit(brand)}
-                          className="p-2 hover:bg-blue-50 rounded-lg text-blue-600"
+                          className="p-2.5 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors shadow-sm relative group"
                           title="Chỉnh sửa"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(brand._id)}
-                          className="p-2 hover:bg-red-50 rounded-lg text-red-600"
+                          className="p-2.5 bg-red-50 hover:bg-red-100 rounded-lg text-red-600 transition-colors shadow-sm relative group"
                           title="Xóa"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     </td>
@@ -302,7 +299,7 @@ function BrandModal({
               required
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF9900] focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
               placeholder="VD: Good Smile Company"
             />
           </div>
@@ -314,7 +311,7 @@ function BrandModal({
               type="url"
               value={formData.logo}
               onChange={e => setFormData({ ...formData, logo: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF9900] focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
               placeholder="https://example.com/logo.png"
             />
             {formData.logo && (
@@ -331,21 +328,21 @@ function BrandModal({
               rows={3}
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF9900] focus:outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
               placeholder="Mô tả về thương hiệu..."
             />
           </div>
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-4 border-t mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50 font-semibold"
+              className="flex-1 px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50 font-semibold transition-colors"
             >
               Hủy
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-[#FF9900] text-white rounded-lg hover:bg-[#E68A00] font-semibold"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors"
             >
               {brand ? 'Cập nhật' : 'Tạo mới'}
             </button>

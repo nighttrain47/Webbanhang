@@ -120,10 +120,9 @@ export default function CustomerManagement() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">Quản lý khách hàng</h1>
-        <p className="text-gray-500 mt-1">Quản lý thông tin khách hàng và lịch sử mua hàng</p>
-      </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Quản lý khách hàng</h1>
+              </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -156,14 +155,14 @@ export default function CustomerManagement() {
               placeholder="Tìm kiếm theo tên, email, ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           </div>
           
           <select
             value={tierFilter}
             onChange={(e) => setTierFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
             <option value="all">Tất cả hạng thành viên</option>
             <option value="Cấp 3">Cấp 3</option>
@@ -219,7 +218,7 @@ export default function CustomerManagement() {
                     <span className="font-semibold text-gray-800">{customer.totalOrders}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-semibold text-[#FF9900]">
+                    <span className="font-semibold text-blue-600">
                       {customer.totalSpent.toLocaleString()}đ
                     </span>
                   </td>
@@ -229,20 +228,20 @@ export default function CustomerManagement() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <button
                         onClick={() => setSelectedCustomer(customer)}
-                        className="p-2 hover:bg-blue-50 rounded-lg text-blue-600 transition-colors"
+                        className="p-2.5 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors shadow-sm relative group"
                         title="Xem chi tiết"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-5 h-5" />
                       </button>
                       <button
                         onClick={(e) => handleDeleteCustomer(customer.id, e)}
-                        className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                        className="p-2.5 bg-red-50 hover:bg-red-100 rounded-lg text-red-600 transition-colors shadow-sm relative group"
                         title="Xoá khách hàng"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
                   </td>
@@ -372,10 +371,10 @@ function CustomerDetailModal({ customer, onClose }: { customer: Customer; onClos
 
           {/* Actions */}
           <div className="flex gap-3 pt-4 border-t">
-            <button className="flex-1 px-4 py-3 bg-[#FF9900] text-white rounded-lg hover:bg-[#E68A00] font-semibold">
+            <button className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors">
               Gửi email
             </button>
-            <button className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold">
+            <button className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-colors">
               Xem tất cả đơn hàng
             </button>
           </div>

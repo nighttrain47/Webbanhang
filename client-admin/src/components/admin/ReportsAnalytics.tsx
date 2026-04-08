@@ -74,13 +74,12 @@ export default function ReportsAnalytics() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Báo cáo & Thống kê</h1>
-          <p className="text-gray-500 mt-1">Phân tích doanh thu và hiệu suất kinh doanh</p>
-        </div>
-        <button className="flex items-center gap-2 bg-[#FF9900] text-white px-4 py-3 rounded-lg hover:bg-[#E68A00] font-semibold">
-          <Download className="w-5 h-5" />
+          <h1 className="text-2xl font-bold text-gray-900">Báo cáo & Thống kê</h1>
+                  </div>
+        <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm">
+          <Download className="w-4 h-4" />
           Xuất báo cáo
         </button>
       </div>
@@ -95,7 +94,7 @@ export default function ReportsAnalytics() {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="7days">7 ngày qua</option>
               <option value="30days">30 ngày qua</option>
@@ -112,7 +111,7 @@ export default function ReportsAnalytics() {
             <select
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
               <option value="revenue">Doanh thu</option>
               <option value="orders">Đơn hàng</option>
@@ -125,7 +124,7 @@ export default function ReportsAnalytics() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               So sánh với
             </label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9900]">
+            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
               <option value="previous">Kỳ trước</option>
               <option value="lastYear">Cùng kỳ năm trước</option>
             </select>
@@ -146,13 +145,13 @@ export default function ReportsAnalytics() {
                   stat.color === 'green' ? 'bg-green-100' :
                   stat.color === 'blue' ? 'bg-blue-100' :
                   stat.color === 'purple' ? 'bg-purple-100' :
-                  'bg-orange-100'
+                  'bg-teal-100'
                 }`}>
                   <Icon className={`w-6 h-6 ${
                     stat.color === 'green' ? 'text-green-600' :
                     stat.color === 'blue' ? 'text-blue-600' :
                     stat.color === 'purple' ? 'text-purple-600' :
-                    'text-orange-600'
+                    'text-teal-600'
                   }`} />
                 </div>
                 <span className={`flex items-center gap-1 text-sm font-semibold ${
@@ -175,10 +174,7 @@ export default function ReportsAnalytics() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-lg font-bold">Doanh thu theo ngày</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Tổng: {totalRevenue.toLocaleString()}đ
-              </p>
-            </div>
+                          </div>
             <BarChart3 className="w-5 h-5 text-gray-400" />
           </div>
 
@@ -195,7 +191,7 @@ export default function ReportsAnalytics() {
                     </div>
                     
                     <div 
-                      className="w-full bg-gradient-to-t from-[#FF9900] to-[#FFB84D] rounded-t-lg hover:opacity-80 transition-all cursor-pointer"
+                      className="w-full bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-all cursor-pointer"
                       style={{ height: `${height}%`, minHeight: '20px' }}
                     ></div>
                   </div>
@@ -229,7 +225,7 @@ export default function ReportsAnalytics() {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-gradient-to-r from-[#FF9900] to-[#FFB84D] h-2 rounded-full transition-all"
+                    className="bg-blue-500 h-2 rounded-full transition-all"
                     style={{ width: `${cat.percentage}%` }}
                   ></div>
                 </div>
@@ -242,7 +238,7 @@ export default function ReportsAnalytics() {
             <div className="pt-4 border-t">
               <div className="flex items-center justify-between">
                 <p className="font-bold text-gray-800">Tổng cộng</p>
-                <p className="font-bold text-[#FF9900]">
+                <p className="font-bold text-blue-600">
                   {totalRevenue.toLocaleString()}đ
                 </p>
               </div>
@@ -272,7 +268,7 @@ export default function ReportsAnalytics() {
               {topProducts.length > 0 ? topProducts.map((product, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-[#FF9900] font-bold text-sm">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold text-sm">
                       {index + 1}
                     </div>
                   </td>
@@ -286,7 +282,7 @@ export default function ReportsAnalytics() {
                     <span className="font-semibold text-gray-800">{product.sold}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-semibold text-[#FF9900]">
+                    <span className="font-semibold text-blue-600">
                       {product.revenue.toLocaleString()}đ
                     </span>
                   </td>
