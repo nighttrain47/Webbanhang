@@ -52,8 +52,8 @@
 
 | Dịch vụ | URL | Platform | Chi phí |
 | :--- | :--- | :--- | :--- |
-| Customer Website | <https://hobby-shop-client.vercel.app> | Vercel | Free |
-| Admin Panel | <https://hobby-shop-admin.vercel.app> | Vercel | Free |
+| Customer Website | <https://hobbyshop-customer.vercel.app> | Vercel | Free |
+| Admin Panel | <https://hobbyshop-admin.vercel.app> | Vercel | Free |
 | Backend API | <https://hobbyshop-api.onrender.com> | Render | Free |
 | Database | MongoDB Atlas | Atlas | Free (512MB) |
 | Uptime Monitor | UptimeRobot | UptimeRobot | Free |
@@ -120,8 +120,8 @@ Vào **Environment** tab, thêm các biến:
 ```
 PORT=5000
 MONGODB_URI=mongodb+srv://hobbyshop-admin:<password>@cluster0.xxxxx.mongodb.net/hobbyshop
-CLIENT_URL=https://hobby-shop-client.vercel.app
-ADMIN_URL=https://hobby-shop-admin.vercel.app
+CLIENT_URL=https://hobbyshop-customer.vercel.app
+ADMIN_URL=https://hobbyshop-admin.vercel.app
 JWT_SECRET=<sinh chuỗi random 64 ký tự>
 SESSION_SECRET=<sinh chuỗi random 32 ký tự>
 EMAIL_USER=your-gmail@gmail.com
@@ -150,7 +150,7 @@ EMAIL_PASS=<Gmail App Password>
 
 | Setting | Giá trị |
 | :--- | :--- |
-| Project Name | `hobby-shop-client` |
+| Project Name | `hobbyshop-customer` |
 | Framework Preset | `Vite` |
 | Root Directory | `client-customer` |
 | Build Command | `npm run build` |
@@ -169,7 +169,7 @@ Tương tự, tạo project mới:
 
 | Setting | Giá trị |
 | :--- | :--- |
-| Project Name | `hobby-shop-admin` |
+| Project Name | `hobbyshop-admin` |
 | Framework Preset | `Vite` |
 | Root Directory | `client-admin` |
 | Build Command | `npm run build` |
@@ -187,8 +187,8 @@ VITE_API_URL=https://hobbyshop-api.onrender.com
 Sau khi có URL Vercel, quay lại Render và cập nhật:
 
 ```
-CLIENT_URL=https://hobby-shop-client.vercel.app
-ADMIN_URL=https://hobby-shop-admin.vercel.app
+CLIENT_URL=https://hobbyshop-customer.vercel.app
+ADMIN_URL=https://hobbyshop-admin.vercel.app
 ```
 
 Render sẽ tự động redeploy khi thay đổi env vars.
@@ -221,9 +221,9 @@ curl https://hobbyshop-api.onrender.com/api/health
 # ✅ Expected: {"status":"ok","timestamp":"..."}
 
 # 2. Test CORS
-curl -H "Origin: https://hobby-shop-client.vercel.app" \
+curl -H "Origin: https://hobbyshop-customer.vercel.app" \
      -I https://hobbyshop-api.onrender.com/api/customer/products/new
-# ✅ Expected: Access-Control-Allow-Origin: https://hobby-shop-client.vercel.app
+# ✅ Expected: Access-Control-Allow-Origin: https://hobbyshop-customer.vercel.app
 
 # 3. Test Customer APIs
 curl https://hobbyshop-api.onrender.com/api/customer/products/new
@@ -237,8 +237,8 @@ curl -X POST https://hobbyshop-api.onrender.com/api/admin/login \
 ```
 
 ### URLs cần verify
-- [ ] `https://hobby-shop-client.vercel.app` — Customer site load được
-- [ ] `https://hobby-shop-admin.vercel.app` — Admin panel load được
+- [ ] `https://hobbyshop-customer.vercel.app` — Customer site load được
+- [ ] `https://hobbyshop-admin.vercel.app` — Admin panel load được
 - [ ] `https://hobbyshop-api.onrender.com/api/health` — Backend healthy
 - [ ] Login admin panel được
 - [ ] Customer site hiện sản phẩm
@@ -282,7 +282,7 @@ Render detects change in server/          → restarts Backend
 ### Frontend hiện lỗi "CORS error"
 ```bash
 # Kiểm tra CLIENT_URL / ADMIN_URL trên Render có đúng domain Vercel không
-# Domain Vercel có thể là: https://hobby-shop-client-xxx.vercel.app (unique suffix)
+# Domain Vercel có thể là: https://hobbyshop-customer-xxx.vercel.app (unique suffix)
 # Phải lấy đúng URL từ Vercel dashboard
 ```
 

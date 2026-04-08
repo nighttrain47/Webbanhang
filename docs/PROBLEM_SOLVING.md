@@ -30,8 +30,8 @@ app.use(cors({
   origin: [
     process.env.CLIENT_URL,    // http://localhost:3000 (dev)
     process.env.ADMIN_URL,     // http://localhost:3001 (dev)
-    'https://hobby-shop-client.vercel.app',   // production
-    'https://hobby-shop-admin.vercel.app'
+    'https://hobbyshop-customer.vercel.app',   // production
+    'https://hobbyshop-admin.vercel.app'
   ],
   credentials: true            // Cho phép gửi cookie/session
 }));

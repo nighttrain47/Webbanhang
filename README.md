@@ -51,7 +51,7 @@ Tài liệu được chia thành các file chuyên biệt, liên kết với nha
 
 | File | Nội dung |
 | :--- | :--- |
-| 📘 [DOC_GIAI_THICH_DU_AN.md](./DOC_GIAI_THICH_DU_AN.md) | Báo cáo kỹ thuật tổng quan: kiến trúc, công nghệ, luồng xử lý, sơ đồ triển khai |
+| 🏠 [README.md](./README.md) | Tổng quan dự án, hướng dẫn cài đặt nhanh và điều hướng tài liệu |
 | 🗂️ [docs/DIRECTORY_STRUCTURE.md](./docs/DIRECTORY_STRUCTURE.md) | Giải thích chi tiết từng thư mục và file trong dự án |
 | 🏗️ [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | Kiến trúc hệ thống và các luồng giao tiếp (có sơ đồ) |
 | 🔧 [docs/TECH_STACK.md](./docs/TECH_STACK.md) | Công nghệ sử dụng và lý do lựa chọn |
@@ -90,7 +90,6 @@ HobbyShop/
 │   └── src/
 │       └── components/admin/  #   12 admin screens
 ├── docs/                      # 📚 Tài liệu chi tiết
-├── DOC_GIAI_THICH_DU_AN.md    # 📘 Báo cáo kỹ thuật tổng quan
 └── package.json               # Root monorepo scripts
 ```
 
@@ -114,11 +113,13 @@ HobbyShop/
 
 ```bash
 git clone https://github.com/nighttrain47/Webbanhang.git
-cd HobbyShop
+cd Webbanhang
 
 # Cài đặt toàn bộ dependencies một lệnh duy nhất
 npm run install:all
 ```
+
+> Nếu bạn đặt lại tên thư mục local thành `HobbyShop`, chỉ cần `cd` vào đúng thư mục dự án trước khi chạy lệnh.
 
 <details>
 <summary>Hoặc cài đặt thủ công từng phần</summary>
@@ -207,7 +208,7 @@ npm run build:admin
 | GET | `/api/admin/customers` | Danh sách khách hàng |
 | GET | `/api/admin/categories` | Danh mục |
 | GET | `/api/admin/reviews` | Đánh giá |
-| GET | `/api/admin/articles` | Bài viết |
+
 
 </details>
 
@@ -222,7 +223,7 @@ npm run build:admin
 | GET | `/api/customer/products/:id` | Chi tiết sản phẩm |
 | POST | `/api/customer/signup` | Đăng ký tài khoản |
 | POST | `/api/customer/login` | Đăng nhập |
-| GET | `/api/customer/articles` | Bài viết / Blog |
+
 
 </details>
 
@@ -236,7 +237,7 @@ npm run build:admin
 | **Frontend** | React 18, Vite 5, TypeScript |
 | **UI** | Radix UI, Lucide React, Recharts, TailwindCSS |
 | **Auth** | JWT, bcryptjs, express-session |
-| **Email** | Nodemailer (SMTP) |
+| **Email** | Brevo (SMTP) + Nodemailer |
 | **Deployment** | Vercel, Render, MongoDB Atlas |
 
 > 📖 Giải thích chi tiết tại [docs/TECH_STACK.md](./docs/TECH_STACK.md)

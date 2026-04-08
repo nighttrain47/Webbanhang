@@ -15,7 +15,6 @@ HobbyShop/                         ← Thư mục gốc (monorepo)
 ├── client-customer/               ← 🌐 Customer Website
 ├── client-admin/                  ← 🛠️ Admin Panel
 ├── docs/                          ← 📚 Tài liệu chi tiết
-├── DOC_GIAI_THICH_DU_AN.md        ← 📘 Báo cáo kỹ thuật tổng quan
 ├── README.md                      ← 🏠 Trang chủ GitHub
 └── package.json                   ← Root scripts (monorepo runner)
 ```
@@ -198,7 +197,6 @@ docs/
 | :--- | :--- |
 | `package.json` | Root monorepo scripts: `install:all`, `dev:server/customer/admin`, `build:*` |
 | `README.md` | Trang chủ GitHub — hướng dẫn cài đặt và overview |
-| `DOC_GIAI_THICH_DU_AN.md` | Báo cáo kỹ thuật dự án |
 | `.gitignore` | Loại trừ `node_modules`, `.env`, `dist` khỏi Git |
 | `server/.env.example` | Template cho biến môi trường |
 

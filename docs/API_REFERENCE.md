@@ -46,11 +46,9 @@ Token được cấp khi đăng nhập thành công qua `POST /api/admin/login`.
 **Response:**
 ```json
 {
+  "success": true,
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "admin": {
-    "id": "...",
-    "username": "admin"
-  }
+  "username": "admin"
 }
 ```
 
@@ -180,8 +178,8 @@ Cập nhật trạng thái đơn hàng.
 
 | Method | Endpoint | Mô tả |
 | :--- | :--- | :--- |
-| GET | `/api/admin/customers` | Danh sách khách hàng (page, search) |
-| GET | `/api/admin/customers/:id` | Chi tiết một khách hàng |
+| GET | `/api/admin/customers` | Danh sách khách hàng |
+| DELETE | `/api/admin/customers/:id` | Xóa khách hàng |
 
 ---
 
@@ -230,16 +228,14 @@ Sản phẩm hot (`isHot: true`).
 #### `GET /api/customer/products/preorder`
 Sản phẩm pre-order (có `releaseDate` trong tương lai).
 
-#### `GET /api/customer/products/category/:categoryId`
+#### `GET /api/customer/products/category/:cid`
 Sản phẩm theo danh mục.
 
 **Query Params:**
 | Param | Mô tả |
 | :--- | :--- |
 | `page` | Trang hiện tại |
-| `sort` | Sắp xếp: `price_asc`, `price_desc`, `newest` |
-| `minPrice` | Giá từ |
-| `maxPrice` | Giá đến |
+| `limit` | Số lượng item mỗi trang |
 
 #### `GET /api/customer/products/search/:keyword`
 Tìm kiếm sản phẩm theo từ khóa (tìm trong tên, mô tả).
@@ -271,12 +267,14 @@ Chi tiết sản phẩm.
 #### `GET /api/customer/products/:id/reviews`
 Lấy danh sách đánh giá của sản phẩm.
 
-#### `POST /api/customer/products/:id/reviews` 🔒
-Gửi đánh giá (yêu cầu đăng nhập).
+#### `POST /api/customer/products/:id/reviews`
+Gửi đánh giá sản phẩm.
 
 **Request Body:**
 ```json
 {
+  "userName": "Nguyen Van A",
+  "userId": "customer_id_optional",
   "rating": 5,
   "comment": "Sản phẩm rất đẹp, đóng gói cẩn thận!"
 }
@@ -287,12 +285,12 @@ Gửi đánh giá (yêu cầu đăng nhập).
 ### Xác thực Khách hàng
 
 #### `POST /api/customer/signup`
-Đăng ký tài khoản mới.
+Đăng ký tài khoản mới và gửi OTP xác thực qua email.
 
 **Request Body:**
 ```json
 {
-  "fullName": "Nguyen Van A",
+  "username": "nguyenvana",
   "email": "user@example.com",
   "password": "mypassword123",
   "phone": "0901234567"
@@ -301,8 +299,46 @@ Gửi đánh giá (yêu cầu đăng nhập).
 
 **Response:** `201 Created` + thông báo kiểm tra email.
 
+#### `POST /api/customer/verify-otp`
+Xác thực OTP.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "otp": "123456",
+  "purpose": "verify"
+}
+```
+
+#### `POST /api/customer/resend-otp`
+Gửi lại OTP (dùng cho xác thực đăng ký hoặc quên mật khẩu).
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "purpose": "verify"
+}
+```
+
+#### `POST /api/customer/forgot-password`
+Gửi OTP để đặt lại mật khẩu.
+
+#### `POST /api/customer/reset-password`
+Đặt lại mật khẩu bằng OTP.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "otp": "123456",
+  "newPassword": "newPassword123"
+}
+```
+
 #### `GET /api/customer/active`
-Kích hoạt tài khoản qua email.
+Endpoint kích hoạt tài khoản cũ (legacy).
 
 **Query Params:** `?id=<customer_id>&token=<otp_token>`
 
@@ -320,12 +356,15 @@ Kích hoạt tài khoản qua email.
 **Response:**
 ```json
 {
+  "success": true,
   "token": "eyJ...",
   "customer": {
-    "_id": "...",
-    "fullName": "Nguyen Van A",
+    "id": "...",
+    "username": "nguyenvana",
+    "name": "Nguyen Van A",
     "email": "user@example.com",
-    "membershipTier": "bronze"
+    "phone": "0901234567",
+    "createdAt": "2026-04-01T..."
   }
 }
 ```
@@ -349,13 +388,23 @@ Tạo đơn hàng mới.
     "address": "123 Đường ABC",
     "city": "TP. Hồ Chí Minh"
   },
-  "paymentMethod": "COD",
-  "totalAmount": 1700000
+  "note": "Giao trong giờ hành chính",
+  "paymentMethod": "Thanh toán khi nhận hàng",
+  "shippingFee": 30000,
+  "shippingMethod": "Giao tận nơi"
 }
 ```
 
 #### `GET /api/customer/orders` 🔒
 Lịch sử đơn hàng của khách hàng đang đăng nhập.
+
+**Response:**
+```json
+{
+  "success": true,
+  "orders": []
+}
+```
 
 ---
 
@@ -372,29 +421,45 @@ Chi tiết bài viết theo slug URL.
 ### Thông tin Khách hàng
 
 #### `GET /api/customer/profile` 🔒
-Thông tin hồ sơ + hạng thành viên.
+Thông tin hồ sơ khách hàng.
 
 **Response:**
 ```json
 {
-  "customer": {
-    "_id": "...",
-    "fullName": "Nguyen Van A",
-    "email": "user@example.com",
-    "phone": "0901234567"
-  },
-  "membership": {
-    "tier": "silver",
-    "totalSpent": 2500000,
-    "discountRate": 0.05,
-    "nextTier": "gold",
-    "remainingForNextTier": 2500000
-  }
+  "success": true,
+  "customer": { "id": "...", "name": "Nguyen Van A", "email": "user@example.com" }
 }
 ```
 
 #### `PUT /api/customer/profile` 🔒
 Cập nhật thông tin cá nhân.
+
+#### `DELETE /api/customer/profile` 🔒
+Xóa tài khoản khách hàng hiện tại.
+
+#### `PUT /api/customer/change-password` 🔒
+Đổi mật khẩu khi đã đăng nhập.
+
+---
+
+### Địa chỉ giao hàng
+
+| Method | Endpoint | Mô tả |
+| :--- | :--- | :--- |
+| GET | `/api/customer/addresses` | Lấy danh sách địa chỉ |
+| POST | `/api/customer/addresses` | Thêm địa chỉ mới |
+| PUT | `/api/customer/addresses/:id` | Cập nhật địa chỉ |
+| DELETE | `/api/customer/addresses/:id` | Xóa địa chỉ |
+| PUT | `/api/customer/addresses/:id/default` | Đặt địa chỉ mặc định |
+
+### Phương thức thanh toán
+
+| Method | Endpoint | Mô tả |
+| :--- | :--- | :--- |
+| GET | `/api/customer/payments` | Lấy danh sách phương thức thanh toán |
+| POST | `/api/customer/payments` | Thêm phương thức thanh toán |
+| DELETE | `/api/customer/payments/:id` | Xóa phương thức thanh toán |
+| PUT | `/api/customer/payments/:id/default` | Đặt phương thức mặc định |
 
 ---
 
