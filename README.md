@@ -58,6 +58,7 @@ Tài liệu được chia thành các file chuyên biệt, liên kết với nha
 | 🧩 [docs/PROBLEM_SOLVING.md](./docs/PROBLEM_SOLVING.md) | Các vấn đề gặp phải và cách giải quyết |
 | 🚀 [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Hướng dẫn triển khai lên Cloud (Vercel + Render + Atlas) |
 | 📡 [docs/API_REFERENCE.md](./docs/API_REFERENCE.md) | Tài liệu REST API đầy đủ |
+| 📑 [docs/REFERENCES.md](./docs/REFERENCES.md) | Danh mục tài liệu tham khảo dùng cho báo cáo đồ án |
 
 ---
 
