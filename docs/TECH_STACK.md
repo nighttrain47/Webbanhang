@@ -26,9 +26,11 @@ HobbyShop xây dựng trên **MERN Stack** (MongoDB · Express · React · Node.
 ## 🌐 Frontend
 
 ### React 18
+
 **Lý do chọn:** React là thư viện UI phổ biến nhất, hệ sinh thái lớn, nhiều tài liệu.
 
 **Cơ chế hoạt động trong dự án:**
+
 - **Virtual DOM:** Chỉ re-render đúng component bị thay đổi (ví dụ: cập nhật giỏ hàng không reload trang).
 - **React Hooks:** Quản lý state cục bộ với `useState`, side effects với `useEffect`.
 - **Context API:** `CartContext` chia sẻ trạng thái giỏ hàng toàn cục mà không cần Redux.
@@ -50,6 +52,7 @@ export const CartProvider = ({ children }) => {
 ---
 
 ### Vite 5
+
 **Lý do chọn:** Thay thế Create React App (CRA) / Webpack — nhanh hơn cực nhiều.
 
 | Tiêu chí | Create React App | Vite |
@@ -60,6 +63,7 @@ export const CartProvider = ({ children }) => {
 | Cơ chế | Bundle trước | ES Modules gốc |
 
 **Cấu hình proxy trong Vite:**
+
 ```typescript
 // vite.config.ts — proxy API để tránh CORS khi dev local
 export default defineConfig({
@@ -74,9 +78,11 @@ export default defineConfig({
 ---
 
 ### TypeScript 5
+
 **Lý do chọn:** Ngăn lỗi runtime bằng kiểm tra kiểu tĩnh ngay trong IDE.
 
 **Ứng dụng thực tế trong dự án:**
+
 ```typescript
 // Định nghĩa kiểu cho Product — tránh truy cập field sai tên
 interface Product {
@@ -98,9 +104,11 @@ interface Product {
 ---
 
 ### TailwindCSS
+
 **Lý do chọn:** Utility-first CSS — dựng UI nhanh, responsive dễ dàng, không bị xung đột CSS.
 
 **So sánh với CSS thuần:**
+
 ```html
 <!-- CSS thuần: phải tạo class riêng -->
 <div class="product-card">...</div>
@@ -112,12 +120,14 @@ interface Product {
 ```
 
 **Responsive trong dự án:**
+
 - Mobile-first: `grid-cols-1` → `sm:grid-cols-2` → `lg:grid-cols-4`
 - Dark mode: `dark:bg-gray-900 dark:text-white`
 
 ---
 
 ### UI Libraries
+
 | Thư viện | Mục đích |
 | :--- | :--- |
 | **Radix UI** | Các component UI accessible: Dialog, Dropdown, Tooltip — không cần tự viết a11y |
@@ -129,18 +139,22 @@ interface Product {
 ## 🖧 Backend
 
 ### Node.js 18
+
 **Lý do chọn:** JavaScript ở phía server — cùng ngôn ngữ với Frontend, tái sử dụng logic.
 
 **Đặc điểm kỹ thuật quan trọng:**
+
 - **Event Loop / Non-blocking I/O:** Node.js xử lý nhiều request đồng thời mà không cần tạo thread mới cho mỗi request.
 - **Phù hợp với E-commerce:** Nhiều request đọc dữ liệu đồng thời (browse sản phẩm) không gây nghẽn cổ chai.
 
 ---
 
 ### Express 5
+
 **Lý do chọn:** Minimal web framework, dễ cấu hình, middleware linh hoạt.
 
 **Cấu trúc routing trong dự án:**
+
 ```javascript
 // server/index.js
 const adminRouter = require('./api/admin');
@@ -153,6 +167,7 @@ app.use('/shop', shopRouter);                    // EJS SSR
 ```
 
 **Middleware tự viết:**
+
 ```javascript
 // utils/jwtAuth.js — Middleware xác thực JWT
 module.exports = (req, res, next) => {
@@ -172,6 +187,7 @@ module.exports = (req, res, next) => {
 ---
 
 ### EJS (Embedded JavaScript)
+
 **Lý do chọn:** Server-side rendering cho `/shop` — fallback không cần JavaScript ở client, tốt cho SEO.
 
 Đây là tính năng bổ sung bên cạnh React SPA, phục vụ nhu cầu SSR đơn giản.
@@ -181,6 +197,7 @@ module.exports = (req, res, next) => {
 ## 🍃 Database
 
 ### MongoDB + Mongoose
+
 **Lý do chọn NoSQL cho E-commerce:**
 
 | Yêu cầu | SQL | MongoDB |
@@ -191,6 +208,7 @@ module.exports = (req, res, next) => {
 | Query phức tạp (hạng thành viên) | ✅ SQL mạnh | ✅ Aggregation Pipeline |
 
 **Aggregation Pipeline — tính hạng thành viên:**
+
 ```javascript
 // CustomerDAO.js — Tính tổng chi tiêu của customer
 const result = await Order.aggregate([
@@ -207,6 +225,7 @@ const tier = totalSpent >= 5000000 ? 'gold'
 ---
 
 ### Bảo mật Mật khẩu (bcryptjs)
+
 ```javascript
 // Đăng ký: hash mật khẩu trước khi lưu
 const hashedPassword = await bcrypt.hash(password, 12);
@@ -222,6 +241,7 @@ const isMatch = await bcrypt.compare(inputPassword, storedHash);
 **Lý do chọn:** Library phổ biến nhất cho Node.js, hỗ trợ nhiều dịch vụ SMTP.
 
 **Hai loại email trong hệ thống:**
+
 1. **Email xác minh OTP:** Gửi khi đăng ký tài khoản mới
 2. **Email hóa đơn:** Gửi sau khi đặt hàng thành công (HTML template đẹp)
 
@@ -251,16 +271,19 @@ const transporter = nodemailer.createTransport({
 ## So sánh Lựa chọn Công nghệ
 
 ### Tại sao không dùng Next.js?
+
 - HobbyShop đã có sẵn backend Node.js riêng → không cần Next.js API routes
 - Team quen với Vite + React riêng biệt hơn
 - Linh hoạt hơn trong cấu hình routing
 
 ### Tại sao không dùng Redux?
+
 - Ứng dụng không đủ phức tạp để cần Redux
 - React Context API + `useState` đủ dùng cho CartContext và AuthContext
 - Ít boilerplate hơn, code đơn giản hơn
 
 ### Tại sao không dùng GraphQL?
+
 - REST API đủ đơn giản và phù hợp với team
 - Ít learning curve hơn
 - Express + REST đủ linh hoạt cho use case hiện tại
