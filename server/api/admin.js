@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const ProductDAO = require('../models/ProductDAO');
 const CategoryDAO = require('../models/CategoryDAO');
 const CustomerDAO = require('../models/CustomerDAO');
@@ -9,26 +8,40 @@ const EmailUtil = require('../utils/EmailUtil');
 const ReviewDAO = require('../models/ReviewDAO');
 const ArticleDAO = require('../models/ArticleDAO');
 const BrandDAO = require('../models/BrandDAO');
+const AdminDAO = require('../models/AdminDAO');
 const { createToken, verifyToken } = require('../utils/jwtAuth');
 
 // ==================== AUTH ====================
-
-// Admin account (hardcoded for simplicity)
-const ADMIN = { username: 'admin', password: '$2a$10$4mjtNgZqDd5oI4thZDsf0OU0LZZFv1laGeAv46kftX0BbsbmexoRi' }; 
 
 // POST /api/admin/login
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        if (username !== ADMIN.username) {
+
+        if (!username || !password) {
+            return res.status(400).json({ success: false, message: 'Thiếu username hoặc password' });
+        }
+
+        const totalAdmins = await AdminDAO.countActiveAdmins();
+        if (totalAdmins === 0) {
+            return res.status(503).json({
+                success: false,
+                message: 'Chưa có tài khoản admin. Hãy tạo bằng lệnh: npm run create:admin -- --username=<user> --password=<pass>',
+            });
+        }
+
+        const admin = await AdminDAO.selectByUsername(username);
+        if (!admin) {
             return res.status(401).json({ success: false, message: 'Sai tài khoản hoặc mật khẩu' });
         }
-        const isMatch = await bcrypt.compare(password, ADMIN.password);
+
+        const isMatch = await admin.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({ success: false, message: 'Sai tài khoản hoặc mật khẩu' });
         }
-        const token = createToken({ username, role: 'admin' });
-        res.json({ success: true, token, username });
+
+        const token = createToken({ adminId: admin._id, username: admin.username, role: admin.role || 'admin' });
+        res.json({ success: true, token, username: admin.username, role: admin.role || 'admin' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

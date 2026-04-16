@@ -142,6 +142,8 @@ Tạo file `server/.env`:
 ```env
 PORT=5000
 MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/hobbyshop
+MONGODB_TLS_INSECURE=false
+ALLOW_INSECURE_TLS=false
 CLIENT_URL=http://localhost:3000
 ADMIN_URL=http://localhost:3001
 JWT_SECRET=your_jwt_secret_key
@@ -165,6 +167,24 @@ VITE_API_URL=http://localhost:5000
 > Xem file mẫu backend tại [`server/.env.example`](./server/.env.example)
 
 > Nếu không cấu hình `BREVO_API_KEY` và `EMAIL_USER`, các luồng gửi OTP/email trạng thái đơn hàng sẽ không hoạt động.
+
+Khởi tạo admin đầu tiên trong database (bắt buộc):
+
+```bash
+cd server
+npm run create:admin -- --username=<admin_username> --password=<admin_password> --name="Super Admin" --role=superadmin
+```
+
+Gợi ý bảo mật (PowerShell) để tránh lưu password trong lịch sử lệnh:
+
+```powershell
+cd server
+$env:ADMIN_USERNAME = "<admin_username>"
+$env:ADMIN_PASSWORD = "<admin_password>"
+npm run create:admin -- --name="Super Admin" --role=superadmin
+Remove-Item Env:ADMIN_USERNAME
+Remove-Item Env:ADMIN_PASSWORD
+```
 
 ---
 
@@ -200,6 +220,18 @@ npm run build:admin
 | `npm run dev:admin` | Chạy admin app tại port 3001 |
 | `npm run build:customer` | Build customer app ra thư mục `client-customer/build` |
 | `npm run build:admin` | Build admin app ra thư mục `client-admin/build` |
+
+### Tạo tài khoản Admin trong Database
+
+Dự án hỗ trợ nhiều tài khoản admin lưu trong MongoDB.
+
+```bash
+cd server
+npm run create:admin -- --username=<admin1_username> --password=<admin1_password> --name="Admin One" --role=superadmin
+npm run create:admin -- --username=<admin2_username> --password=<admin2_password> --name="Admin Two" --role=admin
+```
+
+> Mỗi lần chạy lệnh sẽ tạo thêm 1 admin mới (username phải duy nhất).
 
 > 📖 Hướng dẫn deploy lên Cloud tại [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
 

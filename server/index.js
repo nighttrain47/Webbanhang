@@ -1,5 +1,8 @@
-// Workaround for Node.js v24+ OpenSSL compatibility with MongoDB Atlas
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+// Optional local workaround only. Keep TLS verification enabled by default.
+if (process.env.ALLOW_INSECURE_TLS === 'true') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    console.warn('⚠️ TLS certificate verification is disabled (ALLOW_INSECURE_TLS=true). Do not use this in production.');
+}
 
 const express = require('express');
 const cors = require('cors');

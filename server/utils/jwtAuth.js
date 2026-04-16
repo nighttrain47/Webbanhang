@@ -1,5 +1,9 @@
 const jwt = require('jsonwebtoken');
 
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is required in production');
+}
+
 const JWT_SECRET = process.env.JWT_SECRET || 'hobbyshop_secret_key_2026';
 
 // Create JWT token

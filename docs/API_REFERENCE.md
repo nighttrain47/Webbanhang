@@ -38,8 +38,8 @@ Token được cấp khi đăng nhập thành công qua `POST /api/admin/login`.
 **Request Body:**
 ```json
 {
-  "username": "admin",
-  "password": "123"
+  "username": "<admin_username>",
+  "password": "<admin_password>"
 }
 ```
 
