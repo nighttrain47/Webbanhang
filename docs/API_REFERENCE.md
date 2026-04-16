@@ -39,7 +39,7 @@ Token được cấp khi đăng nhập thành công qua `POST /api/admin/login`.
 ```json
 {
   "username": "admin",
-  "password": "admin123"
+  "password": "123"
 }
 ```
 

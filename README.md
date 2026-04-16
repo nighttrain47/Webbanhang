@@ -146,9 +146,25 @@ CLIENT_URL=http://localhost:3000
 ADMIN_URL=http://localhost:3001
 JWT_SECRET=your_jwt_secret_key
 SESSION_SECRET=your_session_secret_key
+BREVO_API_KEY=your_brevo_api_key
+EMAIL_USER=verified_sender_email@example.com
 ```
 
-> Xem file mẫu tại [`server/.env.example`](./server/.env.example)
+Tạo thêm file `client-customer/.env`:
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+Tạo thêm file `client-admin/.env`:
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+> Xem file mẫu backend tại [`server/.env.example`](./server/.env.example)
+
+> Nếu không cấu hình `BREVO_API_KEY` và `EMAIL_USER`, các luồng gửi OTP/email trạng thái đơn hàng sẽ không hoạt động.
 
 ---
 
@@ -174,7 +190,28 @@ npm run build:customer
 npm run build:admin
 ```
 
+### Các script root hữu ích
+
+| Script | Mô tả |
+| :--- | :--- |
+| `npm run install:all` | Cài dependencies cho `server`, `client-customer`, `client-admin` |
+| `npm run dev:server` | Chạy backend tại port 5000 |
+| `npm run dev:customer` | Chạy customer app tại port 3000 |
+| `npm run dev:admin` | Chạy admin app tại port 3001 |
+| `npm run build:customer` | Build customer app ra thư mục `client-customer/build` |
+| `npm run build:admin` | Build admin app ra thư mục `client-admin/build` |
+
 > 📖 Hướng dẫn deploy lên Cloud tại [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
+
+---
+
+## ✅ Kiểm tra nhanh sau khi chạy
+
+1. Mở `http://localhost:5000/api/health` để xác nhận backend hoạt động.
+2. Mở `http://localhost:3000` và kiểm tra trang chủ customer có tải dữ liệu sản phẩm.
+3. Mở `http://localhost:3001` và thử đăng nhập admin.
+4. Nếu API bị lỗi CORS, kiểm tra lại `CLIENT_URL` và `ADMIN_URL` trong `server/.env`.
+5. Nếu các chức năng OTP/email lỗi, kiểm tra `BREVO_API_KEY` và `EMAIL_USER`.
 
 ---
 

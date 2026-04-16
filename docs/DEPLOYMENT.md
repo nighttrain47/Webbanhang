@@ -232,7 +232,7 @@ curl https://hobbyshop-api.onrender.com/api/customer/products/new
 # 4. Test Admin login
 curl -X POST https://hobbyshop-api.onrender.com/api/admin/login \
      -H "Content-Type: application/json" \
-     -d '{"username":"admin","password":"admin123"}'
+     -d '{"username":"admin","password":"123"}'
 # ✅ Expected: {"token":"eyJ..."}
 ```
 

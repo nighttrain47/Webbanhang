@@ -14,7 +14,7 @@ const { createToken, verifyToken } = require('../utils/jwtAuth');
 // ==================== AUTH ====================
 
 // Admin account (hardcoded for simplicity)
-const ADMIN = { username: 'admin', password: '$2a$10$4mjtNgZqDd5oI4thZDsf0OU0LZZFv1laGeAv46kftX0BbsbmexoRi' }; // admin123
+const ADMIN = { username: 'admin', password: '$2a$10$4mjtNgZqDd5oI4thZDsf0OU0LZZFv1laGeAv46kftX0BbsbmexoRi' }; 
 
 // POST /api/admin/login
 router.post('/login', async (req, res) => {
